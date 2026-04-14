@@ -13,8 +13,8 @@ RUN set -eux; \
         https://github.com/NousResearch/hermes-agent.git /opt/hermesagent
 RUN set -eux; \
     cd /opt/hermesagent; \
-    echo "==> Creating Python 3.11 venv"; \
-    uv venv venv --python 3.11; \
+    echo "==> Creating Python venv"; \
+    uv venv venv --python python3; \
     echo "==> Installing hermes-agent[all]"; \
     VIRTUAL_ENV=/opt/hermesagent/venv uv pip install -e ".[all]"
 RUN set -eux; \

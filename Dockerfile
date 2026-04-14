@@ -36,7 +36,7 @@ RUN set -eux; \
     git clone --depth 1 --branch "${HERMES_AGENT_BRANCH}" \
         https://github.com/NousResearch/hermes-agent.git /opt/hermesagent; \
     cd /opt/hermesagent; \
-    uv venv venv --python 3.11; \
+    uv venv venv --python python3; \
     VIRTUAL_ENV=/opt/hermesagent/venv uv pip install -e ".[all]"; \
     /opt/hermesagent/venv/bin/hermes --version; \
     rm -rf /root/.cache /tmp/*
