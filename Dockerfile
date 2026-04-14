@@ -91,7 +91,7 @@ RUN mkdir -p /data/hermesdeckx /data/hermesagent/state /data/hermesagent/logs /d
     ln -sf /app/hermesdeckx /usr/local/bin/hermesdeckx && \
     ln -sf /opt/hermesagent/venv/bin/hermes /usr/local/bin/hermes
 VOLUME ["/data"]
-EXPOSE 19788 18789
+EXPOSE 19788 8642
 ENV OHD_DB_SQLITE_PATH=/data/hermesdeckx/HermesDeckX.db \
     OHD_LOG_FILE=/data/hermesdeckx/HermesDeckX.log \
     HERMES_HOME=/data/hermesagent/home \

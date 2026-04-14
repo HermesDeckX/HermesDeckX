@@ -17,11 +17,8 @@ services:
       - hermesdeckx-runtime:/data/runtime
     environment:
       OHD_CONFIG: /data/hermesdeckx/HermesDeckX.json
-      HERMES_AGENT_HOME: /data/hermesagent/home
+      HERMES_HOME: /data/hermesagent/home
       HERMES_AGENT_STATE_DIR: /data/hermesagent/state
-      HERMES_AGENT_CONFIG_PATH: /data/hermesagent/state/hermesagent.json
-      OHD_HERMES_AGENT_CONFIG_PATH: /data/hermesagent/state
-      NPM_CONFIG_PREFIX: /data/hermesagent/npm
       OHD_DB_SQLITE_PATH: /data/hermesdeckx/HermesDeckX.db
       OHD_LOG_FILE: /data/hermesdeckx/HermesDeckX.log
       OHD_GATEWAY_LOG: /data/hermesagent/logs/gateway.log
@@ -31,7 +28,7 @@ services:
       # HermesAgent Gateway connection config (default: local in-container gateway)
       # 如需连接宿主机或外部 Gateway，可覆盖为 host.docker.internal 或实际 IP
       OHD_HERMES_AGENT_GATEWAY_HOST: 127.0.0.1
-      OHD_HERMES_AGENT_GATEWAY_PORT: 18789
+      OHD_HERMES_AGENT_GATEWAY_PORT: 8642
       # OHD_HERMES_AGENT_GATEWAY_TOKEN: your_token_here
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:19788/api/v1/health"]

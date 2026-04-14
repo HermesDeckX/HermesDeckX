@@ -44,25 +44,33 @@ write_bootstrap() {
 BSEOF
 }
 
-# hermes-agent uses a YAML config via ~/.hermes/cli-config.yaml
+# hermes-agent uses a YAML config via ~/.hermes/config.yaml
 # No plugin sanitization needed (Python project, different config format)
 
 ensure_default_hermes_config() {
-    HERMES_CLI_CONFIG="$HERMES_HOME/cli-config.yaml"
-    if [ -f "$HERMES_CLI_CONFIG" ]; then
+    HERMES_CONFIG="$HERMES_HOME/config.yaml"
+    if [ -f "$HERMES_CONFIG" ]; then
         return 0
     fi
 
     echo "[docker-entrypoint] HermesAgent config not found, writing minimal config..."
     mkdir -p "$HERMES_HOME"
-    cat > "$HERMES_CLI_CONFIG" <<HCEOF
+    cat > "$HERMES_CONFIG" <<HCEOF
 # HermesAgent minimal config for Docker
+model: ""
 gateway:
   port: ${GATEWAY_PORT}
   bind: 0.0.0.0
+agent:
+  max_turns: 90
+compression:
+  enabled: true
+  threshold: 0.50
+terminal:
+  backend: local
 HCEOF
-    chmod 600 "$HERMES_CLI_CONFIG"
-    echo "[docker-entrypoint] Minimal HermesAgent config written to $HERMES_CLI_CONFIG"
+    chmod 600 "$HERMES_CONFIG"
+    echo "[docker-entrypoint] Minimal HermesAgent config written to $HERMES_CONFIG"
     HERMES_AGENT_CONFIG_CREATED=1
     return 0
 }
