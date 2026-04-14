@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -236,7 +237,7 @@ func handleChatSend(svc *hermes.Service) RPCHandler {
 			return nil, fmt.Errorf("empty API server response")
 		}
 		if !result.OK {
-			return nil, fmt.Errorf(result.Error)
+			return nil, fmt.Errorf("%s", result.Error)
 		}
 
 		runId := req.IdempotencyKey
@@ -291,10 +292,10 @@ func handleSessionsSend(svc *hermes.Service) RPCHandler {
 			return nil, err
 		}
 		if result == nil {
-			return nil, fmt.Errorf("empty API server response")
+			return nil, errors.New("empty API server response")
 		}
 		if !result.OK {
-			return nil, fmt.Errorf(result.Error)
+			return nil, errors.New(result.Error)
 		}
 
 		runId := req.IdempotencyKey
