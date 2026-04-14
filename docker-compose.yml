@@ -1,6 +1,6 @@
 services:
   hermesdeckx:
-    image: hermesdeckx/hermesdeckx:latest
+    image: knowhunters/hermesdeckx:latest
     container_name: hermesdeckx
     init: true
     restart: unless-stopped

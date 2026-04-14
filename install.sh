@@ -314,7 +314,7 @@ stop_service() {
 
 DOCKER_COMPOSE_URL="https://raw.githubusercontent.com/HermesDeckX/HermesDeckX/main/docker-compose.yml"
 DOCKER_COMPOSE_URL_CN="https://ghfast.top/https://raw.githubusercontent.com/HermesDeckX/HermesDeckX/main/docker-compose.yml"
-DOCKER_IMAGE="hermesdeckx/hermesdeckx:latest"
+DOCKER_IMAGE="knowhunters/hermesdeckx:latest"
 DOCKER_COMPOSE_FILE="docker-compose.yml"
 NEED_MIRROR=false
 DOCKER_MIRROR=""
@@ -519,10 +519,10 @@ apply_image_mirror() {
         return
     fi
     # The mirror prefix replaces the default Docker Hub pull path
-    # e.g., hermesdeckx/hermesdeckx:latest → docker.1ms.run/hermesdeckx/hermesdeckx:latest
+    # e.g., knowhunters/hermesdeckx:latest → docker.1ms.run/knowhunters/hermesdeckx:latest
     local mirror_host
     mirror_host=$(echo "$DOCKER_MIRROR" | sed 's|https\?://||')
-    local original_image="hermesdeckx/hermesdeckx"
+    local original_image="knowhunters/hermesdeckx"
     local mirrored_image="${mirror_host}/${original_image}"
     if grep -q "$mirrored_image" "$compose_file" 2>/dev/null; then
         return  # Already mirrored
@@ -537,7 +537,7 @@ revert_image_mirror() {
     if [ -z "$DOCKER_MIRROR" ]; then return; fi
     local mirror_host
     mirror_host=$(echo "$DOCKER_MIRROR" | sed 's|https\?://||')
-    local original_image="hermesdeckx/hermesdeckx"
+    local original_image="knowhunters/hermesdeckx"
     local mirrored_image="${mirror_host}/${original_image}"
     if grep -q "$mirrored_image" "$compose_file" 2>/dev/null; then
         sed_inplace "s|image: ${mirrored_image}|image: ${original_image}|" "$compose_file"
@@ -660,7 +660,7 @@ install_docker_engine() {
 docker_install_new() {
     # Auto-detect next available instance name
     local default_name="hermesdeckx"
-    if [ -f "docker-compose.yml" ] && grep -q "hermesdeckx/hermesdeckx" "docker-compose.yml" 2>/dev/null; then
+    if [ -f "docker-compose.yml" ] && grep -q "knowhunters/hermesdeckx" "docker-compose.yml" 2>/dev/null; then
         # Default instance exists, find next available number
         local n=2
         while [ -f "docker-compose-hermesdeckx-${n}.yml" ]; do
@@ -1128,7 +1128,7 @@ docker_uninstall() {
         for m in "${DOCKER_MIRRORS[@]}"; do
             local mhost
             mhost=$(echo "$m" | sed 's|https\?://||')
-            docker rmi "${mhost}/hermesdeckx/hermesdeckx:latest" 2>/dev/null || true
+            docker rmi "${mhost}/knowhunters/hermesdeckx:latest" 2>/dev/null || true
         done
         echo -e "${GREEN}✓ Image removed / 镜像已删除${NC}"
     fi
@@ -1315,7 +1315,7 @@ if [ "$IS_CONTAINER" = false ] && check_docker && check_docker_compose; then
     # Scan for all compose files that reference our image
     for cf in docker-compose.yml docker-compose-*.yml; do
         [ -f "$cf" ] || continue
-        if grep -q "hermesdeckx/hermesdeckx" "$cf" 2>/dev/null; then
+        if grep -q "knowhunters/hermesdeckx" "$cf" 2>/dev/null; then
             DOCKER_INSTANCES+=("$cf")
             # Extract instance name from filename
             if [ "$cf" = "docker-compose.yml" ]; then
