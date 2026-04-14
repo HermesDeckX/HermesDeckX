@@ -44,15 +44,6 @@
 <br>
 
 <div align="center">
-  <img src="assets/screenshots/scenarios.png" width="390" alt="Scenario Templates" />
-  &nbsp;
-  <img src="assets/screenshots/multi-agent.png" width="390" alt="Multi-Agent Workflow" />
-  <p><sub>Scenario Templates &amp; Multi-Agent Workflow</sub></p>
-</div>
-
-<br>
-
-<div align="center">
   <img src="assets/screenshots/config.png" width="390" alt="Configuration Center" />
   &nbsp;
   <img src="assets/screenshots/skills.png" width="390" alt="Skills Center" />
