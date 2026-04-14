@@ -1997,7 +1997,12 @@ for item in "${MENU_ITEMS[@]}"; do
 done
 echo ""
 echo -n "Enter your choice [1-$N] / 输入选择 [1-$N]: "
-read -r MAIN_CHOICE </dev/tty
+if [ "$N" -le 9 ]; then
+    read -n 1 -r MAIN_CHOICE </dev/tty
+    echo
+else
+    read -r MAIN_CHOICE </dev/tty
+fi
 
 # Validate input
 if [ -z "$MAIN_CHOICE" ] || ! [[ "$MAIN_CHOICE" =~ ^[0-9]+$ ]] || [ "$MAIN_CHOICE" -lt 1 ] || [ "$MAIN_CHOICE" -gt "$N" ]; then
