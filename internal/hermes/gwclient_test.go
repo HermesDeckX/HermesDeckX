@@ -10,7 +10,7 @@ import (
 func TestNewGWClient(t *testing.T) {
 	cfg := GWClientConfig{
 		Host:  "127.0.0.1",
-		Port:  18789,
+		Port:  8642,
 		Token: "test-token",
 	}
 
@@ -134,11 +134,11 @@ func TestConnectParams(t *testing.T) {
 func TestGWClientConfig(t *testing.T) {
 	cfg := GWClientConfig{
 		Host:  "localhost",
-		Port:  18789,
+		Port:  8642,
 		Token: "secret-token",
 	}
 
 	assert.Equal(t, "localhost", cfg.Host)
-	assert.Equal(t, 18789, cfg.Port)
+	assert.Equal(t, 8642, cfg.Port)
 	assert.Equal(t, "secret-token", cfg.Token)
 }

@@ -1,5 +1,5 @@
 {
-  "gateway.port": "閘道 HTTP 监听端口，預設 18789。确保该端口未被其他程序占用",
+  "gateway.port": "閘道 HTTP 监听端口，預設 8642。确保该端口未被其他程序占用",
   "gateway.mode": "執行模式。local = 本机直接執行閘道；remote = 連線遠端閘道实例",
   "gateway.bind": "网络綁定方式。auto = 自動選擇；loopback = 僅本机 (127.0.0.1)；lan = 局域网可存取；custom = 自定义位址；tailnet = Tailscale 网络",
   "gateway.auth.mode": "閘道认证方式。token = 使用令牌认证（推荐）；password = 密码认证；none = 无认证（不安全）",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "TLS 证书文件路径（PEM 格式）",
   "gateway.tls.keyPath": "TLS 私钥文件路径（PEM 格式）",
   "gateway.tls.caPath": "CA 证书路径，用于客户端证书驗證（可选）",
-  "gateway.remote.url": "遠端閘道的 WebSocket 位址，如 ws://192.168.1.100:18789",
+  "gateway.remote.url": "遠端閘道的 WebSocket 位址，如 ws://192.168.1.100:8642",
   "gateway.remote.transport": "連線传输方式。direct = 直连；ssh = 通过 SSH 隧道連線（更安全）",
   "gateway.remote.token": "遠端閘道的存取令牌",
   "gateway.remote.sshTarget": "SSH 目标位址，格式：user@host。用于 SSH 隧道传输",

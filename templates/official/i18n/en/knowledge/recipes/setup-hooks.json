@@ -18,11 +18,11 @@
       },
       {
         "title": "Configure in External Service",
-        "description": "In GitHub/GitLab webhook settings, enter your gateway address + hooks path (e.g., https://your-gateway:18789/hooks/github), and fill the Token in the Secret field."
+        "description": "In GitHub/GitLab webhook settings, enter your gateway address + hooks path (e.g., https://your-gateway:8642/hooks/github), and fill the Token in the Secret field."
       },
       {
         "title": "Test Webhook",
-        "description": "In GitHub's webhook settings, click \"Recent Deliveries\" → \"Redeliver\" to send a test request. Or use curl:\ncurl -X POST http://localhost:18789/hooks/test -H 'Authorization: Bearer YOUR_TOKEN' -d '{\"message\": \"test\"}'."
+        "description": "In GitHub's webhook settings, click \"Recent Deliveries\" → \"Redeliver\" to send a test request. Or use curl:\ncurl -X POST http://localhost:8642/hooks/test -H 'Authorization: Bearer YOUR_TOKEN' -d '{\"message\": \"test\"}'."
       }
     ]
   }

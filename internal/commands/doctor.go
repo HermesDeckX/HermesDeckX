@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"HermesDeckX/internal/i18n"
 	"HermesDeckX/internal/hermes"
+	"HermesDeckX/internal/i18n"
 	"HermesDeckX/internal/output"
 )
 
@@ -270,7 +270,7 @@ func runDoctorFixes(configPath string, report doctorReport) error {
 		bind = "loopback"
 	}
 	if _, ok := gw["port"]; !ok {
-		gw["port"] = 18789
+		gw["port"] = 8642
 	}
 
 	auth, ok := gw["auth"].(map[string]any)

@@ -1456,7 +1456,7 @@ func buildDetailedHealth(svc *hermes.Service) map[string]interface{} {
 		}
 		gwPort := svc.GatewayPort
 		if gwPort <= 0 {
-			gwPort = 18789
+			gwPort = 8642
 		}
 		hc := &http.Client{Timeout: 2 * time.Second}
 		resp, err := hc.Get(fmt.Sprintf("http://%s:%d/health", gwHost, gwPort))

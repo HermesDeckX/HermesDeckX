@@ -174,7 +174,7 @@
   "doctor.token_not_set": "gateway.auth.mode=token 但未设置 gateway.auth.token",
   "doctor.token_suggestion": "设置 gateway.auth.token 或切换为回环地址",
   "doctor.remote_url_not_set": "gateway.mode=remote 但未设置 gateway.remote.url",
-  "doctor.remote_url_suggestion": "设置远程网关地址（如 ws://host:18789）",
+  "doctor.remote_url_suggestion": "设置远程网关地址（如 ws://host:8642）",
   "doctor.remote_url_invalid": "gateway.remote.url 不是 ws:// 或 wss:// 开头",
   "doctor.remote_url_check": "请检查远程网关地址",
   "doctor.remote_no_auth": "远程网关未配置 token/password",

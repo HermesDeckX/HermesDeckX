@@ -299,7 +299,7 @@ func (h *GatewayProfileHandler) TestConnection(w http.ResponseWriter, r *http.Re
 		return
 	}
 	if req.Port <= 0 {
-		req.Port = 18789
+		req.Port = 8642
 	}
 
 	// Step 1: TCP reachability

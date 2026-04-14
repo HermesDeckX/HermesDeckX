@@ -2,7 +2,7 @@
   "name": "快速入門",
   "description": "5 分鐘內完成 HermesAgent 閘道器的安裝、設定和首次對話",
   "content": {
-    "body": "## 前置需求\n\n- Node.js 22+（建議使用 LTS 版本）\n- 任一 AI 提供商的 API Key（OpenAI / Anthropic / Google 等）\n\n## 步驟\n\n### 1. 安裝 HermesAgent\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. 初始化設定\n\n```bash\nhermesagent init\n```\n\n按提示選擇：\n- AI 提供商（建議先選 OpenAI 或 Anthropic）\n- 填入 API Key\n- 選擇預設模型\n\n### 3. 啟動閘道器\n\n```bash\nhermesagent gateway run\n```\n\n閘道器啟動後會在終端顯示存取位址（預設 http://localhost:18789）。\n\n### 4. 連接 HermesDeckX\n\n開啟 HermesDeckX，在設定中填入閘道器位址，即可開始對話。\n\n### 5. 連接聊天頻道（選用）\n\n如果想透過 Telegram / Discord 等使用：\n1. 前往「設定中心 → 頻道」\n2. 選擇頻道類型\n3. 填入 Bot Token\n4. 儲存並等待連線\n\n## 下一步\n\n- 設定 [多頻道路由](/knowledge/tips/multi-channel-routing)\n- 設定 [安全加固](/knowledge/tips/security-hardening)\n- 探索 [場景模板庫](/scenarios)",
+    "body": "## 前置需求\n\n- Node.js 22+（建議使用 LTS 版本）\n- 任一 AI 提供商的 API Key（OpenAI / Anthropic / Google 等）\n\n## 步驟\n\n### 1. 安裝 HermesAgent\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. 初始化設定\n\n```bash\nhermesagent init\n```\n\n按提示選擇：\n- AI 提供商（建議先選 OpenAI 或 Anthropic）\n- 填入 API Key\n- 選擇預設模型\n\n### 3. 啟動閘道器\n\n```bash\nhermesagent gateway run\n```\n\n閘道器啟動後會在終端顯示存取位址（預設 http://localhost:8642）。\n\n### 4. 連接 HermesDeckX\n\n開啟 HermesDeckX，在設定中填入閘道器位址，即可開始對話。\n\n### 5. 連接聊天頻道（選用）\n\n如果想透過 Telegram / Discord 等使用：\n1. 前往「設定中心 → 頻道」\n2. 選擇頻道類型\n3. 填入 Bot Token\n4. 儲存並等待連線\n\n## 下一步\n\n- 設定 [多頻道路由](/knowledge/tips/multi-channel-routing)\n- 設定 [安全加固](/knowledge/tips/security-hardening)\n- 探索 [場景模板庫](/scenarios)",
     "steps": [
       "安裝 Node.js 22+ 和 npm",
       "執行 npm install -g hermesagent@latest",

@@ -1,5 +1,5 @@
 {
-  "gateway.port": "Порт HTTP шлюза, по умолчанию 18789. Убедитесь, что он не занят другим процессом",
+  "gateway.port": "Порт HTTP шлюза, по умолчанию 8642. Убедитесь, что он не занят другим процессом",
   "gateway.mode": "Режим работы. local = локальный шлюз; remote = подключение к удалённому шлюзу",
   "gateway.bind": "Режим привязки сети. auto = автоопределение; loopback = только localhost; lan = доступно в LAN; custom = пользовательский адрес; tailnet = сеть Tailscale",
   "gateway.auth.mode": "Режим авторизации шлюза. token = токен (рекомендуется); password = пароль; none = без авторизации (небезопасно)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "Путь к файлу TLS-сертификата (формат PEM)",
   "gateway.tls.keyPath": "Путь к файлу приватного ключа TLS (формат PEM)",
   "gateway.tls.caPath": "Путь к CA-сертификату для проверки клиентских сертификатов (опционально)",
-  "gateway.remote.url": "URL WebSocket удалённого шлюза, напр. ws://192.168.1.100:18789",
+  "gateway.remote.url": "URL WebSocket удалённого шлюза, напр. ws://192.168.1.100:8642",
   "gateway.remote.transport": "Транспорт подключения. direct = прямое подключение; ssh = через SSH-туннель (безопаснее)",
   "gateway.remote.token": "Токен доступа к удалённому шлюзу",
   "gateway.remote.sshTarget": "Адрес SSH, формат: user@host. Используется для SSH-туннеля",

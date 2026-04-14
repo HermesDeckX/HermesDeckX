@@ -863,7 +863,7 @@ func checkGatewayRunning() (running bool, port int) {
 			}
 		}
 	}
-	ports = append(ports, 18789, 18790, 19001)
+	ports = append(ports, 8642, 8643, 19001)
 	seen := map[int]struct{}{}
 
 	client := &http.Client{Timeout: 2 * time.Second}

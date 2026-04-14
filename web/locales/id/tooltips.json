@@ -1,5 +1,5 @@
 {
-  "gateway.port": "Port listen HTTP Gateway, default 18789. Pastikan tidak digunakan oleh proses lain",
+  "gateway.port": "Port listen HTTP Gateway, default 8642. Pastikan tidak digunakan oleh proses lain",
   "gateway.mode": "Mode jalankan. local = jalankan gateway secara lokal; remote = hubungkan ke instance gateway remote",
   "gateway.bind": "Mode bind jaringan. auto = deteksi otomatis; loopback = localhost saja; lan = dapat diakses LAN; custom = alamat kustom; tailnet = jaringan Tailscale",
   "gateway.auth.mode": "Mode auth gateway. token = berbasis token (direkomendasikan); password = auth kata sandi; none = tanpa auth (tidak aman)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "Path ke file sertifikat TLS (format PEM)",
   "gateway.tls.keyPath": "Path ke file kunci privat TLS (format PEM)",
   "gateway.tls.caPath": "Path sertifikat CA untuk verifikasi sertifikat klien (opsional)",
-  "gateway.remote.url": "URL WebSocket gateway remote, mis. ws://192.168.1.100:18789",
+  "gateway.remote.url": "URL WebSocket gateway remote, mis. ws://192.168.1.100:8642",
   "gateway.remote.transport": "Transport koneksi. direct = koneksi langsung; ssh = hubungkan melalui tunnel SSH (lebih aman)",
   "gateway.remote.token": "Token akses untuk gateway remote",
   "gateway.remote.sshTarget": "Alamat target SSH, format: user@host. Digunakan untuk transport tunnel SSH",

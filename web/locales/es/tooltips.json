@@ -1,5 +1,5 @@
 {
-  "gateway.port": "Puerto de escucha HTTP del Gateway, predeterminado 18789. Asegúrese de que no esté en uso por otro proceso",
+  "gateway.port": "Puerto de escucha HTTP del Gateway, predeterminado 8642. Asegúrese de que no esté en uso por otro proceso",
   "gateway.mode": "Modo de ejecución. local = ejecutar gateway localmente; remote = conectar a una instancia de gateway remota",
   "gateway.bind": "Modo de enlace de red. auto = detección automática; loopback = solo localhost; lan = accesible en LAN; custom = dirección personalizada; tailnet = red Tailscale",
   "gateway.auth.mode": "Modo de auth del Gateway. token = basado en token (recomendado); password = auth por contraseña; none = sin auth (inseguro)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "Ruta al archivo de certificado TLS (formato PEM)",
   "gateway.tls.keyPath": "Ruta al archivo de clave privada TLS (formato PEM)",
   "gateway.tls.caPath": "Ruta del certificado CA para verificación de certificado de cliente (opcional)",
-  "gateway.remote.url": "URL WebSocket del gateway remoto, p. ej. ws://192.168.1.100:18789",
+  "gateway.remote.url": "URL WebSocket del gateway remoto, p. ej. ws://192.168.1.100:8642",
   "gateway.remote.transport": "Transporte de conexión. direct = conexión directa; ssh = conectar vía túnel SSH (más seguro)",
   "gateway.remote.token": "Token de acceso para el gateway remoto",
   "gateway.remote.sshTarget": "Dirección destino SSH, formato: usuario@host. Usado para transporte por túnel SSH",

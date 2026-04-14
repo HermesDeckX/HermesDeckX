@@ -1,5 +1,5 @@
 {
-  "gateway.port": "منفذ استماع HTTP للبوابة، الافتراضي 18789. تأكد أنه غير مستخدم من عملية أخرى",
+  "gateway.port": "منفذ استماع HTTP للبوابة، الافتراضي 8642. تأكد أنه غير مستخدم من عملية أخرى",
   "gateway.mode": "وضع التشغيل. local = تشغيل البوابة محلياً؛ remote = الاتصال بمثيل بوابة عن بُعد",
   "gateway.bind": "وضع ربط الشبكة. auto = كشف تلقائي؛ loopback = localhost فقط؛ lan = قابل للوصول عبر الشبكة المحلية؛ custom = عنوان مخصص؛ tailnet = شبكة Tailscale",
   "gateway.auth.mode": "وضع مصادقة البوابة. token = قائم على الرمز (موصى به)؛ password = مصادقة بكلمة مرور؛ none = بدون مصادقة (غير آمن)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "مسار ملف شهادة TLS (تنسيق PEM)",
   "gateway.tls.keyPath": "مسار ملف مفتاح TLS الخاص (تنسيق PEM)",
   "gateway.tls.caPath": "مسار شهادة CA للتحقق من شهادة العميل (اختياري)",
-  "gateway.remote.url": "عنوان WebSocket للبوابة البعيدة، مثال: ws://192.168.1.100:18789",
+  "gateway.remote.url": "عنوان WebSocket للبوابة البعيدة، مثال: ws://192.168.1.100:8642",
   "gateway.remote.transport": "وسيلة النقل. direct = اتصال مباشر؛ ssh = اتصال عبر نفق SSH (أكثر أماناً)",
   "gateway.remote.token": "رمز وصول البوابة البعيدة",
   "gateway.remote.sshTarget": "عنوان هدف SSH، التنسيق: user@host. يُستخدم لنقل نفق SSH",

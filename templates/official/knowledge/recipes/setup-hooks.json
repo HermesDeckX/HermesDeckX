@@ -32,11 +32,11 @@
       },
       {
         "title": "在外部服务中配置",
-        "description": "在 GitHub/GitLab 等服务的 Webhook 设置中，填入你的网关地址 + hooks 路径（如 https://your-gateway:18789/hooks/github），将 Token 填入 Secret 字段。"
+        "description": "在 GitHub/GitLab 等服务的 Webhook 设置中，填入你的网关地址 + hooks 路径（如 https://your-gateway:8642/hooks/github），将 Token 填入 Secret 字段。"
       },
       {
         "title": "测试 Webhook",
-        "description": "在 GitHub 的 Webhook 设置中点击「Recent Deliveries」→「Redeliver」发送测试请求。或使用 curl 命令测试：\ncurl -X POST http://localhost:18789/hooks/test -H 'Authorization: Bearer YOUR_TOKEN' -d '{\"message\": \"test\"}'。"
+        "description": "在 GitHub 的 Webhook 设置中点击「Recent Deliveries」→「Redeliver」发送测试请求。或使用 curl 命令测试：\ncurl -X POST http://localhost:8642/hooks/test -H 'Authorization: Bearer YOUR_TOKEN' -d '{\"message\": \"test\"}'。"
       }
     ],
     "editorSection": "hooks"

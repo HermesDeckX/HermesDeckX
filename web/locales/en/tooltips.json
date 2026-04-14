@@ -1,5 +1,5 @@
 {
-  "gateway.port": "Gateway HTTP listen port, default 18789. Ensure it is not in use by another process",
+  "gateway.port": "Gateway HTTP listen port, default 8642. Ensure it is not in use by another process",
   "gateway.mode": "Run mode. local = run gateway locally; remote = connect to a remote gateway instance",
   "gateway.bind": "Network bind mode. auto = auto-detect; loopback = localhost only; lan = LAN accessible; custom = custom address; tailnet = Tailscale network",
   "gateway.auth.mode": "Gateway auth mode. token = token-based (recommended); password = password auth; none = no auth (insecure)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "Path to TLS certificate file (PEM format)",
   "gateway.tls.keyPath": "Path to TLS private key file (PEM format)",
   "gateway.tls.caPath": "CA certificate path for client certificate verification (optional)",
-  "gateway.remote.url": "Remote gateway WebSocket URL, e.g. ws://192.168.1.100:18789",
+  "gateway.remote.url": "Remote gateway WebSocket URL, e.g. ws://192.168.1.100:8642",
   "gateway.remote.transport": "Connection transport. direct = direct connection; ssh = connect via SSH tunnel (more secure)",
   "gateway.remote.token": "Access token for the remote gateway",
   "gateway.remote.sshTarget": "SSH target address, format: user@host. Used for SSH tunnel transport",

@@ -1077,7 +1077,7 @@ func (h *DoctorHandler) checkPort() CheckItem {
 		Category: "network",
 		Severity: "info",
 		Status:   "ok",
-		Detail:   "default port 18789",
+		Detail:   "default port 8642",
 	}
 }
 

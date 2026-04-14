@@ -57,7 +57,7 @@ test.describe('Config Editor — Edit & Save', () => {
     await clickSection(page, 'dns');
     await page.waitForTimeout(1000);
 
-    // Target the port NumberField input (contains value like '18789')
+    // Target the port NumberField input (contains value like '8642')
     // NumberField uses a textbox inside a wrapper with ＋/− buttons
     const portInput = page.locator('button:has-text("−") + input, button:has-text("−") ~ input').first();
     const origVal = await portInput.inputValue();

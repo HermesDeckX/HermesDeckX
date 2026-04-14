@@ -1,5 +1,5 @@
 {
-  "gateway.port": "Gateway-HTTP-Listening-Port, Standard 18789. Stellen Sie sicher, dass er nicht von einem anderen Prozess belegt ist",
+  "gateway.port": "Gateway-HTTP-Listening-Port, Standard 8642. Stellen Sie sicher, dass er nicht von einem anderen Prozess belegt ist",
   "gateway.mode": "Ausführungsmodus. local = Gateway lokal ausführen; remote = mit einer Remote-Gateway-Instanz verbinden",
   "gateway.bind": "Netzwerk-Bind-Modus. auto = automatisch erkennen; loopback = nur localhost; lan = LAN-zugänglich; custom = benutzerdefinierte Adresse; tailnet = Tailscale-Netzwerk",
   "gateway.auth.mode": "Gateway-Authentifizierungsmodus. token = tokenbasiert (empfohlen); password = Passwort-Auth; none = keine Auth (unsicher)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "Pfad zur TLS-Zertifikatsdatei (PEM-Format)",
   "gateway.tls.keyPath": "Pfad zur TLS-Private-Key-Datei (PEM-Format)",
   "gateway.tls.caPath": "CA-Zertifikatspfad zur Client-Zertifikatsüberprüfung (optional)",
-  "gateway.remote.url": "Remote-Gateway WebSocket-URL, z. B. ws://192.168.1.100:18789",
+  "gateway.remote.url": "Remote-Gateway WebSocket-URL, z. B. ws://192.168.1.100:8642",
   "gateway.remote.transport": "Verbindungstransport. direct = Direktverbindung; ssh = über SSH-Tunnel verbinden (sicherer)",
   "gateway.remote.token": "Zugangstoken für das Remote-Gateway",
   "gateway.remote.sshTarget": "SSH-Zieladresse, Format: user@host. Für SSH-Tunnel-Transport",

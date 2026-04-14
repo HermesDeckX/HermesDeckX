@@ -1,5 +1,5 @@
 {
-  "gateway.port": "게이트웨이 HTTP 리스닝 포트, 기본값 18789. 다른 프로세스와 충돌하지 않는지 확인하세요",
+  "gateway.port": "게이트웨이 HTTP 리스닝 포트, 기본값 8642. 다른 프로세스와 충돌하지 않는지 확인하세요",
   "gateway.mode": "실행 모드. local = 로컬에서 게이트웨이 실행; remote = 원격 게이트웨이 인스턴스에 연결",
   "gateway.bind": "네트워크 바인드 모드. auto = 자동 감지; loopback = 로컬호스트만; lan = LAN 접근 가능; custom = 커스텀 주소; tailnet = Tailscale 네트워크",
   "gateway.auth.mode": "게이트웨이 인증 모드. token = 토큰 기반 (권장); password = 비밀번호 인증; none = 인증 없음 (비보안)",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "TLS 인증서 파일 경로 (PEM 형식)",
   "gateway.tls.keyPath": "TLS 개인 키 파일 경로 (PEM 형식)",
   "gateway.tls.caPath": "클라이언트 인증서 검증을 위한 CA 인증서 경로 (선택사항)",
-  "gateway.remote.url": "원격 게이트웨이 WebSocket URL, 예: ws://192.168.1.100:18789",
+  "gateway.remote.url": "원격 게이트웨이 WebSocket URL, 예: ws://192.168.1.100:8642",
   "gateway.remote.transport": "연결 전송 방식. direct = 직접 연결; ssh = SSH 터널을 통한 연결 (더 안전)",
   "gateway.remote.token": "원격 게이트웨이 접근 토큰",
   "gateway.remote.sshTarget": "SSH 대상 주소, 형식: user@host. SSH 터널 전송에 사용됩니다",

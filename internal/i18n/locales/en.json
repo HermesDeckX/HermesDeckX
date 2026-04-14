@@ -174,7 +174,7 @@
   "doctor.token_not_set": "gateway.auth.mode=token but gateway.auth.token not set",
   "doctor.token_suggestion": "Set gateway.auth.token or switch to loopback address",
   "doctor.remote_url_not_set": "gateway.mode=remote but gateway.remote.url not set",
-  "doctor.remote_url_suggestion": "Set remote gateway address (e.g. ws://host:18789)",
+  "doctor.remote_url_suggestion": "Set remote gateway address (e.g. ws://host:8642)",
   "doctor.remote_url_invalid": "gateway.remote.url does not start with ws:// or wss://",
   "doctor.remote_url_check": "Please check remote gateway address",
   "doctor.remote_no_auth": "Remote gateway has no token/password configured",

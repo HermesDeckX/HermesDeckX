@@ -1,5 +1,5 @@
 {
-  "gateway.port": "ゲートウェイHTTPリッスンポート、デフォルト18789。他のプログラムに使用されていないことを確認",
+  "gateway.port": "ゲートウェイHTTPリッスンポート、デフォルト8642。他のプログラムに使用されていないことを確認",
   "gateway.mode": "動作モード。local = ローカルでゲートウェイを直接実行；remote = リモートゲートウェイに接続",
   "gateway.bind": "ネットワークバインド方式。auto = 自動；loopback = ローカルのみ (127.0.0.1)；lan = LAN；custom = カスタム；tailnet = Tailscaleネットワーク",
   "gateway.auth.mode": "ゲートウェイ認証方式。token = トークン認証（推奨）；password = パスワード認証；none = 認証なし（非推奨）",
@@ -13,7 +13,7 @@
   "gateway.tls.certPath": "TLS証明書ファイルパス（PEM形式）",
   "gateway.tls.keyPath": "TLS秘密鍵ファイルパス（PEM形式）",
   "gateway.tls.caPath": "CA証明書パス、クライアント証明書検証用（オプション）",
-  "gateway.remote.url": "リモートゲートウェイのWebSocketアドレス。例：ws://192.168.1.100:18789",
+  "gateway.remote.url": "リモートゲートウェイのWebSocketアドレス。例：ws://192.168.1.100:8642",
   "gateway.remote.transport": "接続方式。direct = 直接接続；ssh = SSHトンネル経由（より安全）",
   "gateway.remote.token": "リモートゲートウェイのアクセストークン",
   "gateway.remote.sshTarget": "SSHターゲットアドレス、形式：user@host",
