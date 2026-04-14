@@ -2,10 +2,16 @@
 FROM ubuntu:22.04 AS hermesagent-builder
 ENV DEBIAN_FRONTEND=noninteractive
 ARG HERMES_AGENT_BRANCH=main
-RUN apt-get update && \
+RUN set -eux; \
+    apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates curl git python3 python3-dev build-essential libffi-dev && \
-    rm -rf /var/lib/apt/lists/* && \
+        ca-certificates curl git software-properties-common build-essential libffi-dev; \
+    if ! command -v python3.11 >/dev/null 2>&1; then \
+        add-apt-repository -y ppa:deadsnakes/ppa; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends python3.11 python3.11-dev python3.11-venv; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*; \
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 RUN set -eux; \
     echo "==> Cloning HermesAgent (branch: ${HERMES_AGENT_BRANCH})"; \
@@ -13,8 +19,8 @@ RUN set -eux; \
         https://github.com/NousResearch/hermes-agent.git /opt/hermesagent
 RUN set -eux; \
     cd /opt/hermesagent; \
-    echo "==> Creating Python venv"; \
-    uv venv venv --python python3; \
+    echo "==> Creating Python 3.11 venv"; \
+    uv venv venv --python python3.11; \
     echo "==> Installing hermes-agent[all]"; \
     VIRTUAL_ENV=/opt/hermesagent/venv uv pip install -e ".[all]"
 RUN set -eux; \
@@ -41,8 +47,13 @@ RUN set -eux; \
     }; \
     retry_apt apt-get update; \
     retry_apt apt-get install -y --no-install-recommends \
-        ca-certificates curl git python3 make tzdata tini wget jq ripgrep procps lsof; \
+        ca-certificates curl git software-properties-common make tzdata tini wget jq ripgrep procps lsof; \
     retry_apt apt-get install -y --no-install-recommends ffmpeg golang; \
+    if ! command -v python3.11 >/dev/null 2>&1; then \
+      add-apt-repository -y ppa:deadsnakes/ppa; \
+      retry_apt apt-get update; \
+      retry_apt apt-get install -y --no-install-recommends python3.11 python3.11-venv; \
+    fi; \
     rm -rf /var/lib/apt/lists/*; \
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 

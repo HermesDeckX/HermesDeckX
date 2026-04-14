@@ -27,16 +27,22 @@ RUN COMPAT=$(grep -o '"hermesagentCompat"[[:space:]]*:[[:space:]]*"[^"]*"' web/p
 FROM ubuntu:22.04 AS hermesagent-builder
 ENV DEBIAN_FRONTEND=noninteractive
 ARG HERMES_AGENT_BRANCH=main
-RUN apt-get update && \
+RUN set -eux; \
+    apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates curl git python3 python3-dev build-essential libffi-dev && \
-    rm -rf /var/lib/apt/lists/* && \
+        ca-certificates curl git software-properties-common build-essential libffi-dev; \
+    if ! command -v python3.11 >/dev/null 2>&1; then \
+        add-apt-repository -y ppa:deadsnakes/ppa; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends python3.11 python3.11-dev python3.11-venv; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*; \
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 RUN set -eux; \
     git clone --depth 1 --branch "${HERMES_AGENT_BRANCH}" \
         https://github.com/NousResearch/hermes-agent.git /opt/hermesagent; \
     cd /opt/hermesagent; \
-    uv venv venv --python python3; \
+    uv venv venv --python python3.11; \
     VIRTUAL_ENV=/opt/hermesagent/venv uv pip install -e ".[all]"; \
     /opt/hermesagent/venv/bin/hermes --version; \
     rm -rf /root/.cache /tmp/*
@@ -44,11 +50,17 @@ RUN set -eux; \
 # Stage 4: Runtime (no build tools)
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
+RUN set -eux; \
+    apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates curl git python3 make tzdata tini wget jq ripgrep \
-        procps lsof ffmpeg golang && \
-    rm -rf /var/lib/apt/lists/* && \
+        ca-certificates curl git software-properties-common make tzdata tini wget jq ripgrep \
+        procps lsof ffmpeg golang; \
+    if ! command -v python3.11 >/dev/null 2>&1; then \
+        add-apt-repository -y ppa:deadsnakes/ppa; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends python3.11 python3.11-venv; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*; \
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 
 ARG BUILD_VERSION=0.0.0
