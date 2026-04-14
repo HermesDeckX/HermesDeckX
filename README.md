@@ -198,7 +198,7 @@ HermesDeckX and HermesAgent run in the same container. HermesAgent is **preinsta
 
 The official Docker image also preinstalls common skill/runtime dependencies including `go`, `python3`, `uv`, `ffmpeg`, `jq`, `ripgrep`, `wget`, and `make`, so many HermesAgent skills can run out of the box without extra system package installation.
 
-By default, the bundled HermesDeckX service connects to the local in-container Gateway at `127.0.0.1:18789`. If you need to use a host or external Gateway instead, override `OHD_HERMES_AGENT_GATEWAY_HOST` and `OHD_HERMES_AGENT_GATEWAY_PORT` in `docker-compose.yml`.
+By default, the bundled HermesDeckX service connects to the local in-container Gateway at `127.0.0.1:8642`. If you need to use a host or external Gateway instead, override `OHD_HERMES_AGENT_GATEWAY_HOST` and `OHD_HERMES_AGENT_GATEWAY_PORT` in `docker-compose.yml`.
 
 ```bash
 # View credentials
@@ -212,11 +212,11 @@ docker logs hermesdeckx
 | Port | Service | Description |
 | :--- | :--- | :--- |
 | `19700` → `19788` | HermesDeckX Web UI | Main dashboard (host 19700 → container 19788) |
-| `18789` | HermesAgent Gateway | Optional: expose for external debugging |
+| `8642` | HermesAgent Gateway | Optional: expose for external debugging |
 
-To expose the Gateway port, add `- "18789:18789"` under `ports` in `docker-compose.yml`.
+To expose the Gateway port, add `- "8642:8642"` under `ports` in `docker-compose.yml`.
 
-Note that exposing `18789` alone does not guarantee host access to the Gateway. The generated minimal HermesAgent config binds the Gateway to `loopback` by default, so you may also need to adjust the Gateway bind setting for external access.
+Note that exposing `8642` alone does not guarantee host access to the Gateway. The generated minimal HermesAgent config binds the Gateway to `loopback` by default, so you may also need to adjust the Gateway bind setting for external access.
 
 **Environment Variables:**
 
@@ -232,7 +232,7 @@ Note that exposing `18789` alone does not guarantee host access to the Gateway. 
 | `OHD_SETUP_INSTALL_LOG` | `/data/hermesagent/logs/install.log` | Setup/install log path |
 | `OHD_SETUP_DOCTOR_LOG` | `/data/hermesagent/logs/doctor.log` | Doctor/diagnostic log path |
 | `OHD_HERMES_AGENT_GATEWAY_HOST` | `127.0.0.1` | Gateway host address |
-| `OHD_HERMES_AGENT_GATEWAY_PORT` | `18789` | Gateway port |
+| `OHD_HERMES_AGENT_GATEWAY_PORT` | `8642` | Gateway port |
 | `OHD_HERMES_AGENT_GATEWAY_TOKEN` | *(empty)* | Gateway auth token |
 | `OHD_PORT` | `19788` | HermesDeckX listen port (internal) |
 | `OHD_BIND` | `0.0.0.0` | HermesDeckX bind address |
