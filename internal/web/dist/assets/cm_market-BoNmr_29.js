@@ -1,1 +1,0 @@
-const e={title:"技能市场",subtitle:"扩展 Agent 能力",loading:"加载中...",active:"已启用",searchPlaceholder:"搜索技能...",noSkills:"未找到技能",ready:"就绪",needsSetup:"需要配置",configure:"配置",select:"选择...",cancel:"取消",saving:"保存中...",configured:"技能已配置",enabled:"技能已启用",disabled:"技能已禁用"},l={skillsMarket:e};export{l as default,e as skillsMarket};

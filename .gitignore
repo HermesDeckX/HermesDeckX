@@ -42,7 +42,7 @@ data/
 hermesagent.json
 
 # Build artifacts
-# internal/web/dist/ is committed (embedded frontend)
+internal/web/dist/
 web/dist/
 *.syso
 

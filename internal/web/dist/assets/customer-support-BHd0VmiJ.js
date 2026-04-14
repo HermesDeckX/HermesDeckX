@@ -1,1 +1,0 @@
-const e="客服团队",o="分层客户支持，支持路由和升级",t={greeter:{name:"接待员",role:"初次接触和路由"},specialist:{name:"支持专员",role:"处理常见问题"},supervisor:{name:"主管",role:"处理升级问题"}},s={description:"分层支持与升级"},n={examples:["帮助客户解决账单问题","排查产品问题","处理服务投诉"]},r={name:e,description:o,agents:t,workflow:s,content:n};export{t as agents,n as content,r as default,o as description,e as name,s as workflow};
