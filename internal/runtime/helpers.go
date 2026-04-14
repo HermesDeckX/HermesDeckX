@@ -64,13 +64,24 @@ func currentHermesAgentVersion() string {
 	if err != nil {
 		return ""
 	}
-	// Output is typically "hermes vYYYY.M.D" or just a version string
+	// Take the first line only (hermes --version outputs multiple lines)
 	s := strings.TrimSpace(string(out))
-	s = strings.TrimPrefix(s, "hermes ")
-	s = strings.TrimPrefix(s, "hermes-agent ")
-	s = strings.TrimPrefix(s, "v")
-	// Take the first line only
 	if idx := strings.IndexByte(s, '\n'); idx > 0 {
+		s = s[:idx]
+	}
+	s = strings.TrimSpace(s)
+	// Output format: "Hermes Agent v0.9.0 (2026-04-10)" or "hermes 0.9.0"
+	// Strip known prefixes (case-insensitive)
+	lower := strings.ToLower(s)
+	for _, prefix := range []string{"hermes agent ", "hermes-agent ", "hermes "} {
+		if strings.HasPrefix(lower, prefix) {
+			s = s[len(prefix):]
+			break
+		}
+	}
+	s = strings.TrimPrefix(s, "v")
+	// Strip trailing parenthetical like " (2026-04-10)"
+	if idx := strings.IndexByte(s, '('); idx > 0 {
 		s = s[:idx]
 	}
 	return strings.TrimSpace(s)

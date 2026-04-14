@@ -59,7 +59,16 @@ func verifyBinary(path string) bool {
 		return false
 	}
 	v := strings.TrimSpace(string(out))
-	return v != "" && v[0] >= '0' && v[0] <= '9'
+	if v == "" {
+		return false
+	}
+	// Accept version output that starts with a digit (e.g. "0.9.0")
+	// or contains "hermes" (e.g. "Hermes Agent v0.9.0 (2026-04-10)")
+	if v[0] >= '0' && v[0] <= '9' {
+		return true
+	}
+	lower := strings.ToLower(v)
+	return strings.Contains(lower, "hermes")
 }
 
 // probePipBin checks common pip/pipx install locations for a binary.

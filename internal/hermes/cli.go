@@ -335,6 +335,9 @@ func DetectHermesAgentBinary() (cmd string, version string, installed bool) {
 		return cmd, "", false
 	}
 	out = strings.TrimSpace(out)
+	if idx := strings.IndexByte(out, '\n'); idx > 0 {
+		out = out[:idx]
+	}
 	if out == "" {
 		return cmd, "", false
 	}
