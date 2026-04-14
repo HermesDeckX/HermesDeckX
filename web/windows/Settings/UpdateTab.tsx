@@ -76,6 +76,18 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
   const [runtimeOcStep, setRuntimeOcStep] = useState('');
   const [runtimeOcProgress, setRuntimeOcProgress] = useState(0);
   const isDockerRuntime = !!runtimeStatus?.is_docker;
+  const defaultRuntimeComponent = useMemo(() => ({
+    component: '',
+    active_version: '',
+    image_version: '',
+    runtime_version: '',
+    source: '',
+    installed_at: '',
+    prev_version: '',
+    using_overlay: false,
+  }), []);
+  const runtimeHermesDeckX = runtimeStatus?.hermesdeckx ?? defaultRuntimeComponent;
+  const runtimeHermesAgent = runtimeStatus?.hermesagent ?? defaultRuntimeComponent;
   const effectiveOcUpdating = isDockerRuntime ? runtimeOcUpdating : ocUpdating;
   const effectiveOcLogs = isDockerRuntime ? runtimeOcLogs : ocUpdateLogs;
   const effectiveOcStep = isDockerRuntime ? runtimeOcStep : ocUpdateStep;
@@ -1115,7 +1127,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
             <div className="space-y-2">
               {/* HermesDeckX Runtime */}
               {(() => {
-                const c = runtimeStatus.hermesdeckx;
+                const c = runtimeHermesDeckX;
                 return (
                   <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
                     c.using_overlay
@@ -1158,7 +1170,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
 
               {/* HermesAgent Runtime */}
               {(() => {
-                const c = runtimeStatus.hermesagent;
+                const c = runtimeHermesAgent;
                 return (
                   <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
                     c.using_overlay
