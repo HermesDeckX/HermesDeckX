@@ -47,6 +47,29 @@ BSEOF
 # hermes-agent uses a YAML config via ~/.hermes/config.yaml
 # No plugin sanitization needed (Python project, different config format)
 
+# Ensure .env file has API_SERVER_ENABLED=true and a generated API_SERVER_KEY
+# so hermes-agent starts the HTTP API Server that HermesDeckX connects to.
+ensure_hermes_env() {
+    HERMES_ENV="$HERMES_HOME/.env"
+    mkdir -p "$HERMES_HOME"
+
+    # Ensure API_SERVER_ENABLED=true
+    if [ -f "$HERMES_ENV" ] && grep -q '^API_SERVER_ENABLED=' "$HERMES_ENV" 2>/dev/null; then
+        sed -i 's/^API_SERVER_ENABLED=.*/API_SERVER_ENABLED=true/' "$HERMES_ENV"
+    else
+        echo "API_SERVER_ENABLED=true" >> "$HERMES_ENV"
+    fi
+
+    # Ensure API_SERVER_KEY exists (auto-generate if missing)
+    if ! grep -q '^API_SERVER_KEY=' "$HERMES_ENV" 2>/dev/null; then
+        API_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))" 2>/dev/null || head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 43)
+        echo "API_SERVER_KEY=$API_KEY" >> "$HERMES_ENV"
+        echo "[docker-entrypoint] Generated API_SERVER_KEY in $HERMES_ENV"
+    fi
+
+    chmod 600 "$HERMES_ENV"
+}
+
 ensure_default_hermes_config() {
     HERMES_CONFIG="$HERMES_HOME/config.yaml"
     if [ -f "$HERMES_CONFIG" ]; then
@@ -87,8 +110,9 @@ if command -v hermes &>/dev/null; then
     echo "[docker-entrypoint] Gateway log: $GATEWAY_LOG"
 
     if ensure_default_hermes_config; then
+        ensure_hermes_env
         echo "[docker-entrypoint] Starting HermesAgent gateway..."
-        nohup hermes gateway --port "$GATEWAY_PORT" > "$GATEWAY_LOG" 2>&1 &
+        API_SERVER_ENABLED=true nohup hermes gateway run > "$GATEWAY_LOG" 2>&1 &
         GATEWAY_PID=$!
         GATEWAY_WAIT_SECONDS=30
         if [ "$HERMES_AGENT_CONFIG_CREATED" = "1" ]; then
