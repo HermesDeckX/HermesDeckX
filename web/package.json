@@ -1,7 +1,7 @@
 {
   "name": "HermesDeckX-DashBoard",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "hermesAgentCompat": ">=0.9.0",
   "hermesAgentDockerVersion": "latest",
   "type": "module",
