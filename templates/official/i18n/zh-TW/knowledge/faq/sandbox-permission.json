@@ -1,0 +1,8 @@
+{
+  "name": "沙箱權限問題",
+  "description": "解決 Docker 沙箱權限不足、檔案存取被拒或容器啟動失敗的問題",
+  "content": {
+    "question": "沙箱模式下遇到權限問題怎麼辦？",
+    "answer": "## 常見權限問題\n\n### 1. Docker 未安裝或未執行\n- 確認 Docker Desktop 已安裝並正在執行\n- **Windows**: 開啟 Docker Desktop 應用程式\n- **macOS**: 開啟 Docker Desktop\n- **Linux**: `sudo systemctl start docker`\n\n### 2. 容器啟動失敗\n常見原因：\n- Docker 映像不存在：執行 `docker pull` 拉取映像\n- 記憶體不足：增加 Docker 的記憶體限制\n- 磁碟空間不足：清理未使用的映像和容器\n\n### 3. 檔案存取被拒\n- 檢查工作區存取模式：`none` / `ro` / `rw`\n- 如果需要寫入檔案，將模式改為 `rw`\n- 確認掛載路徑正確\n\n### 4. 網路存取問題\n- 沙箱預設可能限制網路存取\n- 如果需要網路（如安裝套件），確認網路策略允許\n- 檢查 Docker 網路設定\n\n### 5. 執行權限\n- 某些指令碼可能需要執行權限\n- 確認容器內使用者有足夠權限\n- 檢查 `pidsLimit` 是否設定過小\n\n## 替代方案\n\n如果 Docker 沙箱有問題，可以暫時：\n- 關閉沙箱模式（僅限受信任環境）\n- 使用更寬鬆的存取模式\n- 切換到 Podman 作為替代容器執行環境\n\n## 設定欄位\n\n對應設定路徑：`agents.defaults.sandbox`"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "新增 AI 提供商",
+  "description": "設定 OpenAI、Anthropic、Google 等 AI 模型提供商的 API 金鑰與選項",
+  "content": {
+    "body": "## 支援的提供商\n\n| 提供商 | 模型範例 | 特點 |\n|--------|---------|------|\n| **OpenAI** | GPT-4o, GPT-4o-mini | 最成熟的生態 |\n| **Anthropic** | Claude Sonnet, Claude Haiku | 安全性強，上下文長 |\n| **Google** | Gemini Pro, Gemini Flash | 多模態，成本低 |\n| **DeepSeek** | DeepSeek Chat, DeepSeek Coder | 高性價比 |\n| **xAI** | Grok | X 平台整合 |\n| **Ollama** | Llama, Mistral 等 | 本地部署，免費 |\n\n## 在 HermesDeckX 中設定\n\n1. 前往「設定中心 → 模型提供商」\n2. 點擊「新增提供商」\n3. 選擇提供商類型\n4. 填入 API Key\n5. 選擇要啟用的模型\n6. 儲存設定\n\n## API Key 取得方式\n\n- **OpenAI**: platform.openai.com → API Keys\n- **Anthropic**: console.anthropic.com → API Keys\n- **Google**: aistudio.google.com → 取得 API Key\n- **DeepSeek**: platform.deepseek.com → API Keys\n\n## 自訂端點\n\n對於相容 OpenAI API 的提供商（如本地 LLM 伺服器），可以設定自訂端點：\n- 選擇「OpenAI Compatible」類型\n- 填入自訂 API 端點 URL\n- 填入 API Key（如果需要）\n\n## 設定欄位\n\n對應設定路徑：`providers`",
+    "steps": [
+      "前往「設定中心 → 模型提供商」",
+      "點擊「新增提供商」",
+      "選擇提供商類型並填入 API Key",
+      "選擇要啟用的模型",
+      "儲存設定"
+    ]
+  }
+}

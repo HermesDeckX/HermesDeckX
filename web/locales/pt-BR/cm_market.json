@@ -1,0 +1,19 @@
+{
+  "skillsMarket": {
+    "title": "Mercado de Skills",
+    "subtitle": "Estender as capacidades do seu agente",
+    "loading": "Carregando...",
+    "active": "ativo",
+    "searchPlaceholder": "Buscar skills...",
+    "noSkills": "Nenhum skill encontrado",
+    "ready": "Pronto",
+    "needsSetup": "Precisa de configuração",
+    "configure": "Configurar",
+    "select": "Selecionar...",
+    "cancel": "Cancelar",
+    "saving": "Salvando...",
+    "configured": "Skill configurado",
+    "enabled": "Skill ativado",
+    "disabled": "Skill desativado"
+  }
+}

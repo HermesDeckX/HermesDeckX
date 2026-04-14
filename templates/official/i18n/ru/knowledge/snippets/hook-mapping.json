@@ -1,0 +1,7 @@
+{
+  "name": "Маппинг хука GitHub PR",
+  "description": "Фрагмент маппинга Webhook: преобразование событий GitHub Pull Request в инструкции для AI-ревью кода",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"Автоматическое ревью кода при создании GitHub PR\"\n    mapping: |\n      Получено событие GitHub Pull Request:\n\n      **Репозиторий**: {{repository.full_name}}\n      **Заголовок**: {{pull_request.title}}\n      **Автор**: {{pull_request.user.login}}\n      **Описание**: {{pull_request.body}}\n\n      Пожалуйста, выполните ревью PR:\n      1. Проверить качество кода и лучшие практики\n      2. Найти потенциальные баги и проблемы безопасности\n      3. Дать предложения по улучшению\n      4. Предоставить дружелюбную и конструктивную обратную связь"
+  }
+}

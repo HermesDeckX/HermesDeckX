@@ -1,0 +1,19 @@
+{
+  "skillsMarket": {
+    "title": "スキルマーケット",
+    "subtitle": "エージェントの機能を拡張",
+    "loading": "読込中...",
+    "active": "有効",
+    "searchPlaceholder": "スキルを検索...",
+    "noSkills": "スキルが見つかりません",
+    "ready": "準備完了",
+    "needsSetup": "設定が必要",
+    "configure": "設定",
+    "select": "選択...",
+    "cancel": "キャンセル",
+    "saving": "保存中...",
+    "configured": "スキルを設定しました",
+    "enabled": "スキルを有効化しました",
+    "disabled": "スキルを無効化しました"
+  }
+}

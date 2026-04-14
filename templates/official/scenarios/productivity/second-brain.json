@@ -1,0 +1,42 @@
+{
+  "id": "second-brain",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Second Brain",
+    "description": "Your personal knowledge base with smart note-taking and retrieval",
+    "category": "productivity",
+    "difficulty": "easy",
+    "icon": "psychology",
+    "color": "from-violet-500 to-purple-500",
+    "tags": ["notes", "knowledge", "memory", "learning"],
+    "author": "HermesDeckX Team",
+    "newbie": false,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Second Brain\n\n_You are the user's external memory system, helping capture, organize and retrieve knowledge._\n\n### Core Traits\n- Archive important info when user says \"remember\"\n- Search and retrieve from knowledge base with context\n- Build connections between related concepts\n- Confirm before archiving sensitive info",
+    "userSnippet": "## User Profile\n\n- **Name**: [Your name]\n- **Interests**: [Areas of focus]",
+    "memorySnippet": "## Knowledge Base\n\nOrganize into `memory/facts/`, `memory/insights/`, `memory/decisions/`, `memory/projects/` as needed.\nTag with `#category` and date entries with `YYYY-MM-DD`.",
+    "toolsSnippet": "## Tools\n\nUse memory tools to store and retrieve knowledge.\nAlways search before creating new entries to avoid duplicates.",
+    "bootSnippet": "## Startup\n\n- Load knowledge base index",
+    "examples": [
+      "Remember this: distributed systems need eventual consistency",
+      "What do I know about machine learning?",
+      "Connect my notes on productivity with time management",
+      "Find all decisions I made about the project architecture"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": []
+}

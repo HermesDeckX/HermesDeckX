@@ -1,0 +1,7 @@
+{
+  "name": "Chiffrement TLS de la passerelle",
+  "description": "Activer le chiffrement HTTPS/TLS pour la passerelle — protéger l'accès distant et la communication API",
+  "content": {
+    "body": "## Quand le TLS est-il nécessaire ?\n\n- Accès depuis l'extérieur de localhost (LAN, réseau public)\n- Accès via Tailscale / VPN (recommandé)\n- Fourniture d'endpoints Webhook\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Passerelle → TLS » :\n\n### Méthode 1 : Certificat auto-généré (plus simple)\n- Activer « TLS automatique »\n- Certificat auto-signé généré automatiquement\n- Pour usage personnel et réseau interne\n\n### Méthode 2 : Certificat personnalisé\n- **cert** — Fichier certificat (.pem)\n- **key** — Fichier clé privée (.pem)\n- Pour production et accès public\n\n### Méthode 3 : Proxy inverse\n- Nginx / Caddy gère le TLS\n- La passerelle utilise HTTP en interne\n\n## Champs de configuration\n\nChemin : `gateway.tls`"
+  }
+}

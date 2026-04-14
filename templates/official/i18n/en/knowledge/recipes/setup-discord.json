@@ -1,0 +1,29 @@
+{
+  "name": "Connect Discord",
+  "description": "Create a Discord Bot and connect it to HermesAgent gateway via HermesDeckX",
+  "content": {
+    "body": "A Discord Bot needs to be created in the Discord Developer Portal to obtain a Token.\n\n**Prerequisites:**\n- A Discord account\n- A Discord server you manage (to invite the Bot)\n- HermesAgent gateway running with model configured",
+    "steps": [
+      {
+        "title": "Create Discord Application",
+        "description": "Visit https://discord.com/developers/applications → Click \"New Application\" → Enter application name → Create."
+      },
+      {
+        "title": "Get Bot Token",
+        "description": "On the application page, select \"Bot\" in the left sidebar → Click \"Reset Token\" to get the Token. **Important:** The Token is shown only once — copy and save it immediately. Enable Message Content Intent under \"Privileged Gateway Intents\"."
+      },
+      {
+        "title": "Invite Bot to Server",
+        "description": "Select \"OAuth2\" → \"URL Generator\" in the left sidebar → Check bot and applications.commands → Under Bot Permissions, check Send Messages, Read Message History, Add Reactions → Copy the generated URL, open it in a browser, select your server and authorize."
+      },
+      {
+        "title": "Configure in HermesDeckX",
+        "description": "Go to Config Center → Channels → Click \"Add Channel\" → Select Discord. Paste the Bot Token in the Token field. If you want the Bot to work only in a specific server, you can fill in the guildId."
+      },
+      {
+        "title": "Save and Test",
+        "description": "Click \"Save\" and wait for the gateway to reload. In your Discord server, @mention the Bot or send a message in DMs. Receiving an AI reply means setup is complete."
+      }
+    ]
+  }
+}

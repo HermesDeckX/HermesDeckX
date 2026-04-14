@@ -1,0 +1,7 @@
+{
+  "name": "Kebijakan Izin Tool",
+  "description": "Snippet konfigurasi izin tool: kontrol cakupan dan tingkat akses tool AI berdasarkan skenario",
+  "content": {
+    "snippet": "## Contoh Kebijakan Tool\n\n### Izin minimal (hanya chat)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### Asisten programming\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### Akses penuh + pembatasan kustom\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

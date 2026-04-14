@@ -1,0 +1,13 @@
+{
+  "name": "बैकअप और पुनर्स्थापना",
+  "description": "HermesAgent कॉन्फ़िगरेशन, मेमोरी और बातचीत इतिहास का बैकअप लें, नए उपकरणों पर माइग्रेशन सहित",
+  "content": {
+    "body": "## क्या बैकअप करें\n\n| आइटम | पथ | महत्व |\n|------|-----|------|\n| कॉन्फ़िगरेशन | `~/.hermesdeckx/config.yaml` | आवश्यक |\n| एजेंट कॉन्फ़िग | `~/.hermesdeckx/agents/` | आवश्यक |\n| मेमोरी फ़ाइलें | `~/.hermesdeckx/memory/` | महत्वपूर्ण |\n| सत्र इतिहास | `~/.hermesdeckx/sessions/` | वैकल्पिक |\n| क्रेडेंशियल | `~/.hermesdeckx/credentials/` | महत्वपूर्ण |\n\n## बैकअप विधियां\n\n### विधि 1: मैनुअल\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### विधि 2: CLI\n```bash\nhermesagent config export > backup.yaml\n```\n\n### विधि 3: HermesDeckX इंटरफ़ेस\nसेटिंग सेंटर के नीचे «कॉन्फ़िगरेशन निर्यात करें»।\n\n## पुनर्स्थापना\n\n1. HermesAgent स्थापित करें\n2. फ़ाइलें `~/.hermesdeckx/` में कॉपी करें\n3. गेटवे शुरू करें",
+    "steps": [
+      "बैकअप दायरा निर्धारित करें",
+      "बैकअप करें",
+      "सुरक्षित स्थान पर रखें",
+      "पुनर्स्थापना के लिए ~/.hermesdeckx/ में कॉपी करें"
+    ]
+  }
+}

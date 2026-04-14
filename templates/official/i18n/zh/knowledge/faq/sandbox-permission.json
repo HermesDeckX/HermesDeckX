@@ -1,0 +1,8 @@
+{
+  "name": "沙箱权限错误",
+  "description": "排查 Docker 沙箱容器无法启动、权限不足或文件访问失败的问题",
+  "content": {
+    "question": "沙箱容器无法启动或出现权限错误怎么办？",
+    "answer": "## 排查步骤\n\n### 1. 确认 Docker 已安装且正在运行\n- Windows：确认 Docker Desktop 已启动（系统托盘有 Docker 图标）\n- macOS：确认 Docker Desktop 已启动\n- Linux：运行 `docker info` 确认 Docker 服务正在运行\n\n### 2. 检查 Docker 权限\n- Linux 用户需要将当前用户添加到 docker 组：`sudo usermod -aG docker $USER`\n- 或确认 HermesAgent 进程有权限访问 Docker socket（/var/run/docker.sock）\n\n### 3. 检查镜像\n前往「配置中心 → 代理 → 沙箱 → Docker 设置」：\n- 确认 image 字段的镜像名称正确\n- 运行 `docker pull <image>` 手动拉取镜像\n- 如果在国内，可能需要配置 Docker 镜像加速器\n\n### 4. 工作区访问问题\n如果 AI 报告「无法访问文件」或「权限拒绝」：\n- 检查 `workspaceAccess` 设置：none / ro / rw\n- ro（只读）模式下 AI 无法修改文件\n- 确认 workspace 路径存在且 Docker 有权限挂载\n\n### 5. 网络问题\n- 默认使用 bridge 网络模式\n- 如果 AI 需要访问网络（如安装包、网络搜索），确认 network 不是 none\n- **不要使用 host 模式**（会被安全策略拒绝）\n\n### 6. 资源限制\n如果容器频繁被 OOM Kill：\n- 增大 memory 限制（如 \"1g\"）\n- 增大 pidsLimit（如 256）\n- 检查 cpus 限制是否过低\n\n### 7. WSL2 特殊情况（Windows）\n- 确认 Docker Desktop 使用 WSL2 后端（Settings → General → Use WSL 2）\n- 文件路径使用 Linux 格式（/mnt/c/Users/...）\n- 如果沙箱内运行命令报「exec format error」，检查镜像架构是否匹配\n\n## 配置字段\n\n对应配置路径：`agents.defaults.sandbox`"
+  }
+}

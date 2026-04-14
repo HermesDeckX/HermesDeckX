@@ -1,0 +1,7 @@
+{
+  "name": "Perfis de permissões de ferramentas",
+  "description": "Controlar as ferramentas disponíveis para a AI através de perfis — equilibrar capacidade e segurança",
+  "content": {
+    "body": "## Perfis de ferramentas\n\nHermesAgent oferece 4 perfis pré-configurados:\n\n| Perfil | Descrição | Cenário |\n|--------|-----------|--------|\n| **full** | Todas as ferramentas (padrão) | Uso pessoal, ambiente confiável |\n| **coding** | Código, comandos, arquivos | Assistente de programação |\n| **messaging** | Mensagens, conversa básica | Apenas chat |\n| **minimal** | Permissões mínimas | Alta segurança |\n\n## Configurar no HermesDeckX\n\n1. « Centro de configurações → Ferramentas »\n2. Selecionar perfil no dropdown\n3. Para controle mais fino, usar listas allow/deny\n\n## Controle fino de permissões\n\n- **deny** — Ferramentas explicitamente proibidas\n- **allow** — Apenas ferramentas permitidas (sobrescreve perfil)\n- **alsoAllow** — Ferramentas adicionais permitidas\n- **byProvider** — Permissões diferentes por provedor\n\n## Campos de configuração\n\nCaminho: `tools.profile`\n\nValores: `minimal` | `coding` | `messaging` | `full`"
+  }
+}

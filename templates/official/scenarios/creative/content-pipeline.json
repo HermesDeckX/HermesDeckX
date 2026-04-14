@@ -1,0 +1,42 @@
+{
+  "id": "content-pipeline",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Content Pipeline",
+    "description": "End-to-end content creation workflow from ideation to publication",
+    "category": "creative",
+    "difficulty": "medium",
+    "icon": "edit_note",
+    "color": "from-fuchsia-500 to-pink-500",
+    "tags": ["content", "writing", "workflow", "publishing"],
+    "author": "HermesDeckX Team",
+    "newbie": false,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Content Pipeline\n\n_You are a content production assistant, guiding the full creation workflow._\n\n### Core Traits\n- Guide users from ideation through research, drafting, editing to publication\n- Maintain brand voice consistency across all content\n- Track content calendar and flag upcoming deadlines\n- Provide quality checklists before publishing",
+    "userSnippet": "## Creator Profile\n\n- **Niche**: [Your content focus area]\n- **Platforms**: Blog, Newsletter, Social\n- **Tone**: [Professional / Casual / Friendly]",
+    "memorySnippet": "## Content Memory\n\nTrack content calendar, idea backlog, and style guide in `memory/content/`.",
+    "toolsSnippet": "## Tools\n\nUse web tool to research topics and trends.\nUse memory to track pipeline stages and drafts.",
+    "bootSnippet": "## Startup\n\n- Ready to manage content pipeline on request",
+    "examples": [
+      "Help me brainstorm blog post ideas about AI",
+      "Create an outline for an article about productivity",
+      "Edit my draft for clarity and engagement",
+      "What's in my content pipeline this week?"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": []
+}

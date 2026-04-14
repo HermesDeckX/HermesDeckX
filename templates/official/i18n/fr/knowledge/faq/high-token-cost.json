@@ -1,0 +1,8 @@
+{
+  "name": "Coût de tokens élevé",
+  "description": "Analyser et optimiser la consommation de tokens du modèle AI pour réduire les coûts API",
+  "content": {
+    "question": "Que faire si le coût des tokens est trop élevé ? Comment réduire les coûts API ?",
+    "answer": "## Analyse des coûts\n\n### 1. Consulter les statistiques d'utilisation\nAllez sur la page « Utilisation » de HermesDeckX :\n- Voir la consommation quotidienne/hebdomadaire/mensuelle\n- Trier par modèle, canal, utilisateur\n- Identifier les sources de consommation les plus importantes\n\n### 2. Causes courantes de consommation élevée\n\n| Cause | Impact | Solution |\n|-------|--------|----------|\n| Historique trop long | Envoi massif d'historique à chaque fois | Activer compression ou réinitialisation auto |\n| Modèles coûteux | GPT-4.5, Claude Opus, etc. | Passer à GPT-4o-mini, etc. |\n| Appels d'outils fréquents | Tokens supplémentaires par appel | Ajuster la politique d'outils |\n| Trop de sous-agents | Consommation indépendante par sous-agent | Limiter profondeur et nombre |\n\n### 3. Stratégies d'optimisation\n\n**Configuration de compression** (plus efficace) :\n- Allez dans « Centre de configuration → Agent → Compression »\n- Définissez `threshold` à 30000-50000\n- Activez `memoryFlush`\n\n**Sélection de modèle** :\n- Conversations quotidiennes : GPT-4o-mini ou Claude Haiku\n- Tâches complexes uniquement : GPT-4o ou Claude Sonnet\n\n## Champs de configuration\n\nChemins associés : `agents.defaults.model`, `agents.defaults.compaction`, `heartbeat`"
+  }
+}

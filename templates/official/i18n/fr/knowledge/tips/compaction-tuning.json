@@ -1,0 +1,7 @@
+{
+  "name": "Réglage de la compression",
+  "description": "Ajuster finement les paramètres de compression de conversation — équilibrer rétention de contexte et coût en tokens",
+  "content": {
+    "body": "## Qu'est-ce que la compression de conversation ?\n\nQuand l'historique devient trop long, la compression condense automatiquement l'historique en un résumé, conservant les informations importantes tout en réduisant la consommation de tokens.\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Agent → Compression » :\n\n### Paramètres principaux\n\n- **threshold** — Seuil de tokens pour déclencher la compression (défaut 50000)\n  - Trop petit : compression fréquente, perte de contexte possible\n  - Trop grand : consommation élevée, réponses plus lentes\n  - Plage recommandée : 30000-80000\n\n- **maxOutputTokens** — Longueur maximale du résumé\n  - Recommandé : 20-30% du threshold\n\n### Vidage mémoire\n\n- **memoryFlush** — Sauvegarder automatiquement les informations importantes dans MEMORY.md lors de la compression\n  - Fortement recommandé\n\n### Stratégie de compression\n\n- **strategy** — Algorithme\n  - `summarize` — Générer un résumé (défaut, plus efficace)\n  - `truncate` — Couper les anciens messages (plus rapide mais perte d'info)\n\n## Configuration recommandée\n\n**Conversation quotidienne** : threshold=50000, memoryFlush=true\n**Projet de programmation** : threshold=80000, memoryFlush=true\n**Sensible au coût** : threshold=30000, memoryFlush=true\n\n## Champs de configuration\n\nChemin : `agents.defaults.compaction`"
+  }
+}

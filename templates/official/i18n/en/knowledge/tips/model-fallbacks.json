@@ -1,0 +1,7 @@
+{
+  "name": "Model Fallback Chain",
+  "description": "Configure fallback models for automatic failover when the primary model is unavailable",
+  "content": {
+    "body": "## Why Fallback Models?\n\nAI providers may become temporarily unavailable due to rate limiting, service outages, or insufficient account balance. Configuring a fallback chain lets HermesAgent automatically try the next model when the primary fails, ensuring the AI assistant stays online.\n\n## Configure in HermesDeckX\n\n1. Go to Config Center → Models\n2. In the \"Fallback Models\" area, click \"Add Fallback Model\"\n3. Select a configured provider and model from the dropdown\n4. Multiple fallback models can be added, ordered by priority\n\n## Recommended Pairing Strategy\n\n| Primary Model | Fallback 1 | Fallback 2 |\n|--------------|------------|------------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**Best Practices:**\n- Use **different providers** for primary and fallback models to avoid all failing during a single provider outage\n- Fallback models can be cheaper tiers (e.g., gpt-4o-mini) to save costs during degradation\n- Configure at least 1 fallback model; 2 is recommended\n\n## Configuration Field\n\nConfig path: `agents.defaults.model.fallbacks`\n\nValue is an array of model names, e.g.:\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

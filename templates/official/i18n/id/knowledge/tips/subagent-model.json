@@ -1,0 +1,7 @@
+{
+  "name": "Pemilihan Model Sub-Agen",
+  "description": "Gunakan model lebih murah untuk sub-agen, mengurangi biaya secara signifikan sambil menjaga kualitas agen utama",
+  "content": {
+    "body": "## Apa itu Sub-Agen?\n\nSaat tugas kompleks, agen utama dapat membuat sub-agen untuk memproses sub-tugas secara paralel. Setiap sub-agen adalah panggilan AI independen.\n\n## Masalah Biaya\n\nJika sub-agen menggunakan model mahal yang sama:\n- 3-5 sub-agen di tugas kompleks\n- Masing-masing mengonsumsi token dengan harga penuh\n- Total biaya berlipat ganda dengan cepat\n\n## Solusi: Model Lebih Murah untuk Sub-Agen\n\n«Pusat Pengaturan → Agen → Sub-Agen»:\n- **model** — Model lebih murah (gpt-4o-mini, claude-haiku, gemini-flash)\n- **maxSpawnDepth** — Batasi kedalaman (rekomendasi: 1-2)\n- **maxConcurrent** — Maksimum sub-agen bersamaan\n\n## Kombinasi Rekomendasi\n\n| Model Utama | Model Sub-Agen | Penghematan |\n|-------------|----------------|-------------|\n| claude-opus | claude-haiku | ~90% |\n| gpt-4.5 | gpt-4o-mini | ~95% |\n| gpt-4o | gpt-4o-mini | ~80% |\n| gemini-pro | gemini-flash | ~85% |\n\n## Field Konfigurasi\n\nPath: `agents.defaults.subagents`"
+  }
+}

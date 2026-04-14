@@ -1,0 +1,7 @@
+{
+  "name": "Daily Summary Cron Job",
+  "description": "Example cron job config for daily morning news/weather/todo summary",
+  "content": {
+    "snippet": "// Cron job configuration example\n// Create in Config Center → Cron Jobs\n\n// Task name: Daily Briefing\n// Cron expression: 0 8 * * * (Daily at 8:00 AM)\n// Prompt:\n\nPlease prepare my daily briefing:\n\n1. **Today's Weather** — Check the weather forecast for my city\n2. **Important News** — Search for 3 important tech/AI news stories today, briefly summarize\n3. **Todo Reminders** — Check my MEMORY.md for items due today\n4. **Schedule Suggestions** — Based on weather and todos, suggest an action plan for today\n\nPlease output in a concise format, separate each section with emoji headings."
+  }
+}

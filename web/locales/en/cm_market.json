@@ -1,0 +1,19 @@
+{
+  "skillsMarket": {
+    "title": "Skills Market",
+    "subtitle": "Extend your agent capabilities",
+    "loading": "Loading...",
+    "active": "active",
+    "searchPlaceholder": "Search skills...",
+    "noSkills": "No skills found",
+    "ready": "Ready",
+    "needsSetup": "Needs setup",
+    "configure": "Configure",
+    "select": "Select...",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "configured": "Skill configured",
+    "enabled": "Skill enabled",
+    "disabled": "Skill disabled"
+  }
+}

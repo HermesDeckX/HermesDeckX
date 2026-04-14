@@ -1,0 +1,7 @@
+{
+  "name": "Audio Transcription",
+  "description": "Enable automatic voice message transcription so your AI can understand and reply to voice messages",
+  "content": {
+    "body": "## Voice Transcription Feature\n\nMany users send voice messages on Telegram, WhatsApp, and Discord. With voice transcription enabled, HermesAgent automatically converts voice messages to text so the AI assistant can understand and respond.\n\n## Configure in HermesDeckX\n\nGo to Config Center → Audio → Find the \"Voice Transcription\" area:\n\n1. Turn on \"Enable Voice Transcription\"\n2. Select the transcription provider (default uses OpenAI Whisper)\n3. Save\n\n## How It Works\n\n1. User sends a voice message in a messaging channel\n2. HermesAgent automatically downloads the audio file\n3. Calls Whisper API to convert audio to text\n4. Passes the transcribed text to the AI model as user message\n5. AI responds in text\n\n## Notes\n\n- Requires an OpenAI API Key (Whisper is an OpenAI service)\n- Each transcription incurs a small API fee (~$0.006/minute)\n- Supported audio formats: mp3, mp4, mpeg, mpga, m4a, wav, webm\n- Maximum audio duration depends on provider limits\n\n## Configuration Field\n\nConfig path: `audio.transcription`"
+  }
+}

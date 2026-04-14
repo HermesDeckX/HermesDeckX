@@ -1,0 +1,7 @@
+{
+  "name": "Horario activo del heartbeat",
+  "description": "Configurar horario activo del heartbeat AI — verificar solo en horario laboral, ahorrando tokens en noches y fines de semana",
+  "content": {
+    "body": "## ¿Por qué configurar horario activo?\n\nLas tareas heartbeat activan verificaciones AI periódicamente, consumiendo tokens cada vez. Si se ejecuta 24 horas sin parar:\n- Desperdicio de tokens en noches y fines de semana\n- Notificaciones a altas horas que molestan al usuario\n- Posible reducción de costos del 50-70%\n\n## Configurar en HermesDeckX\n\n«Centro de configuración → Programación → Horario activo»:\n\n### Parámetros principales\n- **activeHoursStart** — Hora de inicio (ej: \"08:00\")\n- **activeHoursEnd** — Hora de fin (ej: \"22:00\")\n- **timezone** — Zona horaria (ej: \"America/Mexico_City\")\n\n## Combinación con intervalo de heartbeat\n\n| Horario activo | Intervalo | Activaciones diarias | Costo estimado |\n|----------------|-----------|---------------------|----------------|\n| 8:00-22:00 | 30 min | 28 | Medio |\n| 8:00-22:00 | 60 min | 14 | Bajo |\n| 9:00-18:00 | 60 min | 9 | Mínimo |\n\n## Campos de configuración\n\nRutas correspondientes: `heartbeat.activeHoursStart`, `heartbeat.activeHoursEnd`, `heartbeat.timezone`"
+  }
+}

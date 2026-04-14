@@ -1,0 +1,7 @@
+{
+  "name": "Gestão de sessões",
+  "description": "Configurar escopo de sessão, reset automático e estratégia de manutenção para melhorar a continuidade das conversas",
+  "content": {
+    "body": "## O que é uma sessão?\n\nUma sessão é uma série contínua de contexto de conversa. O HermesAgent mantém o histórico dentro da sessão.\n\n## Escopo de sessão\n\n| Escopo | Descrição |\n|--------|----------|\n| **channel** | Uma sessão por canal (todos compartilham contexto) |\n| **user** | Uma sessão por usuário (contexto independente) |\n| **thread** | Uma sessão por thread (mais granular) |\n\n## Reset automático\n\n- **enabled** — Ativar\n- **every** — Intervalo (\"24h\", \"7d\")\n- **keepMemory** — Manter MEMORY.md após reset\n\n## Comandos de sessão\n\n- `/reset` — Reset manual\n- `/compact` — Acionar compactação\n- `/session` — Ver info da sessão\n\n## Campos de configuração\n\nCaminhos: `session.scope`, `session.autoReset`, `session.maintenance`"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "빠른 시작",
+  "description": "5분 안에 HermesAgent 게이트웨이 설치, 설정 및 첫 대화 완료",
+  "content": {
+    "body": "## 사전 요구사항\n\n- Node.js 22+ (LTS 버전 권장)\n- AI 제공자의 API 키 (OpenAI / Anthropic / Google 등)\n\n## 단계\n\n### 1. HermesAgent 설치\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. 설정 초기화\n\n```bash\nhermesagent init\n```\n\n프롬프트에 따라 선택:\n- AI 제공자 (OpenAI 또는 Anthropic 권장)\n- API 키 입력\n- 기본 모델 선택\n\n### 3. 게이트웨이 시작\n\n```bash\nhermesagent gateway run\n```\n\n게이트웨이 시작 후 터미널에 접근 주소가 표시됩니다 (기본 http://localhost:18789).\n\n### 4. HermesDeckX 연결\n\nHermesDeckX를 열고 설정에서 게이트웨이 주소를 입력하면 대화를 시작할 수 있습니다.\n\n### 5. 채팅 채널 연결 (선택사항)\n\nTelegram / Discord 등에서 사용하려면:\n1. 「설정 센터 → 채널」로 이동\n2. 채널 유형 선택\n3. Bot 토큰 입력\n4. 저장 후 연결 대기",
+    "steps": [
+      "Node.js 22+와 npm 설치",
+      "npm install -g hermesagent@latest 실행",
+      "hermesagent init으로 설정 초기화",
+      "AI 제공자의 API 키 입력",
+      "hermesagent gateway run으로 게이트웨이 시작",
+      "HermesDeckX를 열어 게이트웨이에 연결"
+    ]
+  }
+}

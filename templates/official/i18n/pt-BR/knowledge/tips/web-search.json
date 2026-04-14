@@ -1,0 +1,7 @@
+{
+  "name": "Busca web aprimorada",
+  "description": "Ativar busca web para que o assistente AI possa consultar informações atualizadas em tempo real. Suporta Brave, Perplexity, Gemini, Grok, Kimi",
+  "content": {
+    "body": "## Por que ativar busca web?\n\nModelos AI têm data de corte nos dados de treinamento. Com busca web, o assistente pode:\n- Buscar notícias, clima, cotações em tempo real\n- Buscar documentação técnica e referências API\n- Verificar a precisão do próprio conhecimento\n\n## Provedores de busca suportados\n\n| Provedor | Características | Chave API |\n|----------|----------------|----------|\n| **Brave** | Privacidade, cota gratuita | Necessária |\n| **Perplexity** | Resultados aprimorados por AI | Necessária |\n| **Gemini** | Capacidade de busca Google | Necessária |\n| **Grok** | Integração plataforma X | Necessária |\n| **Kimi** | Otimizado para chinês | Necessária |\n\n## Configurar no HermesDeckX\n\n1. « Centro de configurações → Ferramentas »\n2. Área « Busca web »\n3. Ativar interruptor\n4. Selecionar provedor\n5. Inserir chave API\n\n## Parâmetros ajustáveis\n\n- **maxResults** — Máximo de resultados (padrão 5)\n- **timeoutSeconds** — Timeout\n- **cacheTtlMinutes** — Duração do cache\n\n## Campos de configuração\n\nCaminhos: `tools.web.search.enabled` e `tools.web.search.provider`"
+  }
+}

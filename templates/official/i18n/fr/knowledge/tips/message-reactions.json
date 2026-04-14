@@ -1,0 +1,7 @@
+{
+  "name": "Emojis de statut de message",
+  "description": "Activer les réactions emoji de statut pour que les utilisateurs connaissent en temps réel l'étape de traitement de l'AI",
+  "content": {
+    "body": "## Que sont les emojis de statut ?\n\nLes réactions de statut sont des emojis ajoutés automatiquement par HermesAgent aux messages de l'utilisateur pendant le traitement.\n\n## Emojis de statut par défaut\n\n| Étape | Emoji | Signification |\n|-------|-------|---------------|\n| thinking | 🤔 | L'AI réfléchit |\n| tool | 🔧 | L'AI utilise un outil |\n| coding | 💻 | L'AI écrit du code |\n| web | 🌐 | L'AI cherche sur le web |\n| done | ✅ | Traitement terminé |\n| error | ❌ | Erreur de traitement |\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Messages » → zone « Emojis de statut » :\n\n1. Activer l'interrupteur\n2. Personnaliser les emojis (optionnel)\n3. Ajuster les paramètres de temps (optionnel)\n\n## Paramètres de temps\n\n- **debounceMs** — Délai anti-rebond (défaut 500ms)\n- **stallSoftMs** — Temps pour « traitement lent » (défaut 30000ms)\n- **stallHardMs** — Temps pour « traitement bloqué » (défaut 120000ms)\n\n## Champs de configuration\n\nChemin : `messages.statusReactions`"
+  }
+}

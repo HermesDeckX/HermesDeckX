@@ -1,0 +1,7 @@
+{
+  "name": "Manajemen Sesi",
+  "description": "Konfigurasi lingkup sesi, auto-reset, dan strategi pemeliharaan untuk meningkatkan kontinuitas percakapan",
+  "content": {
+    "body": "## Apa itu Sesi?\n\nSesi adalah rangkaian konteks percakapan yang berkelanjutan. HermesAgent memelihara riwayat dalam sesi.\n\n## Lingkup Sesi\n\n| Lingkup | Deskripsi |\n|---------|----------|\n| **channel** | Satu sesi per saluran (semua pengguna berbagi konteks) |\n| **user** | Satu sesi per pengguna (konteks independen) |\n| **thread** | Satu sesi per thread (paling granular) |\n\n## Auto-Reset\n\n- **enabled** — Aktifkan\n- **every** — Interval (\"24h\", \"7d\")\n- **keepMemory** — Pertahankan MEMORY.md setelah reset\n\n## Perintah Sesi\n\n- `/reset` — Reset manual\n- `/compact` — Picu kompresi\n- `/session` — Lihat info sesi\n\n## Field Konfigurasi\n\nPath: `session.scope`, `session.autoReset`, `session.maintenance`"
+  }
+}

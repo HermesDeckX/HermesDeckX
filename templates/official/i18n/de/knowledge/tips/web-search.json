@@ -1,0 +1,7 @@
+{
+  "name": "Erweiterte Websuche",
+  "description": "Websuche aktivieren, damit der AI-Assistent aktuelle Informationen in Echtzeit abrufen kann. Unterstützt Brave, Perplexity, Gemini, Grok, Kimi",
+  "content": {
+    "body": "## Warum Websuche aktivieren?\n\nAI-Modelle haben ein Trainings-Cutoff-Datum. Mit Websuche kann der Assistent:\n- Echtzeitnachrichten, Wetter, Aktienkurse suchen\n- Technische Dokumentation und API-Referenzen finden\n- Eigenes Wissen auf Richtigkeit prüfen\n\n## Unterstützte Suchanbieter\n\n| Anbieter | Merkmale | API-Schlüssel |\n|----------|---------|---------------|\n| **Brave** | Datenschutz, kostenloses Kontingent | Erforderlich |\n| **Perplexity** | AI-verstärkte Ergebnisse | Erforderlich |\n| **Gemini** | Google-Suchfähigkeit | Erforderlich |\n| **Grok** | X-Plattform-Integration | Erforderlich |\n| **Kimi** | Optimiert für Chinesisch | Erforderlich |\n\n## In HermesDeckX konfigurieren\n\n1. « Einstellungszentrum → Werkzeuge »\n2. « Websuche »-Bereich\n3. Schalter aktivieren\n4. Suchanbieter auswählen\n5. API-Schlüssel eingeben\n\n## Einstellbare Parameter\n\n- **maxResults** — Max. Ergebnisse (Standard 5)\n- **timeoutSeconds** — Zeitüberschreitung\n- **cacheTtlMinutes** — Cache-Dauer\n\n## Konfigurationsfelder\n\nPfade: `tools.web.search.enabled` und `tools.web.search.provider`"
+  }
+}

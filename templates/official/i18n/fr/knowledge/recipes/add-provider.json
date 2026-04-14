@@ -1,0 +1,14 @@
+{
+  "name": "Ajouter un fournisseur AI",
+  "description": "Configurer les clés API et options des fournisseurs de modèles AI comme OpenAI, Anthropic, Google",
+  "content": {
+    "body": "## Fournisseurs supportés\n\n| Fournisseur | Exemples de modèle | Caractéristiques |\n|-------------|-------------------|------------------|\n| **OpenAI** | GPT-4o, GPT-4o-mini | Écosystème le plus mature |\n| **Anthropic** | Claude Sonnet, Claude Haiku | Haute sécurité, long contexte |\n| **Google** | Gemini Pro, Gemini Flash | Multimodal, faible coût |\n| **DeepSeek** | DeepSeek Chat, DeepSeek Coder | Excellent rapport qualité-prix |\n| **Ollama** | Llama, Mistral, etc. | Déploiement local, gratuit |\n\n## Configurer dans HermesDeckX\n\n1. Allez dans « Centre de configuration → Fournisseurs de modèles »\n2. Cliquez sur « Ajouter un fournisseur »\n3. Sélectionnez le type et entrez la clé API\n4. Sélectionnez les modèles à activer\n5. Sauvegardez\n\n## Champs de configuration\n\nChemin : `providers`",
+    "steps": [
+      "Aller dans « Centre de configuration → Fournisseurs de modèles »",
+      "Cliquer sur « Ajouter un fournisseur »",
+      "Sélectionner le type et entrer la clé API",
+      "Sélectionner les modèles à activer",
+      "Sauvegarder"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Denkmodus",
+  "description": "Tiefes Denken aktivieren für bessere komplexe Schlussfolgerungsfähigkeit — Qualität bei Mathematik, Programmierung und Analyse verbessern",
+  "content": {
+    "body": "## Was ist der Denkmodus?\n\nDer Denkmodus (erweitertes Denken, Gedankenkette) ermöglicht der AI, « Schritt für Schritt zu denken » bevor sie antwortet.\n\n## Wann verwenden?\n\n| Aufgabentyp | Empfohlen? |\n|-------------|------------|\n| Komplexe Mathematik/Logik | ✅ Ja |\n| Mehrstufige Programmierung | ✅ Ja |\n| Datenanalyse | ✅ Ja |\n| Einfache Q&A | ❌ Nein (Token-Verschwendung) |\n| Alltagsgespräch | ❌ Nein |\n\n## In HermesDeckX konfigurieren\n\n### Standardmodus\n- **thinkingDefault**\n  - `off` — Kein Denken (Standard)\n  - `minimal` — Kurzes Denken\n  - `full` — Vollständiges erweitertes Denken\n\n### Pro Gespräch umschalten\n- `/think` — Für nächste Nachricht aktivieren\n- `/think off` — Deaktivieren\n\n## Kostenauswirkung\n\n- **Kurzes Denken:** ~20-50% zusätzliche Tokens\n- **Vollständiges Denken:** ~50-200% zusätzliche Tokens\n\n## Konfigurationsfelder\n\nPfad: `agents.defaults.thinkingDefault`"
+  }
+}

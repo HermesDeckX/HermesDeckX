@@ -1,0 +1,29 @@
+{
+  "id": "tip-gateway-tls",
+  "type": "tip",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "网关 TLS 加密",
+    "description": "启用 TLS 加密保护网关通信，防止 API Key 和对话内容在传输中被窃取",
+    "category": "security",
+    "tags": ["tls", "ssl", "https", "encryption", "security", "certificate"],
+    "difficulty": "medium",
+    "i18n": {
+      "en": {
+        "name": "Gateway TLS Encryption",
+        "description": "Enable TLS to protect gateway communication — prevent API keys and conversations from being intercepted"
+      }
+    }
+  },
+  "content": {
+    "body": "## 为什么需要 TLS？\n\n如果网关在网络上暴露（非 localhost 访问），所有通信都以明文传输，包括：\n- API Key 和 Token\n- 对话内容\n- 认证凭据\n\n启用 TLS 后，所有通信都会加密，即使被截获也无法读取。\n\n## 什么时候需要 TLS？\n\n| 场景 | 是否需要 |\n|------|----------|\n| 本机访问（localhost） | 不需要 |\n| 局域网访问 | 推荐 |\n| 外网/远程访问 | **必须** |\n| 使用 Tailscale | 不需要（Tailscale 自带加密） |\n\n## 在 HermesDeckX 中配置\n\n前往「配置中心 → 网关 → TLS」：\n\n### 方式一：自动生成证书（最简单）\n\n1. 打开「启用 TLS」开关\n2. 打开「自动生成」开关\n3. 保存即可\n\nHermesAgent 会自动生成自签名证书。注意：浏览器会显示安全警告，这是正常的（自签名证书不被浏览器信任）。\n\n### 方式二：使用自己的证书\n\n1. 打开「启用 TLS」开关\n2. 关闭「自动生成」\n3. 填写证书路径（certPath）和密钥路径（keyPath）\n4. 如果有 CA 证书，填写 caPath\n\n## 配合认证使用\n\nTLS 通常与认证模式配合使用：\n- 前往「配置中心 → 网关 → 认证」\n- 选择认证模式：token（推荐）或 password\n- 设置认证凭据\n\n## 配置字段\n\n对应配置路径：`gateway.tls.enabled`",
+    "editorSection": "gateway",
+    "statusCheck": {
+      "type": "config_field",
+      "field": "gateway.tls.enabled",
+      "okWhen": "true",
+      "okTemplate": "TLS 加密已启用",
+      "failTemplate": "TLS 未启用，网络通信为明文"
+    }
+  }
+}

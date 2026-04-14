@@ -1,0 +1,14 @@
+{
+  "name": "AI 제공자 추가",
+  "description": "OpenAI, Anthropic, Google 등 AI 모델 제공자의 API 키와 옵션 설정",
+  "content": {
+    "body": "## 지원되는 제공자\n\n| 제공자 | 모델 예시 | 특징 |\n|--------|---------|------|\n| **OpenAI** | GPT-4o, GPT-4o-mini | 가장 성숙한 생태계 |\n| **Anthropic** | Claude Sonnet, Claude Haiku | 높은 안전성, 긴 컨텍스트 |\n| **Google** | Gemini Pro, Gemini Flash | 멀티모달, 저비용 |\n| **DeepSeek** | DeepSeek Chat, DeepSeek Coder | 높은 가성비 |\n| **xAI** | Grok | X 플랫폼 통합 |\n| **Ollama** | Llama, Mistral 등 | 로컬 배포, 무료 |\n\n## HermesDeckX에서 설정\n\n1. 「설정 센터 → 모델 제공자」로 이동\n2. 「제공자 추가」 클릭\n3. 제공자 유형 선택\n4. API 키 입력\n5. 활성화할 모델 선택\n6. 설정 저장\n\n## API 키 획득 방법\n\n- **OpenAI**: platform.openai.com → API Keys\n- **Anthropic**: console.anthropic.com → API Keys\n- **Google**: aistudio.google.com → API 키 가져오기\n- **DeepSeek**: platform.deepseek.com → API Keys\n\n## 설정 필드\n\n해당 설정 경로: `providers`",
+    "steps": [
+      "「설정 센터 → 모델 제공자」로 이동",
+      "「제공자 추가」 클릭",
+      "제공자 유형 선택 및 API 키 입력",
+      "활성화할 모델 선택",
+      "설정 저장"
+    ]
+  }
+}

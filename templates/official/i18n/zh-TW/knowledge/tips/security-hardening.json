@@ -1,0 +1,7 @@
+{
+  "name": "安全加固",
+  "description": "全面安全設定——存取控制、工具限制、網路策略和加密",
+  "content": {
+    "body": "## 安全設定清單\n\n### 1. 啟用認證\n\n前往「設定中心 → 閘道器 → 認證」：\n- 選擇認證模式：`token`（建議）或 `password`\n- Token 模式：生成隨機 Token，所有請求在 Authorization 標頭中傳遞\n- **非 localhost 存取時必須啟用**\n\n### 2. 設定 TLS 加密\n\n前往「設定中心 → 閘道器 → TLS」：\n- 非 localhost 存取時啟用 TLS\n- 使用自動生成憑證（最簡單）或自訂憑證\n- 詳見「閘道器 TLS 加密」技巧\n\n### 3. 限制頻道存取\n\n對每個頻道設定：\n- **allowFrom** — 僅允許特定使用者 ID 使用 Bot\n- **dmPolicy** — 設為 `allowFrom` 限制私訊存取\n- **groupPolicy** — 控制群組訊息的回應行為\n\n### 4. 限制工具權限\n\n前往「設定中心 → 工具」：\n- 選擇合適的工具設定檔（`full` / `coding` / `messaging` / `minimal`）\n- 使用 deny 清單封鎖危險工具\n- 設定 exec allowlist 限制可執行的命令\n\n### 5. 啟用沙箱\n\n前往「設定中心 → 代理 → 沙箱」：\n- 啟用 Docker 沙箱執行程式碼\n- 設定工作區存取為 `ro`（唯讀），除非需要寫入\n- 限制容器資源\n\n### 6. 保護敏感資訊\n\n前往「設定中心 → 日誌」：\n- 啟用 `redactSensitive` 在日誌中遮罩敏感資料\n- 設定 `redactPatterns` 自訂脫敏規則\n\n## 建議安全等級\n\n| 等級 | 適用場景 | 設定 |\n|------|---------|------|\n| **基本** | 個人使用，僅本機 | 預設設定 |\n| **標準** | 區域網路 / Tailscale | 認證 + allowFrom |\n| **高** | 公網暴露 | 認證 + TLS + allowFrom + 沙箱 + 工具限制 |\n\n## 設定欄位\n\n相關路徑：`gateway.auth`、`gateway.tls`、`channels[].allowFrom`、`tools.profile`、`agents.defaults.sandbox`"
+  }
+}

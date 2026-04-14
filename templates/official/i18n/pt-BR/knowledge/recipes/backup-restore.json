@@ -1,0 +1,13 @@
+{
+  "name": "Backup e restauração",
+  "description": "Fazer backup da configuração, memória e histórico de conversas do HermesAgent, com suporte para migração para novos dispositivos",
+  "content": {
+    "body": "## O que fazer backup\n\n| Item | Caminho | Importância |\n|------|---------|------------|\n| Configuração | `~/.hermesdeckx/config.yaml` | Essencial |\n| Config de agentes | `~/.hermesdeckx/agents/` | Essencial |\n| Arquivos de memória | `~/.hermesdeckx/memory/` | Importante |\n| Histórico de sessões | `~/.hermesdeckx/sessions/` | Opcional |\n| Credenciais | `~/.hermesdeckx/credentials/` | Importante |\n\n## Métodos de backup\n\n### Método 1: Manual\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### Método 2: CLI\n```bash\nhermesagent config export > meu-backup.yaml\n```\n\n### Método 3: Interface HermesDeckX\n« Exportar configuração » no rodapé do Centro de configurações.\n\n## Restaurar\n\n1. Instalar HermesAgent\n2. Copiar arquivos para `~/.hermesdeckx/`\n3. Iniciar gateway\n\n## Campos de configuração\n\nCaminho: `~/.hermesdeckx/`",
+    "steps": [
+      "Definir escopo do backup",
+      "Executar backup",
+      "Armazenar em local seguro",
+      "Para restaurar, copiar para ~/.hermesdeckx/ e reiniciar"
+    ]
+  }
+}

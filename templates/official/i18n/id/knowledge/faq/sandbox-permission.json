@@ -1,0 +1,8 @@
+{
+  "name": "Masalah Izin Sandbox",
+  "description": "Mengatasi masalah izin Docker sandbox yang tidak memadai, akses file ditolak, atau kegagalan memulai container",
+  "content": {
+    "question": "Apa yang harus dilakukan saat ada masalah izin di mode sandbox?",
+    "answer": "## Masalah Izin Umum\n\n### 1. Docker tidak terinstal atau tidak berjalan\n- Docker Desktop terinstal dan berjalan?\n- **Windows**: Buka Docker Desktop\n- **macOS**: Buka Docker Desktop\n- **Linux**: `sudo systemctl start docker`\n\n### 2. Gagal memulai container\n- Image Docker tidak ada: `docker pull`\n- Memori tidak cukup\n- Ruang disk tidak cukup\n\n### 3. Akses file ditolak\n- Periksa mode akses: `none` / `ro` / `rw`\n- Jika perlu menulis, ubah ke `rw`\n\n### 4. Masalah akses jaringan\n\n### 5. Izin eksekusi\n\n## Alternatif\n\n- Nonaktifkan sandbox sementara (hanya lingkungan tepercaya)\n- Gunakan Podman sebagai alternatif\n\n## Field Konfigurasi\n\nPath: `agents.defaults.sandbox`"
+  }
+}

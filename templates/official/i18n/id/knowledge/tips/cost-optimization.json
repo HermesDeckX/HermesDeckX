@@ -1,0 +1,7 @@
+{
+  "name": "Optimasi Biaya",
+  "description": "Kurangi biaya penggunaan AI secara komprehensif — pemilihan model, kompresi, heartbeat, dan strategi tool",
+  "content": {
+    "body": "## Checklist Optimasi Biaya\n\n### 1. Pilih model yang tepat\n- Harian: GPT-4o-mini / Claude Haiku / Gemini Flash\n- Tugas kompleks: GPT-4o / Claude Sonnet\n- Jangan gunakan model termahal sebagai default\n\n### 2. Aktifkan kompresi\n- Threshold 30000-50000\n- Aktifkan memoryFlush\n\n### 3. Optimalkan heartbeat\n- Model termurah untuk heartbeat\n- Tingkatkan interval (30-60 menit)\n- Konfigurasi jam aktif\n\n### 4. Strategi sub-agen\n- Model murah untuk sub-agen\n- Batasi kedalaman dan jumlah\n\n### 5. Kontrol tool\n- Profil `minimal` atau `messaging`\n- Nonaktifkan tool yang tidak diperlukan\n\n### 6. Manajemen sesi\n- Auto-reset harian\n- `/compact` berkala\n\n## Field Konfigurasi\n\nPath: `agents.defaults.model`, `agents.defaults.compaction`, `heartbeat`, `tools.profile`"
+  }
+}

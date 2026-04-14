@@ -1,0 +1,7 @@
+{
+  "name": "Profil Izin Tool",
+  "description": "Kontrol tool yang tersedia untuk AI melalui profil — seimbangkan kemampuan dan keamanan",
+  "content": {
+    "body": "## Profil Tool\n\nHermesAgent menyediakan 4 profil preset:\n\n| Profil | Deskripsi | Skenario |\n|--------|-----------|----------|\n| **full** | Semua tool (default) | Pribadi, lingkungan tepercaya |\n| **coding** | Kode, perintah, file | Asisten programming |\n| **messaging** | Pesan, percakapan dasar | Hanya chat |\n| **minimal** | Izin minimal | Keamanan tinggi |\n\n## Konfigurasi di HermesDeckX\n\n1. «Pusat Pengaturan → Tools»\n2. Pilih profil dari dropdown\n3. Untuk kontrol lebih detail, gunakan daftar allow/deny\n\n## Kontrol Izin Detail\n\n- **deny** — Tool yang secara eksplisit dilarang\n- **allow** — Hanya tool yang diizinkan (override profil)\n- **alsoAllow** — Tool tambahan yang diizinkan\n- **byProvider** — Izin berbeda per penyedia\n\n## Field Konfigurasi\n\nPath: `tools.profile`\n\nNilai: `minimal` | `coding` | `messaging` | `full`"
+  }
+}

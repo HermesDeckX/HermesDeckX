@@ -1,0 +1,7 @@
+{
+  "name": "Sélection de modèle de sous-agent",
+  "description": "Utiliser des modèles moins chers pour les sous-agents, réduisant significativement les coûts tout en maintenant la qualité de l'agent principal",
+  "content": {
+    "body": "## Qu'est-ce qu'un sous-agent ?\n\nQuand l'agent principal rencontre des tâches complexes, il peut créer des sous-agents pour traiter des sous-tâches en parallèle. Chaque sous-agent est un appel AI indépendant.\n\n## Problème de coûts\n\nSi les sous-agents utilisent le même modèle coûteux :\n- 3-5 sous-agents possibles par tâche complexe\n- Chacun consomme des tokens au prix fort\n- Le coût total se multiplie rapidement\n\n## Solution : Modèles moins chers pour les sous-agents\n\n« Centre de configuration → Agent → Sous-agents » :\n- **model** — Modèle moins cher (gpt-4o-mini, claude-haiku, gemini-flash)\n- **maxSpawnDepth** — Limiter la profondeur (recommandé : 1-2)\n- **maxConcurrent** — Maximum de sous-agents simultanés\n\n## Combinaisons recommandées\n\n| Modèle principal | Modèle sous-agent | Économie |\n|-----------------|-------------------|----------|\n| claude-opus | claude-haiku | ~90% |\n| gpt-4.5 | gpt-4o-mini | ~95% |\n| gpt-4o | gpt-4o-mini | ~80% |\n| gemini-pro | gemini-flash | ~85% |\n\n## Champs de configuration\n\nChemin : `agents.defaults.subagents`"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Backup dan Restore",
+  "description": "Backup konfigurasi, memori, dan riwayat percakapan HermesAgent, mendukung migrasi ke perangkat baru",
+  "content": {
+    "body": "## Apa yang Di-backup\n\n| Item | Path | Pentingnya |\n|------|------|----------|\n| Konfigurasi | `~/.hermesdeckx/config.yaml` | Wajib |\n| Konfigurasi agen | `~/.hermesdeckx/agents/` | Wajib |\n| File memori | `~/.hermesdeckx/memory/` | Penting |\n| Riwayat sesi | `~/.hermesdeckx/sessions/` | Opsional |\n| Kredensial | `~/.hermesdeckx/credentials/` | Penting |\n\n## Metode Backup\n\n### Metode 1: Manual\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### Metode 2: CLI\n```bash\nhermesagent config export > backup.yaml\n```\n\n### Metode 3: Antarmuka HermesDeckX\n«Ekspor Konfigurasi» di bagian bawah Pusat Pengaturan.\n\n## Restore\n\n1. Instal HermesAgent\n2. Salin file ke `~/.hermesdeckx/`\n3. Mulai gateway",
+    "steps": [
+      "Tentukan lingkup backup",
+      "Lakukan backup",
+      "Simpan di tempat aman",
+      "Untuk restore, salin ke ~/.hermesdeckx/ dan restart"
+    ]
+  }
+}

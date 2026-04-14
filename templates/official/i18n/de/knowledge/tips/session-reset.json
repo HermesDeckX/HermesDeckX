@@ -1,0 +1,7 @@
+{
+  "name": "Automatischer Sitzungsreset",
+  "description": "Täglichen/wöchentlichen automatischen Sitzungsreset konfigurieren, um endloses Kontextwachstum und steigende Kosten zu verhindern",
+  "content": {
+    "body": "## Warum automatisch zurücksetzen?\n\nOhne Reset:\n- Kontext wächst endlos\n- Alte Informationen verwässern die Qualität\n- Kosten steigen kontinuierlich\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Sitzung → Automatischer Reset »:\n\n### Parameter\n- **enabled** — Aktivieren\n- **every** — Intervall\n  - `24h` — Täglich (empfohlen)\n  - `12h` — Zweimal täglich\n  - `7d` — Wöchentlich\n- **at** — Uhrzeit (z.B. \"04:00\")\n- **timezone** — Zeitzone\n\n### Wichtige Infos behalten\n- **keepMemory** — MEMORY.md nach Reset behalten\n- `memoryFlush` in Komprimierung aktivieren\n\n## Konfigurationsfelder\n\nPfad: `session.autoReset`"
+  }
+}

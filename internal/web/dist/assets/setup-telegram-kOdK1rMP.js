@@ -1,0 +1,8 @@
+const e="Connect Telegram",t="Create a Telegram Bot and connect it to HermesAgent gateway via HermesDeckX",n={body:`Telegram is one of HermesAgent's most commonly used messaging channels. You need to first create a Bot through BotFather, then enter the Token in HermesDeckX to complete the connection.
+
+**Prerequisites:**
+- A Telegram account
+- HermesAgent gateway running with model configured`,steps:[{title:"Create Telegram Bot",description:"Search for @BotFather in Telegram and send the /newbot command. Follow prompts to enter Bot name and username (username must end with 'bot'). BotFather will return a Token (format like 123456789:ABCdefGHIjklMNO) — copy and save it."},{title:"Add Telegram Channel",description:'Go to Config Center → Channels → Click "Add Channel" → Select Telegram. Paste the Token from BotFather in the Token field.'},{title:"Configure Access Control (Recommended)",description:'In the channel settings, find the "allowFrom" field and enter your Telegram user ID (get it via @userinfobot). This prevents strangers from using your Bot. You can also set dmPolicy to allowFrom to restrict DM access.'},{title:"Save and Test",description:'Click "Save" and wait for the gateway to reload. In Telegram, open your newly created Bot, send /start, then send any message. If you receive an AI reply, the connection is successful.'},{title:"Group Usage (Optional)",description:`To use in groups:
+1. Add the Bot to a group
+2. In BotFather, send /setprivacy → Select your Bot → Disable (allows Bot to read all messages)
+3. @mention the Bot or reply to the Bot's messages in the group to trigger conversation`}]},o={name:e,description:t,content:n};export{n as content,o as default,t as description,e as name};

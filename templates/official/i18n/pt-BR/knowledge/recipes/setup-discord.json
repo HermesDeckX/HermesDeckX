@@ -1,0 +1,15 @@
+{
+  "name": "Configurar Bot do Discord",
+  "description": "Criar um Bot do Discord e conectá-lo ao gateway HermesAgent",
+  "content": {
+    "body": "## Criar Bot do Discord\n\n### 1. Criar aplicação Discord\n1. Acesse discord.com/developers/applications\n2. « New Application »\n3. Página « Bot » → « Add Bot »\n\n### 2. Obter Token\n1. « Reset Token »\n2. Copiar Token\n3. Ativar « Message Content Intent » (importante!)\n\n### 3. Convidar Bot para servidor\n1. « OAuth2 → URL Generator »\n2. Permissão `bot`\n3. Copiar URL e abrir\n4. Selecionar servidor\n\n### 4. Configurar no HermesDeckX\n1. « Centro de configurações → Canais »\n2. « Adicionar canal » → Discord\n3. Colar Token\n4. Salvar\n\n## Campos de configuração\n\nCaminho: `channels[].type: \"discord\"`",
+    "steps": [
+      "Criar aplicação no Discord",
+      "Criar Bot e copiar Token",
+      "Ativar Message Content Intent",
+      "Gerar link de convite",
+      "Adicionar canal Discord no HermesDeckX",
+      "Colar Token e salvar"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Werkzeug-Berechtigungsprofile",
+  "description": "Verfügbare Werkzeuge der AI über Profile steuern — Balance zwischen Fähigkeit und Sicherheit",
+  "content": {
+    "body": "## Werkzeugprofile\n\nHermesAgent bietet 4 voreingestellte Werkzeugprofile:\n\n| Profil | Beschreibung | Szenario |\n|--------|-------------|----------|\n| **full** | Alle Werkzeuge (Standard) | Persönlich, vertrauenswürdige Umgebung |\n| **coding** | Code, Befehle, Dateien | Programmierassistent |\n| **messaging** | Nachrichten, Grundgespräch | Nur Chat |\n| **minimal** | Minimale Berechtigungen | Hohe Sicherheitsanforderungen |\n\n## In HermesDeckX konfigurieren\n\n1. « Einstellungszentrum → Werkzeuge »\n2. Profil im Dropdown auswählen\n3. Für feinere Steuerung: allow/deny-Listen\n\n## Feine Berechtigungssteuerung\n\n- **deny** — Explizit verbotene Werkzeuge\n- **allow** — Nur erlaubte Werkzeuge (überschreibt Profil)\n- **alsoAllow** — Zusätzlich erlaubte Werkzeuge\n- **byProvider** — Verschiedene Berechtigungen pro Anbieter\n\n## Konfigurationsfelder\n\nPfad: `tools.profile`\n\nWerte: `minimal` | `coding` | `messaging` | `full`"
+  }
+}

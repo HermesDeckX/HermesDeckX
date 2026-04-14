@@ -1,0 +1,7 @@
+{
+  "name": "HermesDeckX-Workflow",
+  "description": "AI-Assistenten effizient über die visuelle HermesDeckX-Oberfläche verwalten — Tastenkürzel, Panel-Navigation und erweiterte Operationen",
+  "content": {
+    "body": "## HermesDeckX-Tastenkürzel\n\n| Kürzel | Funktion |\n|--------|----------|\n| `Ctrl/Cmd + K` | Schnellbefehlspalette |\n| `Ctrl/Cmd + ,` | Einstellungen öffnen |\n| `Ctrl/Cmd + Shift + D` | Dashboard öffnen |\n| `Ctrl/Cmd + Shift + H` | Gesundheitszentrum öffnen |\n\n## Panel-Navigation\n\n### Dashboard\n- Echtzeit-Status aller Kanäle\n- Token-Verbrauch und Kosten überwachen\n- Aktive Sitzungen anzeigen\n\n### Einstellungszentrum\n- Abschnitte: Kanäle, Modelle, Agenten, Werkzeuge, Planung\n- Beschreibung und Standardwert für jedes Element\n- Sofortige Anwendung beim Speichern\n\n### Gesundheitszentrum\n- Ein-Klick-Diagnose aller Komponenten\n- Automatische Korrekturvorschläge\n\n### Szenario-Vorlagenbibliothek\n- Voreingestellte Szenarien durchsuchen und installieren\n- Ein-Klick-Konfigurationsanwendung"
+  }
+}

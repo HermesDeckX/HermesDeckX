@@ -1,0 +1,32 @@
+{
+  "name": "Pipeline Data",
+  "description": "Pengumpulan, pemrosesan, analisis, dan pelaporan data otomatis",
+  "agents": {
+    "collector": {
+      "name": "Pengumpul Data",
+      "role": "Mengumpulkan data dari sumber"
+    },
+    "processor": {
+      "name": "Pemroses Data",
+      "role": "Membersihkan dan mentransformasi data"
+    },
+    "analyzer": {
+      "name": "Penganalisis Data",
+      "role": "Analisis dan menemukan insight"
+    },
+    "reporter": {
+      "name": "Pembuat Laporan",
+      "role": "Membuat laporan dan visualisasi"
+    }
+  },
+  "workflow": {
+    "description": "Pipeline ETL dengan analisis"
+  },
+  "content": {
+    "examples": [
+      "Analisis data penjualan mingguan",
+      "Buat laporan performa bulanan",
+      "Proses dan analisis data perilaku pengguna"
+    ]
+  }
+}

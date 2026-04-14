@@ -1,0 +1,7 @@
+{
+  "name": "Routage multi-canal",
+  "description": "Servir plusieurs plateformes de chat avec une seule AI, avec des règles de comportement différentes par canal",
+  "content": {
+    "body": "## Qu'est-ce que le routage multi-canal ?\n\nLe routage multi-canal permet de connecter l'assistant AI simultanément à Telegram, Discord, WhatsApp, Signal, etc., avec **des règles indépendantes par canal**.\n\n## Pourquoi ?\n\n- **Gestion unifiée** — Une seule AI pour toutes les plateformes\n- **Comportement différencié** — Canal travail formel, canal personnel décontracté\n- **Contrôle d'accès** — Différentes listes allowFrom et dmPolicy par canal\n\n## Configuration\n\n### 1. Ajouter plusieurs canaux\nDans le « Centre de configuration », ajoutez les plateformes et entrez les Tokens.\n\n### 2. Configurer les règles de routage\nChaque canal peut être configuré indépendamment :\n- **dmPolicy** — Qui peut initier un DM (`open` / `allowlist` / `closed`)\n- **allowFrom** — Liste blanche\n- **groupPolicy** — Stratégie de réponse aux messages de groupe\n\n### 3. Override SOUL par canal\nChaque canal peut avoir son propre SOUL.md.\n\n## Champs de configuration\n\nChemins : `channels[].dmPolicy`, `channels[].allowFrom`, `channels[].groupPolicy`"
+  }
+}

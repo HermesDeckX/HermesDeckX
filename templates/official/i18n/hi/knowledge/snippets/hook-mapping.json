@@ -1,0 +1,7 @@
+{
+  "name": "GitHub PR Hook मैपिंग",
+  "description": "Webhook मैपिंग स्निपेट: GitHub Pull Request इवेंट को AI कोड रिव्यू निर्देशों में बदलें",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"GitHub PR बनने पर स्वचालित कोड रिव्यू\"\n    mapping: |\n      GitHub Pull Request इवेंट प्राप्त:\n\n      **रिपॉजिटरी**: {{repository.full_name}}\n      **शीर्षक**: {{pull_request.title}}\n      **लेखक**: {{pull_request.user.login}}\n      **विवरण**: {{pull_request.body}}\n\n      कृपया इस PR की समीक्षा करें:\n      1. कोड गुणवत्ता और सर्वोत्तम प्रथाएं जांचें\n      2. संभावित बग और सुरक्षा समस्याएं खोजें\n      3. सुधार सुझाव दें\n      4. मित्रवत और रचनात्मक प्रतिक्रिया दें"
+  }
+}

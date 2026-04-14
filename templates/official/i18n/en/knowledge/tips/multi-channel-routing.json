@@ -1,0 +1,7 @@
+{
+  "name": "Multi-Channel Routing",
+  "description": "Serve multiple chat platforms with a single AI, each channel can have different behavior rules",
+  "content": {
+    "body": "## What is Multi-Channel Routing?\n\nMulti-channel routing lets your AI assistant simultaneously connect to Telegram, Discord, WhatsApp, Signal and other chat platforms, **with independent behavior rules for each channel**.\n\n## Why Do You Need It?\n\n- **Unified Management** — One AI serves all platforms, no separate deployment needed\n- **Differentiated Behavior** — Work channels stay professional, personal channels stay casual\n- **Access Control** — Different allowFrom allowlists and dmPolicy for each channel\n\n## Configuration Method\n\n### 1. Add Multiple Channels\n\nIn the Config Center's Channels section, add your desired chat platforms and enter the corresponding tokens.\n\n### 2. Set Channel Routing Rules\n\nEach channel can independently set:\n- **dmPolicy** — Control who can initiate DMs (`open` / `allowlist` / `closed`)\n- **allowFrom** — Allowlist: only specific users or groups\n- **groupPolicy** — Response policy for group messages\n\n### 3. Channel-level SOUL Override\n\nEach channel can have its own SOUL.md for different behavior:\n- Work channels (Slack) → Professional, concise\n- Personal channels (Telegram) → Casual, fun\n\n## Configuration Field\n\nConfig path: `channels[].dmPolicy`, `channels[].allowFrom`, `channels[].groupPolicy`"
+  }
+}

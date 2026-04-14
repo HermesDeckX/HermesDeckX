@@ -1,0 +1,8 @@
+{
+  "name": "Modelo não responde",
+  "description": "Resolver problemas quando o modelo AI não responde ou atinge timeout — verificar chave API, cota e rede",
+  "content": {
+    "question": "O que fazer se o modelo AI não responder ou atingir timeout?",
+    "answer": "## Passos para resolução\n\n### 1. Verificar chave API\n- Chave inserida e correta?\n- Não expirada ou revogada?\n- Tentar regenerar na console do provedor\n\n### 2. Verificar cota e saldo\n- **OpenAI** — platform.openai.com\n- **Anthropic** — console.anthropic.com\n- **Google** — Cloud Console\n\n### 3. Verificar disponibilidade do modelo\n- Nome do modelo correto?\n- Alguns modelos requerem permissões especiais\n- Testar com outro modelo\n\n### 4. Verificar conexão de rede\n\n### 5. Usar modelo de fallback\n- Configurar cadeia de fallback\n\n## Correção rápida\n\nDiagnóstico → Verificar model.reachable."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Configurer des tâches planifiées",
+  "description": "Utiliser les tâches heartbeat pour que l'AI effectue des vérifications, envoie des résumés et exécute des opérations de maintenance automatiquement",
+  "content": {
+    "body": "## Qu'est-ce que le Heartbeat ?\n\nHeartbeat est le système de tâches planifiées d'HermesAgent :\n- Envoyer un résumé de nouvelles chaque matin\n- Vérifier les e-mails toutes les heures\n- Générer des rapports hebdomadaires\n- Nettoyer les données expirées\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Planification » :\n\n### Configuration de base\n- **enabled** — Activer le heartbeat\n- **intervalMinutes** — Intervalle d'exécution (minutes)\n- **model** — Modèle pour le heartbeat (modèle économique recommandé)\n\n### Plage horaire active\n- **activeHoursStart/End** — Plage horaire (ex : 8:00-22:00)\n- **timezone** — Fuseau horaire\n\n## Champs de configuration\n\nChemin : `heartbeat`",
+    "steps": [
+      "Aller dans « Centre de configuration → Planification »",
+      "Activer la fonction heartbeat",
+      "Configurer l'intervalle et la plage horaire",
+      "Sélectionner le modèle heartbeat",
+      "Rédiger les instructions heartbeat",
+      "Sauvegarder"
+    ]
+  }
+}

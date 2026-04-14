@@ -1,0 +1,7 @@
+{
+  "name": "SOUL.md Persönlichkeitsvorlage",
+  "description": "Vorlage für die Persönlichkeitskonfiguration des AI-Agenten. Definiert Identität, Charakter und Fachgebiete des Assistenten",
+  "content": {
+    "snippet": "## Persönlichkeitskern\n\n_Sie sind ein(e) [Rollenbeschreibung], mit [Hauptmerkmale]._\n\n### Basisinformationen\n- **Name**: [Assistentenname]\n- **Rolle**: [Hauptverantwortung]\n- **Stil**: [Kommunikationsstil]\n\n### Hauptmerkmale\n- [Merkmal 1]\n- [Merkmal 2]\n- [Merkmal 3]\n\n### Regeln\n- [Verhaltensregel 1]\n- [Verhaltensregel 2]\n\n### Einschränkungen\n- [Was nicht getan wird 1]\n- [Was nicht getan wird 2]"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Registro y depuración",
+  "description": "Configurar nivel de registro, formato de salida y herramientas de diagnóstico para resolver problemas de HermesAgent eficientemente",
+  "content": {
+    "body": "## Configuración de registro\n\nCuando HermesAgent presenta comportamiento anormal, los registros son la primera herramienta para resolver problemas.\n\n### Configurar en HermesDeckX\n\n«Centro de configuración → Registro»:\n\n### Niveles de registro\n\n| Nivel | Descripción | Escenario |\n|-------|-------------|----------|\n| **silent** | Sin salida | No recomendado |\n| **error** | Solo errores | Producción |\n| **warn** | Errores + advertencias | Producción (recomendado) |\n| **info** | Incluye info de ejecución | Uso diario (predeterminado) |\n| **debug** | Incluye info de depuración | Activar temporalmente al resolver problemas |\n| **trace** | Más detallado | Depuración profunda |\n\n### Formato de salida en consola\n\n- **pretty** — Salida formateada con colores (recomendado para desarrollo)\n- **compact** — Salida compacta (recomendado para producción)\n- **json** — Formato JSON (conveniente para sistemas de recolección de logs)\n\n## Campos de configuración\n\nRutas correspondientes: `logging` y `diagnostics`"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Cadena de modelos de respaldo",
+  "description": "Configurar modelos de respaldo para cambiar automáticamente cuando el modelo principal no está disponible, garantizando operación continua",
+  "content": {
+    "body": "## ¿Por qué necesitar modelos de respaldo?\n\nLos proveedores de AI pueden estar temporalmente no disponibles por límites de velocidad, interrupciones de servicio o saldo insuficiente. Una cadena de respaldo permite que HermesAgent intente automáticamente el siguiente modelo cuando el principal falla.\n\n## Configurar en HermesDeckX\n\n1. Vaya a «Centro de configuración → Modelos»\n2. En «Modelos de respaldo», haga clic en «Agregar modelo de respaldo»\n3. Seleccione proveedor y modelo del menú desplegable\n4. Puede agregar múltiples modelos en orden de prioridad\n\n## Estrategia de combinación recomendada\n\n| Modelo principal | Respaldo 1 | Respaldo 2 |\n|-----------------|------------|------------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**Mejores prácticas:**\n- Usar **diferentes proveedores** para principal y respaldo\n- Modelos de respaldo pueden ser de nivel más económico\n- Recomendado mínimo 1 respaldo, idealmente 2\n\n## Campos de configuración\n\nRuta correspondiente: `agents.defaults.model.fallbacks`\n\nValor es un array de nombres de modelo:\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

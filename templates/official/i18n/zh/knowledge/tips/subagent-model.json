@@ -1,0 +1,7 @@
+{
+  "name": "子代理模型优化",
+  "description": "为子代理设置独立的低成本模型，在保持主代理高质量的同时降低整体费用",
+  "content": {
+    "body": "## 什么是子代理？\n\n当 AI 助手需要执行复杂任务时，它可以「分派」（spawn）子代理来并行处理子任务。例如：\n- 主代理分析需求，子代理分别去搜索资料、编写代码、执行测试\n- 多个子代理可以同时运行，加速任务完成\n\n## 优化策略：子代理使用低成本模型\n\n子代理通常执行较简单的子任务，不需要最强的模型。为子代理设置低成本模型可以显著降低费用：\n\n| 模型搭配 | 主代理 | 子代理 | 预估节省 |\n|----------|--------|--------|----------|\n| 方案 A | claude-sonnet | claude-haiku | ~70% |\n| 方案 B | gpt-4o | gpt-4o-mini | ~80% |\n| 方案 C | gemini-pro | gemini-flash | ~90% |\n\n## 在 HermesDeckX 中配置\n\n前往「配置中心 → 代理」→ 找到「子代理」区域：\n\n1. 在「子代理模型」中选择一个低成本模型\n2. 设置并发限制（maxConcurrent，默认 3）\n3. 设置最大嵌套深度（maxSpawnDepth，默认 1 = 不嵌套）\n\n### 关键参数\n\n- **model** — 子代理使用的模型（可以和主模型不同）\n- **maxConcurrent** — 同时运行的最大子代理数\n- **maxSpawnDepth** — 最大嵌套深度（1-5，不建议超过 2）\n- **maxChildrenPerAgent** — 单个代理最多产生的子代理数（1-20，默认 5）\n- **runTimeoutSeconds** — 子代理运行超时时间\n- **archiveAfterMinutes** — 子代理完成后多久自动归档\n- **thinking** — 子代理的思考模式（建议设为 off 或 minimal 以节省 token）\n\n## 配置字段\n\n对应配置路径：`agents.defaults.subagents`\n\n```json\n\"subagents\": {\n  \"model\": \"gpt-4o-mini\",\n  \"maxConcurrent\": 3,\n  \"maxSpawnDepth\": 1,\n  \"thinking\": \"off\"\n}\n```"
+  }
+}

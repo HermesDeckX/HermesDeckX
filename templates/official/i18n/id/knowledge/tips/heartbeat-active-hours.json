@@ -1,0 +1,7 @@
+{
+  "name": "Jam Aktif Heartbeat",
+  "description": "Konfigurasi jam aktif heartbeat AI — periksa hanya saat jam kerja, hemat token di malam hari dan akhir pekan",
+  "content": {
+    "body": "## Mengapa Konfigurasi Jam Aktif?\n\nTugas heartbeat mengonsumsi token setiap kali dipicu. Beroperasi 24/7:\n- Pemborosan token di malam hari dan akhir pekan\n- Notifikasi yang tidak diinginkan\n- Penghematan biaya 50-70% dimungkinkan\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Penjadwalan → Jam Aktif»:\n\n### Parameter\n- **activeHoursStart** — Waktu mulai (misal \"08:00\")\n- **activeHoursEnd** — Waktu selesai (misal \"22:00\")\n- **timezone** — Zona waktu (misal \"Asia/Jakarta\")\n\n## Kombinasi dengan Interval Heartbeat\n\n| Jam Aktif | Interval | Pemicu/hari | Biaya |\n|-----------|----------|-------------|-------|\n| 8:00-22:00 | 30 menit | 28 | Sedang |\n| 8:00-22:00 | 60 menit | 14 | Rendah |\n| 9:00-18:00 | 60 menit | 9 | Minimal |\n\n## Field Konfigurasi\n\nPath: `heartbeat.activeHoursStart`, `heartbeat.activeHoursEnd`, `heartbeat.timezone`"
+  }
+}

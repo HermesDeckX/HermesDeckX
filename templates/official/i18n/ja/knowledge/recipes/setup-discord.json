@@ -1,0 +1,15 @@
+{
+  "name": "Discord Bot の設定",
+  "description": "Discord Bot を作成し HermesAgent ゲートウェイに接続する",
+  "content": {
+    "body": "## Discord Bot の作成\n\n### 1. Discord アプリケーションの作成\n1. discord.com/developers/applications へ\n2. 「New Application」をクリック\n3. アプリ名を入力\n4. 「Bot」ページへ\n5. 「Add Bot」をクリック\n\n### 2. トークンの取得\n1. Bot ページで「Reset Token」をクリック\n2. 新しいトークンをコピー\n3. 「Message Content Intent」を有効にする（重要！）\n\n### 3. Bot をサーバーに招待\n1. 「OAuth2 → URL Generator」へ\n2. `bot` 権限を選択\n3. 必要な Bot 権限を選択（Send Messages、Read Message History など）\n4. 生成された URL をコピーしてブラウザで開く\n5. 追加するサーバーを選択\n\n### 4. HermesDeckX での設定\n1. 「設定センター → チャンネル」へ\n2. 「チャンネルを追加」→ Discord を選択\n3. Bot トークンを貼り付け\n4. 設定を保存\n\n### 5. 確認\n- ダッシュボードで Discord チャンネルが 🟢 表示されるはず\n- Discord で Bot を @メンション するか DM を送信\n- Bot が返信するはず\n\n## 設定フィールド\n\n対応する設定パス：`channels[].type: \"discord\"`",
+    "steps": [
+      "Discord Developer Portal でアプリケーションを作成",
+      "Bot を作成しトークンをコピー",
+      "Message Content Intent を有効にする",
+      "招待リンクを生成し Bot をサーバーに追加",
+      "HermesDeckX 設定センターで Discord チャンネルを追加",
+      "トークンを貼り付けて保存"
+    ]
+  }
+}

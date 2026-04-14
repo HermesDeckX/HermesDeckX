@@ -1,0 +1,29 @@
+{
+  "id": "tip-compaction-tuning",
+  "type": "tip",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "压缩策略调优",
+    "description": "优化上下文压缩策略，在对话质量和 Token 成本之间找到最佳平衡",
+    "category": "optimization",
+    "tags": ["compaction", "token", "context", "memory-flush", "quality"],
+    "difficulty": "medium",
+    "i18n": {
+      "en": {
+        "name": "Compaction Strategy Tuning",
+        "description": "Optimize context compaction strategy — balance conversation quality and token cost"
+      }
+    }
+  },
+  "content": {
+    "body": "## 什么是上下文压缩？\n\n当对话历史超过模型的上下文窗口限制时，HermesAgent 会自动压缩（summarize）旧的对话内容，保留关键信息。压缩策略直接影响 AI 的「记忆力」和 Token 成本。\n\n## 压缩模式\n\n| 模式 | 说明 |\n|------|------|\n| **default** | 标准压缩，适用大多数场景 |\n| **safeguard** | 安全模式，压缩前额外检查，防止丢失重要信息 |\n\n## 在 HermesDeckX 中配置\n\n前往「配置中心 → 代理」→ 找到「压缩」区域：\n\n### 关键参数\n\n- **reserveTokens** — 为新对话保留的 token 数量。增大此值可以让 AI 有更多空间回复，但会更频繁地触发压缩\n- **keepRecentTokens** — 保留最近的 token 数量不被压缩。增大可以保留更多近期上下文\n- **maxHistoryShare** — 历史对话占总上下文的最大比例（0.1-0.9）。设为 0.7 表示 70% 用于历史，30% 保留给系统提示和新回复\n\n### 质量守卫\n\n启用 `qualityGuard` 可以在压缩后检查摘要质量，如果质量不达标会自动重试：\n- **enabled** — 是否启用\n- **maxRetries** — 最大重试次数\n\n### 记忆冲刷（Memory Flush）\n\n`memoryFlush` 是一个重要功能，在压缩即将发生时自动将重要信息保存到 MEMORY.md：\n- **enabled** — 是否启用（**强烈推荐开启**）\n- **softThresholdTokens** — 提前触发阈值\n- **forceFlushTranscriptBytes** — 强制冲刷的对话大小阈值\n\n## 推荐配置\n\n**日常聊天（平衡模式）：**\n- reserveTokens: 4000\n- keepRecentTokens: 8000\n- memoryFlush.enabled: true\n\n**编程助手（保留更多上下文）：**\n- reserveTokens: 8000\n- keepRecentTokens: 16000\n- maxHistoryShare: 0.8\n\n## 配置字段\n\n对应配置路径：`agents.defaults.compaction`",
+    "editorSection": "agents",
+    "statusCheck": {
+      "type": "config_field",
+      "field": "agents.defaults.compaction.memoryFlush.enabled",
+      "okWhen": "true",
+      "okTemplate": "记忆冲刷已启用",
+      "failTemplate": "记忆冲刷未启用，压缩时可能丢失重要信息"
+    }
+  }
+}

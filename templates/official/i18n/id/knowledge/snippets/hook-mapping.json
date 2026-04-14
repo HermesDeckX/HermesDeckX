@@ -1,0 +1,7 @@
+{
+  "name": "Pemetaan Hook GitHub PR",
+  "description": "Snippet pemetaan Webhook: konversi event GitHub Pull Request menjadi instruksi code review AI",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"Code review otomatis saat GitHub PR dibuat\"\n    mapping: |\n      Event GitHub Pull Request diterima:\n\n      **Repository**: {{repository.full_name}}\n      **Judul**: {{pull_request.title}}\n      **Penulis**: {{pull_request.user.login}}\n      **Deskripsi**: {{pull_request.body}}\n\n      Silakan review PR ini:\n      1. Periksa kualitas kode dan best practice\n      2. Cari bug potensial dan masalah keamanan\n      3. Berikan saran perbaikan\n      4. Berikan feedback yang ramah dan konstruktif"
+  }
+}

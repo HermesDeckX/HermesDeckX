@@ -1,0 +1,15 @@
+{
+  "name": "Discord-Bot einrichten",
+  "description": "Einen Discord-Bot erstellen und mit dem HermesAgent-Gateway verbinden",
+  "content": {
+    "body": "## Discord-Bot erstellen\n\n### 1. Discord-Anwendung erstellen\n1. discord.com/developers/applications öffnen\n2. « New Application » klicken\n3. « Bot »-Seite → « Add Bot »\n\n### 2. Token erhalten\n1. « Reset Token » klicken\n2. Token kopieren\n3. « Message Content Intent » aktivieren (wichtig!)\n\n### 3. Bot zum Server einladen\n1. « OAuth2 → URL Generator »\n2. `bot`-Berechtigung auswählen\n3. URL kopieren und öffnen\n\n### 4. In HermesDeckX konfigurieren\n1. « Einstellungszentrum → Kanäle »\n2. « Kanal hinzufügen » → Discord\n3. Token einfügen\n4. Speichern\n\n## Konfigurationsfelder\n\nPfad: `channels[].type: \"discord\"`",
+    "steps": [
+      "Discord-Anwendung erstellen",
+      "Bot erstellen und Token kopieren",
+      "Message Content Intent aktivieren",
+      "Einladungslink generieren",
+      "Discord-Kanal in HermesDeckX hinzufügen",
+      "Token einfügen und speichern"
+    ]
+  }
+}

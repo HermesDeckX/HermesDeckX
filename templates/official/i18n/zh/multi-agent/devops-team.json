@@ -1,0 +1,32 @@
+{
+  "name": "DevOps 团队",
+  "description": "自动化事件响应和基础设施管理团队",
+  "agents": {
+    "monitor": {
+      "name": "监控员",
+      "role": "监视系统并检测问题"
+    },
+    "responder": {
+      "name": "首响者",
+      "role": "初步分类和快速修复"
+    },
+    "engineer": {
+      "name": "SRE 工程师",
+      "role": "深度排查和修复"
+    },
+    "communicator": {
+      "name": "沟通员",
+      "role": "利益相关者更新"
+    }
+  },
+  "workflow": {
+    "description": "事件响应工作流"
+  },
+  "content": {
+    "examples": [
+      "处理服务器宕机",
+      "响应高CPU告警",
+      "管理安全事件"
+    ]
+  }
+}

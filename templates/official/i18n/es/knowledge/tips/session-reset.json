@@ -1,0 +1,7 @@
+{
+  "name": "Reinicio automático de sesión",
+  "description": "Configurar reinicio automático diario/semanal para prevenir el crecimiento infinito del contexto y el aumento de costos",
+  "content": {
+    "body": "## ¿Por qué reiniciar sesiones automáticamente?\n\nSin reinicio:\n- El contexto crece infinitamente, enviando más tokens cada solicitud\n- Información antigua irrelevante diluye la calidad de las respuestas\n- Los costos API aumentan continuamente\n\n## Configurar en HermesDeckX\n\n«Centro de configuración → Sesión → Reinicio automático»:\n\n### Parámetros principales\n- **enabled** — Activar reinicio automático\n- **every** — Intervalo\n  - `24h` — Reinicio diario (recomendado para la mayoría)\n  - `12h` — Dos veces al día\n  - `7d` — Reinicio semanal (para proyectos a largo plazo)\n- **at** — Hora específica (ej: \"04:00\" a las 4 AM)\n- **timezone** — Zona horaria\n\n### Retener información importante\n- **keepMemory** — Activar para mantener contenido de MEMORY.md después del reinicio\n- Activar `memoryFlush` en compresión para guardar automáticamente información importante antes del reinicio\n\n## Configuración recomendada\n\n**Uso diario:**\n```json\n\"autoReset\": { \"enabled\": true, \"every\": \"24h\", \"at\": \"04:00\", \"keepMemory\": true }\n```\n\n**Proyecto de programación:**\n```json\n\"autoReset\": { \"enabled\": true, \"every\": \"7d\", \"keepMemory\": true }\n```\n\n## Campos de configuración\n\nRuta correspondiente: `session.autoReset`"
+  }
+}

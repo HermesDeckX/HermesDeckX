@@ -1,0 +1,7 @@
+{
+  "name": "Logging dan Debugging",
+  "description": "Konfigurasi level log, format output, dan tool diagnostik untuk menyelesaikan masalah HermesAgent secara efisien",
+  "content": {
+    "body": "## Konfigurasi Logging\n\n«Pusat Pengaturan → Logging»:\n\n### Level Log\n\n| Level | Deskripsi | Skenario |\n|-------|-----------|----------|\n| **silent** | Tanpa output | Tidak direkomendasikan |\n| **error** | Hanya error | Produksi |\n| **warn** | Error + peringatan | Produksi (direkomendasikan) |\n| **info** | Info runtime | Penggunaan harian (default) |\n| **debug** | Info debug | Sementara saat ada masalah |\n| **trace** | Paling detail | Debugging mendalam |\n\n### Format Output Konsol\n\n- **pretty** — Format berwarna (pengembangan)\n- **compact** — Output ringkas (produksi)\n- **json** — Format JSON (sistem pengumpulan log)\n\n## Field Konfigurasi\n\nPath: `logging` dan `diagnostics`"
+  }
+}

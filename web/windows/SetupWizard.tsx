@@ -1,0 +1,1123 @@
+﻿import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { Language } from '../types';
+import { getTranslation } from '../locales';
+import { get, post } from '../services/request';
+import { useConfirm } from '../components/ConfirmDialog';
+import { getPipIndexURL, isLikelyInChina, PIP_INDEX_MIRRORS } from '../services/network';
+import { useHermesAgentUpdate } from '../hooks/useHermesAgentUpdate';
+
+interface SetupWizardProps {
+  language: Language;
+  onClose?: () => void;
+  onOpenEditor?: () => void;
+}
+
+const SETUP_WIZARD_AUTO_OPEN_DISABLED_KEY = 'setup_wizard_disable_auto_open';
+
+type WizardPhase = 'scan' | 'install' | 'starting' | 'complete';
+
+interface ToolInfo {
+  installed: boolean;
+  version?: string;
+  path?: string;
+}
+
+interface Step {
+  name: string;
+  description: string;
+  command?: string;
+  required: boolean;
+}
+
+interface EnvironmentReport {
+  os: string;
+  arch: string;
+  distro?: string;
+  hostname: string;
+  packageManager: string;
+  hasSudo: boolean;
+  tools: Record<string, ToolInfo>;
+  internetAccess: boolean;
+  hermesAgentInstalled: boolean;
+  hermesAgentConfigured: boolean;
+  hermesAgentVersion?: string;
+  hermesAgentStateDir?: string;
+  hermesAgentConfigPath?: string;
+  hermesAgentGatewayLog?: string;
+  hermesAgentInstallLog?: string;
+  hermesAgentDoctorLog?: string;
+  gatewayRunning: boolean;
+  gatewayPort?: number;
+  recommendedMethod: string;
+  recommendedSteps: Step[];
+  warnings: string[];
+  isRoot?: boolean;
+  currentUser?: string;
+  latestHermesAgentVersion?: string;
+  updateAvailable?: boolean;
+  isDocker?: boolean;
+  dockerMounts?: { source: string; destination: string; type?: string }[];
+}
+
+interface SetupEvent {
+  type: 'phase' | 'step' | 'progress' | 'log' | 'success' | 'error' | 'complete';
+  phase?: string;
+  step?: string;
+  message: string;
+  progress?: number;
+  data?: any;
+}
+
+const SetupWizard: React.FC<SetupWizardProps> = ({ language, onClose, onOpenEditor }) => {
+  const t = useMemo(() => getTranslation(language), [language]);
+  const sw = (t as any).sw || {};
+  const common = (t as any).common || {};
+
+  const [phase, setPhase] = useState<WizardPhase>('scan');
+  const [scanResult, setScanResult] = useState<EnvironmentReport | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState('');
+  const [needsRestart, setNeedsRestart] = useState(false);
+  const [installSummary, setInstallSummary] = useState<Array<{label: string; status: string; detail?: string; category?: string}>>([]);
+  const [isUninstalling, setIsUninstalling] = useState(false);
+  const {
+    running: isUpdating,
+    logs: updateLogs,
+    step: updateStep,
+    progress: updateProgress,
+    run: runHermesAgentUpdate,
+  } = useHermesAgentUpdate();
+  const updateLogRef = useRef<HTMLDivElement>(null);
+  const [gwStartElapsed, setGwStartElapsed] = useState(0);
+  const [gwStartFailed, setGwStartFailed] = useState(false);
+  const [gwStartError, setGwStartError] = useState<string | null>(null);
+  const [gwRetryCount, setGwRetryCount] = useState(0);
+  const [wasInstalledOnOpen, setWasInstalledOnOpen] = useState<boolean | null>(null);
+  const { confirm } = useConfirm();
+
+  // 安装选项
+  const [selectedRegistry, setSelectedRegistry] = useState(''); // '' | 'https://pypi.tuna.tsinghua.edu.cn/simple'
+  const [autoDetectedRegistry, setAutoDetectedRegistry] = useState<string | null>(null);
+  const [isDetectingRegistry, setIsDetectingRegistry] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(true);
+  const [installZeroTier, setInstallZeroTier] = useState(false);
+  const [zerotierNetworkId, setZerotierNetworkId] = useState('');
+  const [installTailscale, setInstallTailscale] = useState(false);
+  const [sudoPassword, setSudoPassword] = useState('');
+  const [disableAutoOpen, setDisableAutoOpen] = useState<boolean>(() => localStorage.getItem(SETUP_WIZARD_AUTO_OPEN_DISABLED_KEY) === '1');
+
+  useEffect(() => {
+    localStorage.setItem(SETUP_WIZARD_AUTO_OPEN_DISABLED_KEY, disableAutoOpen ? '1' : '0');
+  }, [disableAutoOpen]);
+
+  const resolveSetupEventMessage = useCallback((event: SetupEvent): string => {
+    const phaseMap: Record<string, string | undefined> = {
+      scan: sw.scanning,
+      install: sw.phaseInstallDeps,
+      'skill-deps': sw.phaseSkillDeps,
+      'vpn-tools': sw.phaseVpnTools,
+      configure: sw.configuring,
+      start: sw.gwStarting,
+      verify: sw.phaseVerify,
+      update: sw.updatingHermesAgent,
+      'stop-gateway': sw.stoppingGateway,
+      restart: sw.restartingGateway,
+    };
+
+    const stepMap: Record<string, string | undefined> = {
+      'check-config': sw.checkingConfig,
+      'install-gateway-service': sw.installingGatewayService,
+      'start-gateway': sw.gwStarting,
+      doctor: sw.runningDoctor,
+    };
+
+    if (event.type === 'phase' && event.phase) {
+      return phaseMap[event.phase] || event.message;
+    }
+    if (event.type === 'step' && event.step) {
+      return stepMap[event.step] || event.message;
+    }
+    return event.message;
+  }, [sw]);
+
+  // 扫描环境
+  const scanEnvironment = useCallback(async () => {
+    setIsScanning(true);
+    setError(null);
+    try {
+      const response = await get<any>('/api/v1/setup/scan');
+      const data: EnvironmentReport = response.data || response; // 兼容两种格式
+      setScanResult(data);
+
+      // 记录首次扫描时 HermesAgent 是否已安装
+      if (wasInstalledOnOpen === null) {
+        setWasInstalledOnOpen(data.hermesAgentInstalled);
+      }
+
+      // 保持在 scan 阶段，显示扫描结果（无论是否已安装）
+    } catch (err: any) {
+      setError(err.message || sw.scanFailed);
+    } finally {
+      setIsScanning(false);
+    }
+  }, []);
+
+  // 升级日志自动滚动
+  useEffect(() => {
+    if (updateLogRef.current) {
+      updateLogRef.current.scrollTop = updateLogRef.current.scrollHeight;
+    }
+  }, [updateLogs]);
+
+  // 初始扫描
+  useEffect(() => {
+    scanEnvironment();
+  }, [scanEnvironment]);
+
+  // 自动检测最快的 pip index
+  useEffect(() => {
+    setIsDetectingRegistry(true);
+    getPipIndexURL()
+      .then(url => {
+        setAutoDetectedRegistry(url);
+        // 如果用户没有手动选择，自动使用检测到的最快源
+        const mapped = url === 'https://pypi.org/simple' ? '' : url;
+        if (selectedRegistry === '') {
+          setSelectedRegistry(mapped);
+        }
+      })
+      .catch(() => {
+        // 检测失败，保持默认
+      })
+      .finally(() => {
+        setIsDetectingRegistry(false);
+      });
+  }, []);
+
+  // 一键安装
+  const startAutoInstall = useCallback(async () => {
+    setPhase('install');
+
+    const installConfig = {
+      version: 'hermesagent',
+      registry: selectedRegistry,
+      installZeroTier,
+      zerotierNetworkId: installZeroTier && zerotierNetworkId ? zerotierNetworkId : undefined,
+      installTailscale,
+      skipConfig: true,
+      skipGateway: false,
+      sudoPassword: sudoPassword || undefined,
+    };
+
+    setIsInstalling(true);
+    setError(null);
+    setLogs([]);
+    setProgress(0);
+
+    try {
+      // Stream is not supported by request.post yet, using fetch manually
+      const response = await fetch('/api/v1/setup/auto-install', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(installConfig),
+        credentials: 'include', // Important for cookies
+      });
+
+      if (!response.ok) {
+        throw new Error(sw.installFailed);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error(sw.streamFailed);
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const event: SetupEvent = JSON.parse(line.slice(6));
+
+              if (event.type === 'log') {
+                setLogs(prev => [...prev.slice(-100), event.message]);
+              } else if (event.type === 'phase') {
+                setCurrentStep(resolveSetupEventMessage(event));
+                setProgress(event.progress || 0);
+              } else if (event.type === 'step') {
+                setCurrentStep(resolveSetupEventMessage(event));
+                setProgress(event.progress || 0);
+              } else if (event.type === 'progress') {
+                setProgress(event.progress || 0);
+              } else if (event.type === 'error') {
+                setError(event.message);
+                setIsInstalling(false);
+                return;
+              } else if (event.type === 'complete') {
+                setProgress(100);
+                if (event.data?.summary) {
+                  setInstallSummary(event.data.summary);
+                }
+                // 检查是否需要重启
+                if (event.data && event.data.needsRestart) {
+                  setNeedsRestart(true);
+                  setPhase('complete');
+                } else if (event.data && !event.data.configValid) {
+                  // 配置文件不存在或异常，直接进入完成页（无需等待网关）
+                  setPhase('complete');
+                } else if (event.data && !event.data.gatewayRunning) {
+                  // 配置正常但网关尚未就绪，进入启动等待阶段
+                  setPhase('starting');
+                } else {
+                  setPhase('complete');
+                }
+                // 重新扫描环境以获取安装后的版本号等信息
+                setLogs(prev => [...prev, `\n🔍 ${sw.runningDiagnostics}`]);
+                scanEnvironment();
+              }
+            } catch { }
+          }
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || sw.installFailed);
+    } finally {
+      setIsInstalling(false);
+    }
+  }, [selectedRegistry, installZeroTier, zerotierNetworkId, installTailscale]);
+
+
+
+  // 网关启动轮询
+  useEffect(() => {
+    if (phase !== 'starting') return;
+    setGwStartElapsed(0);
+    setGwStartFailed(false);
+    setGwStartError(null);
+
+    let cancelled = false;
+
+    // 重试时主动调用启动 API
+    if (gwRetryCount > 0) {
+      post('/api/v1/gateway/start').catch(() => { });
+    }
+
+    let elapsed = 0;
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      elapsed += 2;
+      setGwStartElapsed(elapsed);
+
+      if (elapsed > 60) {
+        clearInterval(interval);
+        setGwStartFailed(true);
+        setGwStartError(sw.gwStartTimeout);
+        return;
+      }
+
+      try {
+        const res = await get<{ running: boolean }>('/api/v1/gateway/status');
+        const data = (res as any).data || res;
+        if (data.running) {
+          clearInterval(interval);
+          // 添加明显的诊断提示
+          setLogs(prev => [...prev, `\n⏳ ${sw.runningFullDiagnostics}`]);
+          scanEnvironment();
+          setPhase('complete');
+        }
+      } catch {
+        // 忽略请求错误，继续轮询
+      }
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [phase, gwRetryCount]);
+
+  return (
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar neon-scrollbar bg-slate-50 dark:bg-transparent transition-colors">
+      <div className="max-w-3xl mx-auto">
+        {/* 标题 */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            🚀 {sw.title}
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-white/60">
+            {sw.subtitle}
+          </p>
+          <label className="mt-3 inline-flex items-center gap-2 text-xs text-slate-500 dark:text-white/60 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={disableAutoOpen}
+              onChange={(e) => setDisableAutoOpen(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-primary focus:ring-primary/30"
+            />
+            <span>{sw.disableAutoOpen}</span>
+          </label>
+          <p className="mt-1 text-[11px] text-slate-400 dark:text-white/40">
+            {sw.disableAutoOpenHint}
+          </p>
+        </div>
+
+        {/* 进度指示器 */}
+        {(() => {
+          const phaseIdx = phase === 'scan' ? 0 : phase === 'install' || phase === 'starting' ? 1 : 2;
+          const steps = [
+            { label: sw.stepScan || 'Scan', icon: 'search', desc: sw.stepScanDesc || '' },
+            { label: sw.stepInstall || 'Install', icon: 'download', desc: sw.stepInstallDesc || '' },
+            { label: sw.stepDone || 'Done', icon: 'check_circle', desc: sw.stepDoneDesc || '' },
+          ];
+          return (
+            <div className="flex items-start justify-center mb-8 px-4">
+              {steps.map((step, i) => {
+                const isActive = i === phaseIdx;
+                const isDone = i < phaseIdx;
+                const isLast = i === steps.length - 1;
+                return (
+                  <React.Fragment key={i}>
+                    <div className="flex flex-col items-center min-w-[80px] relative z-10">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
+                        isDone ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-100' :
+                        isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 ring-4 ring-primary/20 scale-110' :
+                        'theme-field theme-text-muted'
+                      }`}>
+                        {isDone ? (
+                          <span className="material-symbols-outlined text-[18px]">check</span>
+                        ) : isActive && (phase === 'install' || phase === 'starting') ? (
+                          <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[18px]">{step.icon}</span>
+                        )}
+                      </div>
+                      <p className={`text-[11px] font-bold mt-2 transition-colors ${
+                        isDone ? 'text-emerald-600 dark:text-emerald-400' :
+                        isActive ? 'text-primary' :
+                        'theme-text-muted'
+                      }`}>{step.label}</p>
+                      {step.desc && (
+                        <p className={`text-[9px] mt-0.5 text-center max-w-[100px] ${
+                          isActive ? 'theme-text-secondary' : 'theme-text-muted opacity-60'
+                        }`}>{step.desc}</p>
+                      )}
+                    </div>
+                    {!isLast && (
+                      <div className="flex-1 flex items-center pt-5 px-1 min-w-[40px]">
+                        <div className="w-full h-[3px] rounded-full theme-field overflow-hidden relative">
+                          <div className={`absolute inset-y-0 start-0 rounded-full transition-all duration-700 ease-out ${
+                            isDone ? 'w-full bg-emerald-500' :
+                            isActive && (phase === 'install' || phase === 'starting') ? 'bg-primary/60 animate-pulse' :
+                            'w-0'
+                          }`} style={isActive && (phase === 'install' || phase === 'starting') ? { width: `${Math.max(10, progress)}%` } : undefined} />
+                        </div>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {/* 错误提示 */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        )}
+
+        {/* 配置提醒 */}
+        {phase === 'complete' && !needsRestart && (
+          <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl p-4 mb-6">
+            <p className="text-sm text-green-700 dark:text-green-400">
+              {sw.installSuccessMsg}
+            </p>
+            <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-2">
+              {sw.installSuccessNote}
+            </p>
+          </div>
+        )}
+
+        {/* 重启提醒 */}
+        {phase === 'complete' && needsRestart && (
+          <div className="bg-yellow-50 dark:bg-yellow-500/10 border-2 border-yellow-500 dark:border-yellow-500/50 rounded-xl p-5 mb-6 animate-pulse">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-2xl text-yellow-600 dark:text-yellow-400 mt-0.5">warning</span>
+              <div className="flex-1">
+                <h4 className="text-base font-bold text-yellow-800 dark:text-yellow-300 mb-2">
+                  {'⚠️ ' + sw.restartRequired}
+                </h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-3">
+                  {sw.restartDesc}
+                </p>
+                <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-lg p-3 mb-3">
+                  <p className="text-xs text-yellow-800 dark:text-yellow-300 font-medium mb-2">
+                    {sw.restartStepsTitle}
+                  </p>
+                  <ol className="text-xs text-yellow-700 dark:text-yellow-400 space-y-1 list-decimal list-inside">
+                    {(sw.restartSteps || []).map((step: string, idx: number) => <li key={idx}>{step}</li>)}
+                  </ol>
+                </div>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400/80">
+                  {sw.restartReason}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 扫描阶段 */}
+        {phase === 'scan' && (
+          <div className="theme-panel rounded-2xl p-6 shadow-sm">
+            {isScanning ? (
+              <div className="text-center py-12">
+                <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="theme-text-secondary">{sw.scanning}</p>
+              </div>
+            ) : scanResult ? (
+              <div className="space-y-6">
+                {/* 系统信息 */}
+                <div>
+                  <h3 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80 mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">computer</span>
+                    {sw.sysInfo}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 theme-field rounded-lg">
+                      <p className="text-[10px] theme-text-muted uppercase">OS</p>
+                      <p className="text-sm font-medium text-[var(--color-text)] dark:text-white/80">{scanResult.os} / {scanResult.arch}</p>
+                    </div>
+                    <div className="p-3 theme-field rounded-lg">
+                      <p className="text-[10px] theme-text-muted uppercase">{sw.pkgMgr}</p>
+                      <p className="text-sm font-medium text-[var(--color-text)] dark:text-white/80">{scanResult.packageManager || common.na}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 工具状态 */}
+                <div>
+                  <h3 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80 mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">build</span>
+                    {sw.deps}
+                  </h3>
+                  <div className="space-y-2">
+                    {['python', 'pip', 'git', 'hermes-agent'].map(tool => {
+                      const info = scanResult.tools ? scanResult.tools[tool] : undefined;
+                      return (
+                        <div key={tool} className="flex items-center justify-between p-3 theme-field rounded-lg">
+                          <span className="text-sm font-medium text-[var(--color-text)] dark:text-white/80 capitalize">{tool}</span>
+                          <div className="flex items-center gap-2">
+                            {info?.installed ? (
+                              <>
+                                <span className="text-xs text-slate-400">{info.version}</span>
+                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              </>
+                            ) : (
+                              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 技能运行时依赖 */}
+                <div>
+                  <h3 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80 mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">extension</span>
+                    {sw.skillDeps}
+                    <span className="text-[10px] theme-text-muted font-normal">{sw.skillDepsDesc}</span>
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {([
+                      ['go', 'Go'],
+                      ['uv', 'uv (Python)'],
+                      ['ffmpeg', 'FFmpeg'],
+                      ['jq', 'jq'],
+                      ['rg', 'ripgrep'],
+                    ] as [string, string][]).map(([key, label]) => {
+                      const info = scanResult.tools ? scanResult.tools[key] : undefined;
+                      return (
+                        <div key={key} className="flex items-center justify-between p-2.5 theme-field rounded-lg">
+                          <span className="text-xs font-medium text-[var(--color-text)] dark:text-white/80">{label}</span>
+                          <div className="flex items-center gap-1.5">
+                            {info?.installed ? (
+                              <>
+                                <span className="text-[10px] text-slate-400">{info.version}</span>
+                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              </>
+                            ) : (
+                              <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* root 用户警告 */}
+                {scanResult.isRoot && (
+                  <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-red-500 text-lg">shield_person</span>
+                      <h4 className="text-sm font-bold text-red-700 dark:text-red-400">{sw.rootWarningTitle}</h4>
+                    </div>
+                    <p className="text-xs text-red-600 dark:text-red-400/80">{sw.rootWarningDesc}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs text-red-600 dark:text-red-400/70 font-medium">{sw.rootSwitchUser}</p>
+                      <code className="block px-3 py-2 bg-red-100 dark:bg-red-500/15 rounded-lg text-[11px] font-mono text-red-800 dark:text-red-300 select-all">su - username</code>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs text-red-600 dark:text-red-400/70 font-medium">{sw.rootCreateUser}</p>
+                      <code className="block px-3 py-2 bg-red-100 dark:bg-red-500/15 rounded-lg text-[11px] font-mono text-red-800 dark:text-red-300 select-all">adduser --gecos "" hermesagent</code>
+                      <code className="block px-3 py-2 bg-red-100 dark:bg-red-500/15 rounded-lg text-[11px] font-mono text-red-800 dark:text-red-300 select-all">usermod -aG sudo hermesagent</code>
+                      <code className="block px-3 py-2 bg-red-100 dark:bg-red-500/15 rounded-lg text-[11px] font-mono text-red-800 dark:text-red-300 select-all">echo 'hermesagent ALL=(ALL) NOPASSWD:ALL' &gt; /etc/sudoers.d/hermesagent</code>
+                      <code className="block px-3 py-2 bg-red-100 dark:bg-red-500/15 rounded-lg text-[11px] font-mono text-red-800 dark:text-red-300 select-all">su - hermesagent</code>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs text-red-600 dark:text-red-400/70 font-medium">{sw.rootThenReopen}</p>
+                      <code className="block px-3 py-2 bg-red-100 dark:bg-red-500/15 rounded-lg text-[11px] font-mono text-red-800 dark:text-red-300 select-all">
+                        {scanResult.os === 'windows' ? 'HermesDeckX.exe' : './HermesDeckX'}
+                      </code>
+                    </div>
+                  </div>
+                )}
+
+                {/* 其他警告 */}
+                {scanResult.warnings?.filter(w => !w.includes('root')).length > 0 && (
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/30 rounded-xl">
+                    <h4 className="text-sm font-bold text-yellow-700 dark:text-yellow-400 mb-2">{sw.warnings}</h4>
+                    <ul className="text-xs text-yellow-600 dark:text-yellow-400/80 space-y-1">
+                      {scanResult.warnings.filter(w => !w.includes('root')).map((w, i) => <li key={i}>• {w}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                {/* 安装选项 */}
+                {!scanResult.hermesAgentInstalled && (
+                  <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                    <h4 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80">
+                      {sw.installOpts}
+                    </h4>
+
+                    {/* 高级设置（可折叠） */}
+                    <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => setAdvancedOpen(!advancedOpen)}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-base text-slate-400">settings</span>
+                          <span className="text-sm font-medium text-[var(--color-text)] dark:text-white/80">{sw.advancedSettings}</span>
+                          <span className="text-[10px] theme-text-muted">{sw.advancedDesc}</span>
+                        </div>
+                        <span className={`material-symbols-outlined text-[16px] text-slate-400 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                      </button>
+                      {advancedOpen && (
+                        <div className="px-4 pb-4 space-y-4 border-t border-slate-200 dark:border-white/10 pt-3">
+                          {/* pip 镜像源 */}
+                          <div>
+                            <label className="text-xs theme-text-secondary mb-2 block">{sw.pipIndex}</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {PIP_INDEX_MIRRORS.map(mirror => {
+                                const mirrorUrl = mirror.priority === 1 ? '' : mirror.url;
+                                const isFastest = autoDetectedRegistry === mirror.url;
+                                return (
+                                  <button key={mirror.url} onClick={() => setSelectedRegistry(mirrorUrl)}
+                                    className={`p-3 rounded-lg border-2 transition-all relative ${selectedRegistry === mirrorUrl ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-slate-200 dark:border-white/10 hover:border-primary/50'}`}>
+                                    <div className="text-sm font-medium text-[var(--color-text)] dark:text-white">{mirror.name}</div>
+                                    <div className="text-[10px] theme-text-secondary mt-1 truncate">{new URL(mirror.url).hostname}</div>
+                                    {isFastest && !isDetectingRegistry && (
+                                      <span className="absolute -top-1.5 -right-1.5 text-[9px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold">{sw.fastest || '⚡ fastest'}</span>
+                                    )}
+                                    {isDetectingRegistry && (
+                                      <span className="absolute -top-1.5 -right-1.5 text-[9px] bg-slate-400 text-white px-1.5 py-0.5 rounded-full animate-pulse">...</span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {/* 内网穿透 / 虚拟局域网 */}
+                          <div>
+                            <label className="text-xs theme-text-secondary mb-1 block">{sw.vpnTools}</label>
+                            <p className="text-[10px] theme-text-muted mb-2">{sw.vpnToolsDesc}</p>
+                            <div className="space-y-2">
+                              <label className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:border-primary/40 transition-colors cursor-pointer">
+                                <input type="checkbox" checked={installZeroTier} onChange={e => setInstallZeroTier(e.target.checked)}
+                                  className="mt-0.5 w-4 h-4 rounded border-slate-300 dark:border-white/20 text-primary focus:ring-primary/30" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-[var(--color-text)] dark:text-white/80">🌐 {sw.installZeroTier}</div>
+                                  <div className="text-[10px] theme-text-muted mt-0.5">{sw.zeroTierDesc}</div>
+                                </div>
+                              </label>
+                              {installZeroTier && (
+                                <div className="ms-7 mt-1">
+                                  <input
+                                    type="text"
+                                    value={zerotierNetworkId}
+                                    onChange={e => setZerotierNetworkId(e.target.value.replace(/[^a-fA-F0-9]/g, '').slice(0, 16))}
+                                    placeholder={sw.zerotierNetworkIdPlaceholder}
+                                    className="w-full h-8 px-3 theme-field rounded-lg text-xs font-mono placeholder:text-slate-400 dark:placeholder:text-white/35 outline-none focus:ring-1 focus:ring-primary/40"
+                                  />
+                                  <p className="text-[10px] theme-text-muted mt-1">{sw.zerotierNetworkIdDesc}</p>
+                                </div>
+                              )}
+                              <label className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:border-primary/40 transition-colors cursor-pointer">
+                                <input type="checkbox" checked={installTailscale} onChange={e => setInstallTailscale(e.target.checked)}
+                                  className="mt-0.5 w-4 h-4 rounded border-slate-300 dark:border-white/20 text-primary focus:ring-primary/30" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-[var(--color-text)] dark:text-white/80">🔒 {sw.installTailscale}</div>
+                                  <div className="text-[10px] theme-text-muted mt-0.5">{sw.tailscaleDesc}</div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+
+                  </div>
+                )}
+
+                {/* 已安装状态 */}
+                {scanResult.hermesAgentInstalled && (
+                  <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                    <div className="p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-xl">check_circle</span>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-green-800 dark:text-green-300">
+                            {sw.alreadyInstalled}
+                          </h4>
+                          <p className="text-xs text-green-600 dark:text-green-400/80 mt-1">
+                            {`hermesagent ${scanResult.hermesAgentVersion || ''}`}
+                            {scanResult.gatewayRunning
+                              ? ` · ${sw.gwRunning}`
+                              : ` · ${sw.gwNotRunning}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {((scanResult.hermesAgentStateDir || scanResult.hermesAgentConfigPath || scanResult.hermesAgentGatewayLog || scanResult.hermesAgentInstallLog || scanResult.hermesAgentDoctorLog)) && (
+                  <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-white/10">
+                    <h4 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80">{sw.pathsTitle || 'Hermes Agent Paths'}</h4>
+                    <div className="space-y-2">
+                      {[
+                        [sw.pathState || 'State', scanResult.hermesAgentStateDir],
+                        [sw.pathConfig || 'Config', scanResult.hermesAgentConfigPath],
+                        [sw.pathGatewayLog || 'Gateway log', scanResult.hermesAgentGatewayLog],
+                        [sw.pathInstallLog || 'Install log', scanResult.hermesAgentInstallLog],
+                        [sw.pathDoctorLog || 'Doctor log', scanResult.hermesAgentDoctorLog],
+                      ].filter(([, value]) => Boolean(value)).map(([label, value]) => (
+                        <div key={label} className="p-3 theme-field rounded-lg">
+                          <p className="text-[10px] theme-text-muted uppercase">{label}</p>
+                          <p className="text-xs font-mono break-all text-[var(--color-text)] dark:text-white/80 mt-1">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Docker Volume Mounts */}
+                {scanResult.isDocker && scanResult.dockerMounts && scanResult.dockerMounts.length > 0 && (
+                  <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-white/10">
+                    <h4 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-base">deployed_code</span>
+                      {sw.dockerMountsTitle || 'Docker Volume Mounts'}
+                    </h4>
+                    <p className="text-[11px] theme-text-muted">{sw.dockerMountsDesc || 'Volume mappings between host and container paths'}</p>
+                    <div className="space-y-2">
+                      {scanResult.dockerMounts.map((m, i) => (
+                        <div key={i} className="p-3 theme-field rounded-lg">
+                          <div className="flex items-center gap-2 text-[10px] theme-text-muted uppercase">
+                            <span>{sw.dockerMountHost || 'Host'}</span>
+                            <span className="material-symbols-outlined text-[10px]">arrow_forward</span>
+                            <span>{sw.dockerMountContainer || 'Container'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs font-mono break-all text-[var(--color-text)] dark:text-white/80 flex-1">{m.source}</p>
+                            <span className="material-symbols-outlined text-[12px] theme-text-muted shrink-0">arrow_forward</span>
+                            <p className="text-xs font-mono break-all text-[var(--color-text)] dark:text-white/80 flex-1">{m.destination}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 操作按钮 */}
+                <div className="flex gap-3 pt-4">
+                  {scanResult.hermesAgentInstalled ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (scanResult.hermesAgentConfigured) {
+                            if (onClose) onClose();
+                          } else {
+                            if (onClose) onClose();
+                            if (onOpenEditor) onOpenEditor();
+                          }
+                        }}
+                        className="flex-1 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30"
+                      >
+                        {scanResult.hermesAgentConfigured ? sw.enterSystem : sw.goConfigure}
+                      </button>
+                      <button
+                        disabled={isUpdating || isUninstalling || !scanResult.updateAvailable}
+                        onClick={async () => {
+                          if (!scanResult.updateAvailable) return;
+                          setError(null);
+                          try {
+                            await runHermesAgentUpdate({ mapStepMessage: resolveSetupEventMessage });
+                            await scanEnvironment();
+                          } catch (err: any) {
+                            setError(err?.message || sw.updateFailed);
+                          }
+                        }}
+                        className={`px-5 py-3 rounded-xl font-medium transition-colors border ${!scanResult.updateAvailable
+                            ? 'theme-field theme-text-muted border-transparent cursor-not-allowed'
+                            : 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30'
+                          }`}
+                      >
+                        <div className="flex flex-col items-center leading-none gap-1">
+                          <span className="flex items-center gap-1.5">
+                            {isUpdating && (
+                              <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                            )}
+                            {isUpdating ? sw.updating : (!scanResult.updateAvailable ? sw.upToDate : sw.updateAvailable)}
+                          </span>
+                          {scanResult.latestHermesAgentVersion && (
+                            <span className="text-[10px] opacity-70">
+                              {scanResult.hermesAgentVersion} → {scanResult.latestHermesAgentVersion}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                      <button
+                        disabled={isUninstalling || isUpdating}
+                        onClick={async () => {
+                          const cmdName = 'hermes';
+                          const confirmed = await confirm({
+                            title: sw.confirmUninstall,
+                            message: sw.confirmUninstallMsg.replace('{cmd}', cmdName),
+                            confirmText: sw.uninstall,
+                            cancelText: sw.cancel,
+                            danger: true,
+                          });
+                          if (!confirmed) return;
+                          // Ask whether to also remove all data (full uninstall)
+                          const fullUninstall = await confirm({
+                            title: sw.confirmUninstallFullTitle || 'Remove Data?',
+                            message: sw.confirmUninstallFullMsg || 'Do you also want to remove all configuration and data (~/.hermes)?\nThis includes API keys, sessions, and logs. This cannot be undone.',
+                            confirmText: sw.confirmUninstallFullBtn || 'Remove Everything',
+                            cancelText: sw.confirmUninstallKeepBtn || 'Keep My Data',
+                            danger: true,
+                          });
+                          setIsUninstalling(true);
+                          setError(null);
+                          try {
+                            await post('/api/v1/setup/uninstall', { full: fullUninstall });
+                            setScanResult(null);
+                            await scanEnvironment();
+                          } catch (err: any) {
+                            setError(err?.message || sw.uninstallFailed);
+                          } finally {
+                            setIsUninstalling(false);
+                          }
+                        }}
+                        className="px-5 py-3 bg-slate-200 hover:bg-red-100 dark:bg-white/10 dark:hover:bg-red-500/20 text-slate-600 hover:text-red-600 dark:text-white/60 dark:hover:text-red-400 rounded-xl font-medium transition-colors disabled:opacity-50"
+                      >
+                        {isUninstalling ? sw.uninstalling : sw.uninstall}
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex-1 space-y-3">
+                      {/* sudo 密码输入（非 root 且无免密 sudo 时显示） */}
+                      {scanResult && !scanResult.isRoot && !scanResult.hasSudo && scanResult.os !== 'windows' && (
+                        <div className="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-amber-500 text-base">key</span>
+                            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">{sw.sudoPasswordTitle}</span>
+                          </div>
+                          <p className="text-[11px] text-amber-600 dark:text-amber-400/70">{sw.sudoPasswordDesc}</p>
+                          <input
+                            type="password"
+                            value={sudoPassword}
+                            onChange={e => setSudoPassword(e.target.value)}
+                            placeholder={sw.sudoPasswordPlaceholder}
+                            className="w-full h-9 px-3 bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-500/30 rounded-lg text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/35 outline-none focus:ring-1 focus:ring-amber-400"
+                          />
+                        </div>
+                      )}
+                      <button
+                        onClick={startAutoInstall}
+                        className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30"
+                      >
+                        {sw.startInstall}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 升级日志面板 */}
+                {(isUpdating || updateLogs.length > 0) && (
+                  <div className="mt-4 theme-panel rounded-xl overflow-hidden">
+                    {/* 进度条 */}
+                    {isUpdating && (
+                      <div className="h-1 bg-slate-200 dark:bg-white/10">
+                        <div
+                          className="h-full bg-blue-500 transition-all duration-500"
+                          style={{ width: `${updateProgress}%` }}
+                        />
+                      </div>
+                    )}
+                    {/* 当前步骤 */}
+                    {updateStep && (
+                      <div className="px-3 py-2 border-b border-slate-200 dark:border-white/10 flex items-center gap-2">
+                        {isUpdating && (
+                          <span className="material-symbols-outlined text-[14px] text-blue-500 animate-spin">progress_activity</span>
+                        )}
+                        {!isUpdating && updateProgress >= 100 && (
+                          <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
+                        )}
+                        <span className="text-xs theme-text-secondary">{updateStep}</span>
+                        {isUpdating && (
+                          <span className="text-[10px] theme-text-muted ms-auto">{updateProgress}%</span>
+                        )}
+                      </div>
+                    )}
+                    {/* 日志输出 */}
+                    <div ref={updateLogRef} className="max-h-32 overflow-y-auto p-3 font-mono text-[11px] theme-text-secondary space-y-0.5">
+                      {updateLogs.length === 0 && isUpdating && (
+                        <div className="theme-text-muted">{sw.waitingOutput}</div>
+                      )}
+                      {updateLogs.map((line, i) => (
+                        <div key={i} className="break-all leading-relaxed">{line}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {/* 安装阶段 */}
+        {phase === 'install' && (
+          <div className="theme-panel rounded-2xl p-6 shadow-sm">
+            <h3 className="text-sm font-bold text-[var(--color-text)] dark:text-white/80 mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary animate-pulse">download</span>
+              {sw.installing}
+            </h3>
+
+            {/* 进度条 */}
+            <div className="mb-4">
+              <div className="flex justify-between text-xs theme-text-secondary mb-1">
+                <span>{currentStep}</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-2 theme-field rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-300 relative"
+                  style={{ width: `${progress}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_2s_infinite] translate-x-[-100%]"
+                    style={{
+                      backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
+                      animation: 'shimmer 1.5s infinite'
+                    }}>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 日志输出 */}
+            <div className="h-48 overflow-y-auto theme-field rounded-lg p-3 font-mono text-xs text-green-500 dark:text-green-400 custom-scrollbar neon-scrollbar">
+              {logs.map((log, i) => (
+                <div key={i} className="whitespace-pre-wrap">{log}</div>
+              ))}
+              {logs.length === 0 && (
+                <div className="theme-text-muted">{sw.waitingOutput}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 启动网关阶段 */}
+        {phase === 'starting' && (
+          <div className="theme-panel rounded-2xl p-6 shadow-sm">
+            <div className="text-center">
+              {!gwStartFailed ? (
+                <>
+                  <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="material-symbols-outlined text-3xl text-yellow-600 dark:text-yellow-400 animate-spin">progress_activity</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--color-text)] dark:text-white mb-2">
+                    {sw.gwStarting}
+                  </h3>
+                  <p className="text-sm theme-text-secondary mb-4">
+                    {sw.gwStartingDesc}
+                  </p>
+                  {/* 进度条 */}
+                  <div className="max-w-xs mx-auto mb-3">
+                    <div className="h-2 theme-field rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-yellow-500 transition-all duration-1000"
+                        style={{ width: `${Math.min((gwStartElapsed / 60) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs theme-text-muted">
+                    {gwStartElapsed}s / 60s
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="material-symbols-outlined text-3xl text-red-600 dark:text-red-400">error</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--color-text)] dark:text-white mb-2">
+                    {sw.gwStartFailed}
+                  </h3>
+                  <p className="text-sm theme-text-secondary mb-2">
+                    {gwStartError}
+                  </p>
+                  <p className="text-xs theme-text-muted mb-6">
+                    {sw.gwStartFailedHint}
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        setGwStartFailed(false);
+                        setGwStartError(null);
+                        setGwRetryCount(c => c + 1);
+                      }}
+                      className="px-5 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      {sw.gwRetry}
+                    </button>
+                    <button
+                      onClick={() => setPhase('complete')}
+                      className="px-5 py-2.5 theme-field text-[var(--color-text)] dark:text-white rounded-xl font-medium hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
+                    >
+                      {sw.gwSkip}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 完成阶段 */}
+        {phase === 'complete' && (
+          <div className="theme-panel rounded-2xl p-6 shadow-sm text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-3xl text-green-600 dark:text-green-400">check_circle</span>
+            </div>
+            <h3 className="text-xl font-bold text-[var(--color-text)] dark:text-white mb-2">
+              {sw.installComplete}
+            </h3>
+            <p className="text-sm theme-text-secondary mb-4">
+              {sw.installSuccess}
+            </p>
+
+            {/* 安装详单 */}
+            {installSummary.length > 0 && (
+              <div className="mb-6 text-start">
+                {(['deps', 'optional', 'config', 'gateway'] as const).map(cat => {
+                  const items = installSummary.filter(s => s.category === cat);
+                  if (items.length === 0) return null;
+                  const catLabel = { deps: sw.summaryDeps, optional: sw.summaryOptional, config: sw.summaryConfig, gateway: sw.summaryGateway }[cat];
+                  return (
+                    <div key={cat} className="mb-3">
+                      <div className="text-[11px] font-medium theme-text-muted uppercase tracking-wider mb-1.5 px-1">{catLabel}</div>
+                      <div className="theme-field rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                        {items.map((item, idx) => {
+                          const isZeroTier = item.label?.toLowerCase().includes('zerotier');
+                          const isTailscale = item.label?.toLowerCase().includes('tailscale');
+                          return (
+                            <div key={idx} className="flex items-center gap-2 px-3 py-2 text-xs">
+                              <span className="material-symbols-outlined text-sm" style={{ color: item.status === 'ok' ? '#22c55e' : item.status === 'warn' ? '#eab308' : item.status === 'fail' ? '#ef4444' : '#94a3b8' }}>
+                                {item.status === 'ok' ? 'check_circle' : item.status === 'warn' ? 'warning' : item.status === 'fail' ? 'cancel' : 'remove_circle_outline'}
+                              </span>
+                              <span className="font-medium text-[var(--color-text)] dark:text-white/80 min-w-[80px]">{item.label}</span>
+                              <span className="theme-text-secondary truncate flex-1">{item.detail}</span>
+                              {isZeroTier && item.status === 'ok' && (
+                                <a href="https://my.zerotier.com/" target="_blank" rel="noopener noreferrer"
+                                  className="flex items-center gap-1 px-2 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors shrink-0"
+                      title={sw.zerotierManageHint}>
+                                  <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                        <span className="text-[10px] font-bold whitespace-nowrap">{sw.zerotierManage}</span>
+                                </a>
+                              )}
+                              {isTailscale && item.status === 'ok' && (
+                                <a href="https://login.tailscale.com/admin" target="_blank" rel="noopener noreferrer"
+                                  className="flex items-center gap-1 px-2 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors shrink-0"
+                      title={sw.tailscaleManageHint}>
+                                  <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                        <span className="text-[10px] font-bold whitespace-nowrap">{sw.tailscaleManage}</span>
+                                </a>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <div className="flex gap-3">
+              {needsRestart ? (
+                <button
+                  onClick={() => onClose && onClose()}
+                  className="flex-1 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-yellow-500/30"
+                >
+                  {sw.restartAck}
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      if (onOpenEditor) onOpenEditor();
+                    }}
+                    className="flex-1 px-6 py-3 theme-field hover:bg-slate-300 dark:hover:bg-white/20 text-[var(--color-text)] dark:text-white rounded-xl font-medium transition-colors"
+                  >
+                    {sw.openEditor}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+};
+
+export default SetupWizard;

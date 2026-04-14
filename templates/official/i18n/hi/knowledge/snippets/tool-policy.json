@@ -1,0 +1,7 @@
+{
+  "name": "टूल अनुमति नीति",
+  "description": "टूल अनुमति कॉन्फ़िगरेशन स्निपेट: परिदृश्य के अनुसार AI टूल्स का दायरा और एक्सेस स्तर नियंत्रित करें",
+  "content": {
+    "snippet": "## टूल नीति उदाहरण\n\n### न्यूनतम अनुमतियां (केवल चैट)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### प्रोग्रामिंग सहायक\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### पूर्ण एक्सेस + कस्टम प्रतिबंध\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

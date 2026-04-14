@@ -1,0 +1,15 @@
+{
+  "name": "Schnellstart",
+  "description": "Installation, Konfiguration und erstes Gespräch mit dem HermesAgent-Gateway in 5 Minuten",
+  "content": {
+    "body": "## Voraussetzungen\n\n- Node.js 22+ (LTS empfohlen)\n- API-Schlüssel eines AI-Anbieters (OpenAI / Anthropic / Google usw.)\n\n## Schritte\n\n### 1. HermesAgent installieren\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. Konfiguration initialisieren\n\n```bash\nhermesagent init\n```\n\n### 3. Gateway starten\n\n```bash\nhermesagent gateway run\n```\n\n### 4. HermesDeckX verbinden\n\nHermesDeckX öffnen, Gateway-Adresse eingeben.\n\n### 5. Chat-Kanal verbinden (optional)\n\n1. « Einstellungszentrum → Kanäle »\n2. Kanaltyp auswählen\n3. Bot-Token eingeben\n4. Speichern",
+    "steps": [
+      "Node.js 22+ installieren",
+      "npm install -g hermesagent@latest",
+      "hermesagent init ausführen",
+      "API-Schlüssel eingeben",
+      "hermesagent gateway run",
+      "HermesDeckX verbinden"
+    ]
+  }
+}

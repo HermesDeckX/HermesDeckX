@@ -1,0 +1,1 @@
+const e={title:"스킬 마켓",subtitle:"에이전트 기능을 확장하세요",loading:"로딩 중...",active:"활성",searchPlaceholder:"스킬 검색...",noSkills:"스킬을 찾을 수 없습니다",ready:"준비됨",needsSetup:"설정 필요",configure:"설정",select:"선택...",cancel:"취소",saving:"저장 중...",configured:"스킬이 설정되었습니다",enabled:"스킬 활성화됨",disabled:"스킬 비활성화됨"},l={skillsMarket:e};export{l as default,e as skillsMarket};

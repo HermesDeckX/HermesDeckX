@@ -1,0 +1,8 @@
+{
+  "name": "البوابة لا تعمل",
+  "description": "حل مشاكل عدم بدء تشغيل بوابة HermesAgent أو عملها بشكل غير طبيعي",
+  "content": {
+    "question": "ماذا أفعل إذا لم تبدأ البوابة أو عملت بشكل غير طبيعي؟",
+    "answer": "## خطوات الحل\n\n### 1. التحقق من حالة البوابة\nمؤشر في أعلى لوحة تحكم HermesDeckX:\n- 🟢 تعمل — طبيعي\n- 🔴 متوقفة — تحتاج تشغيل\n- 🟡 جارٍ البدء — في الانتظار\n\n### 2. التحقق من استخدام المنفذ\nالبوابة تستخدم المنفذ 18789 افتراضياً.\n- **Windows**: `netstat -ano | findstr 18789`\n- **macOS/Linux**: `lsof -i :18789`\n\n### 3. التحقق من ملف الإعدادات\n- `~/.hermesdeckx/config.yaml` يجب أن يكون موجوداً وبتنسيق صحيح\n\n### 4. التحقق من إصدار Node.js\n- HermesAgent يتطلب Node.js 18+\n- تحقق بـ `node --version`\n- يُنصح بـ Node.js 22 LTS\n\n### 5. التحقق من السجلات\n- الموقع: `~/.hermesdeckx/logs/`\n\n### 6. إعادة التثبيت\n- `npm install -g hermesagent@latest`\n\n## حل سريع\n\nانقر «تشغيل البوابة» في HermesDeckX أو نفّذ `hermesagent gateway run`."
+  }
+}

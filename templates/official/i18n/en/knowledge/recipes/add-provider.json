@@ -1,0 +1,33 @@
+{
+  "name": "Add AI Provider",
+  "description": "Add OpenAI, Anthropic, Google or other AI providers and configure API keys in HermesDeckX",
+  "content": {
+    "body": "HermesAgent supports 20+ AI providers including OpenAI, Anthropic, Google, Mistral, Groq, Ollama and more. Each provider requires configuring API type, Base URL and API Key.\n\n**Supported API Types:**\n- `openai` — OpenAI and compatible providers (e.g., Groq, Together, OpenRouter)\n- `anthropic` — Anthropic Claude series\n- `google` — Google Gemini series\n- `mistral` — Mistral AI\n- `ollama` — Local Ollama inference\n- `azure` — Azure OpenAI Service\n\n**Security Note:** API Keys are encrypted and stored locally, never uploaded to any remote service.",
+    "steps": [
+      {
+        "title": "Open Model Configuration",
+        "description": "Go to Config Center → Models and click the \"Add Provider\" button at the top of the page."
+      },
+      {
+        "title": "Select Provider Type",
+        "description": "In the wizard popup, select a provider (e.g., OpenAI). The system will auto-fill default API type and Base URL. For third-party providers compatible with OpenAI format (e.g., Groq), select OpenAI type and modify the Base URL."
+      },
+      {
+        "title": "Enter API Key",
+        "description": "Paste your key in the API Key field. Click the \"Test Connection\" button to verify the key is valid. If the test fails, check if the key is correct and if the network can access the provider's API address."
+      },
+      {
+        "title": "Discover Available Models",
+        "description": "After successful connection, click \"Discover Models\" to automatically retrieve all models supported by the provider. You can also manually enter model names."
+      },
+      {
+        "title": "Set as Primary Model (Optional)",
+        "description": "In the Primary Model area, select a model from the provider you just added. It's recommended to set 1-2 fallback models that auto-switch when the primary model is unavailable."
+      },
+      {
+        "title": "Save and Verify",
+        "description": "Click \"Save\" and the gateway will auto-reload configuration. Open the Chat window and send a test message to confirm the model responds correctly."
+      }
+    ]
+  }
+}

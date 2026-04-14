@@ -1,0 +1,7 @@
+{
+  "name": "Poda de contexto",
+  "description": "Controlar a quantidade de contexto enviado à AI — reduzir prompts de sistema e histórico desnecessários para economizar tokens",
+  "content": {
+    "body": "## Por que podar o contexto?\n\nCada requisição AI envia o contexto completo:\n- Prompts do sistema (SOUL.md, USER.md, etc.)\n- Histórico de conversa\n- Definições de ferramentas\n- Conteúdo de memória\n\nMais contexto = maior custo e respostas potencialmente mais lentas.\n\n## Estratégias de poda\n\n### 1. Otimizar prompts do sistema\n- Manter SOUL.md conciso (menos de 500 palavras)\n- Remover explicações desnecessárias\n- Usar listas ao invés de parágrafos longos\n\n### 2. Controlar histórico\n- Ativar compactação\n- Configurar auto-reset\n- Usar `/compact` manualmente\n\n### 3. Limitar ferramentas\n- Usar perfil adequado ao cenário\n- Cada definição consome tokens\n\n### 4. Otimizar memória\n- Limpar arquivos antigos periodicamente\n\n## Estimativa de impacto\n\n| Otimização | Economia de tokens |\n|-----------|-------------------|\n| Poda de prompts | 10-20% |\n| Compactação | 30-60% |\n| Perfil minimal vs full | 15-25% |\n| Otimização de memória | 5-15% |\n\n## Campos de configuração\n\nCaminhos: `agents.defaults.compaction`, `tools.profile`, `session.autoReset`"
+  }
+}

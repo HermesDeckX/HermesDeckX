@@ -1,0 +1,7 @@
+{
+  "name": "Emoji Status Pesan",
+  "description": "Aktifkan reaksi emoji status agar pengguna melihat tahap pemrosesan AI secara real-time",
+  "content": {
+    "body": "## Apa itu Emoji Status?\n\nReaksi status adalah emoji yang ditambahkan HermesAgent secara otomatis ke pesan pengguna selama pemrosesan.\n\n## Emoji Status Default\n\n| Tahap | Emoji | Arti |\n|-------|-------|------|\n| thinking | 🤔 | AI sedang berpikir |\n| tool | 🔧 | AI menggunakan tool |\n| coding | 💻 | AI menulis kode |\n| web | 🌐 | AI mencari di web |\n| done | ✅ | Pemrosesan selesai |\n| error | ❌ | Error pemrosesan |\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Pesan» → «Emoji Status»:\n\n1. Aktifkan sakelar\n2. Kustomisasi emoji (opsional)\n3. Sesuaikan parameter waktu (opsional)\n\n## Parameter Waktu\n\n- **debounceMs** — Delay debounce (default 500ms)\n- **stallSoftMs** — Waktu «pemrosesan lambat» (default 30000ms)\n- **stallHardMs** — Waktu «pemrosesan macet» (default 120000ms)\n\n## Field Konfigurasi\n\nPath: `messages.statusReactions`"
+  }
+}

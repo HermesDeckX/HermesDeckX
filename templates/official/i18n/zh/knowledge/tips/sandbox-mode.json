@@ -1,0 +1,7 @@
+{
+  "name": "沙箱安全执行",
+  "description": "启用 Docker 沙箱隔离 AI 的命令执行和代码运行，防止意外操作损坏系统",
+  "content": {
+    "body": "## 为什么需要沙箱？\n\n当 AI 助手执行命令或运行代码时，默认在宿主机上直接运行。如果 AI 产生错误操作（如误删文件），可能造成不可逆的损害。沙箱通过 Docker 容器隔离执行环境，确保安全。\n\n## 沙箱模式\n\n| 模式 | 说明 | 适用场景 |\n|------|------|----------|\n| **off** | 不使用沙箱（默认） | 个人设备，信任环境 |\n| **non-main** | 仅非主代理使用沙箱 | 多代理场景，主代理需要直接操作 |\n| **all** | 所有代理都在沙箱中运行 | 生产环境，最高安全级别 |\n\n## 在 HermesDeckX 中配置\n\n1. 前往「配置中心 → 代理 → 沙箱」\n2. 在「沙箱模式」下拉列表中选择模式\n3. 选择工作区访问级别：\n   - **none** — 沙箱内无法访问工作区文件\n   - **ro** — 只读访问（推荐）\n   - **rw** — 读写访问\n\n## Docker 容器配置\n\n在「Docker 设置」中可以精细控制容器资源：\n- **image** — 使用的 Docker 镜像\n- **memory** — 容器内存限制（如 512m、1g）\n- **cpus** — CPU 核心数限制\n- **pidsLimit** — 进程数限制（防止 fork 炸弹）\n- **network** — 网络模式（bridge/none，禁止使用 host）\n- **capDrop** — 要移除的 Linux Capabilities\n\n## 前提条件\n\n- 需要安装 Docker 并确保 Docker 服务正在运行\n- HermesAgent 进程需要有权限访问 Docker API\n- Windows 用户需要 Docker Desktop 或 WSL2 中的 Docker\n\n## 配置字段\n\n对应配置路径：`agents.defaults.sandbox.mode`\n\n值为 `off` | `non-main` | `all`"
+  }
+}

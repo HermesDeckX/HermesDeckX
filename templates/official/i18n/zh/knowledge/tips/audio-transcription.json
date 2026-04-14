@@ -1,0 +1,7 @@
+{
+  "name": "语音转写",
+  "description": "启用语音消息自动转写功能，让 AI 助手能理解和回复语音消息",
+  "content": {
+    "body": "## 语音转写功能\n\n很多用户在 Telegram、WhatsApp、Discord 中习惯发送语音消息。启用语音转写后，HermesAgent 会自动将语音消息转为文字，让 AI 助手能理解并回复。\n\n## 在 HermesDeckX 中配置\n\n前往「配置中心 → 音频」→ 找到「语音转写」区域：\n\n1. 打开「启用语音转写」开关\n2. 选择转写提供商（默认使用 OpenAI Whisper）\n3. 保存即可\n\n## 工作原理\n\n1. 用户在消息频道中发送语音消息\n2. HermesAgent 自动下载音频文件\n3. 调用 Whisper API 将音频转为文字\n4. 将转写文本作为用户消息传递给 AI 模型\n5. AI 以文字方式回复\n\n## 注意事项\n\n- 需要 OpenAI API Key（Whisper 是 OpenAI 的服务）\n- 每次转写会产生少量 API 费用（约 $0.006/分钟）\n- 支持的音频格式：mp3、mp4、mpeg、mpga、m4a、wav、webm\n- 最大音频时长取决于提供商限制\n\n## 配置字段\n\n对应配置路径：`audio.transcription`"
+  }
+}

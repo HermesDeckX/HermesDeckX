@@ -1,0 +1,7 @@
+{
+  "name": "Execução de código em sandbox",
+  "description": "Ativar sandbox Docker para execução segura de código AI — isolar sistema de arquivos e acesso à rede",
+  "content": {
+    "body": "## O que é o modo sandbox?\n\nO modo sandbox executa código gerado pela AI em um contêiner Docker isolado, impedindo modificação direta de arquivos do host ou requisições de rede não autorizadas.\n\n## Por que usar sandbox?\n\nSem sandbox, a AI pode:\n- Modificar ou excluir arquivos do sistema\n- Executar comandos arbitrários\n- Acessar dados sensíveis\n\nCom sandbox:\n- Código roda em contêiner isolado\n- Acesso a arquivos controlável (none / ro / rw)\n- Acesso à rede restrito\n- Uso de recursos limitado\n\n## Configurar no HermesDeckX\n\n« Centro de configurações → Agente → Sandbox »:\n\n1. Ativar sandbox\n2. Selecionar tipo: `docker` (recomendado) ou `podman`\n3. Configurar imagem Docker\n4. Configurar modo de acesso ao workspace\n\n## Modos de acesso ao workspace\n\n| Modo | Descrição |\n|------|----------|\n| **none** | Sem acesso a arquivos do host |\n| **ro** | Somente leitura |\n| **rw** | Leitura e escrita |\n\n## Campos de configuração\n\nCaminho: `agents.defaults.sandbox`"
+  }
+}

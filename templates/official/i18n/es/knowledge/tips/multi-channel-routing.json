@@ -1,0 +1,7 @@
+{
+  "name": "Enrutamiento multi-canal",
+  "description": "Servir múltiples plataformas de chat con una AI, con reglas de comportamiento diferentes por canal",
+  "content": {
+    "body": "## ¿Qué es el enrutamiento multi-canal?\n\nEl enrutamiento multi-canal permite conectar el asistente AI simultáneamente a Telegram, Discord, WhatsApp, Signal y más, con **reglas de comportamiento independientes por canal**.\n\n## ¿Por qué es necesario?\n\n- **Gestión unificada** — Una AI sirve todas las plataformas, sin despliegue individual\n- **Comportamiento diferenciado** — Canal de trabajo formal, canal personal casual\n- **Control de acceso** — Diferentes listas de allowFrom y dmPolicy por canal\n\n## Configuración\n\n### 1. Agregar múltiples canales\nEn el área de canales del «Centro de configuración», agregue las plataformas deseadas e ingrese los Tokens correspondientes.\n\n### 2. Configurar reglas de enrutamiento\nCada canal puede configurarse independientemente:\n- **dmPolicy** — Controlar quién puede iniciar DM (`open` / `allowlist` / `closed`)\n- **allowFrom** — Lista blanca: solo usuarios o grupos específicos\n- **groupPolicy** — Estrategia de respuesta a mensajes de grupo\n\n### 3. Override SOUL por canal\nCada canal puede tener su propio SOUL.md para comportamiento diferente:\n- Canal de trabajo (Slack) → Profesional, conciso\n- Canal personal (Telegram) → Casual, divertido\n\n## Campos de configuración\n\nRutas correspondientes: `channels[].dmPolicy`, `channels[].allowFrom`, `channels[].groupPolicy`"
+  }
+}

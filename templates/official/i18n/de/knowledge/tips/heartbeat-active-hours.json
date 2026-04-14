@@ -1,0 +1,7 @@
+{
+  "name": "Heartbeat-Aktivzeitfenster",
+  "description": "Aktive Zeitfenster für den AI-Heartbeat konfigurieren — nur während der Arbeitszeit prüfen, Tokens nachts und am Wochenende sparen",
+  "content": {
+    "body": "## Warum Aktivzeitfenster konfigurieren?\n\nHeartbeat-Aufgaben verbrauchen bei jedem Auslösen Tokens. 24/7-Betrieb bedeutet:\n- Token-Verschwendung nachts und am Wochenende\n- Störende Benachrichtigungen nachts\n- 50-70% Kostenreduktion möglich\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Planung → Aktivzeitfenster »:\n\n### Parameter\n- **activeHoursStart** — Startzeit (z.B. \"08:00\")\n- **activeHoursEnd** — Endzeit (z.B. \"22:00\")\n- **timezone** — Zeitzone (z.B. \"Europe/Berlin\")\n\n## Kombination mit Heartbeat-Intervall\n\n| Zeitfenster | Intervall | Auslösungen/Tag | Kosten |\n|-------------|----------|-----------------|--------|\n| 8:00-22:00 | 30 Min | 28 | Mittel |\n| 8:00-22:00 | 60 Min | 14 | Niedrig |\n| 9:00-18:00 | 60 Min | 9 | Minimal |\n\n## Konfigurationsfelder\n\nPfade: `heartbeat.activeHoursStart`, `heartbeat.activeHoursEnd`, `heartbeat.timezone`"
+  }
+}

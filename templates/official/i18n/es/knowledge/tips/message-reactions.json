@@ -1,0 +1,7 @@
+{
+  "name": "Emojis de estado de mensaje",
+  "description": "Activar reacciones de emoji de estado para que los usuarios conozcan en tiempo real la etapa de procesamiento de la AI",
+  "content": {
+    "body": "## ¿Qué son los emojis de estado?\n\nLas reacciones de estado (Status Reactions) son emojis que HermesAgent agrega automáticamente a los mensajes del usuario durante el procesamiento. Diferentes emojis indican diferentes etapas.\n\n## Emojis de estado predeterminados\n\n| Etapa | Emoji | Significado |\n|-------|-------|-------------|\n| thinking | 🤔 | AI está pensando |\n| tool | 🔧 | AI está usando herramientas |\n| coding | 💻 | AI está escribiendo código |\n| web | 🌐 | AI está buscando en web |\n| done | ✅ | Procesamiento completado |\n| error | ❌ | Error de procesamiento |\n\n## Configurar en HermesDeckX\n\n«Centro de configuración → Mensajes» → Encontrar área «Emojis de estado»:\n\n1. Activar interruptor «Activar emojis de estado»\n2. Personalizar emoji de cada etapa (opcional)\n3. Ajustar parámetros de tiempo (opcional)\n\n## Parámetros de tiempo\n\n- **debounceMs** — Retardo anti-rebote (predeterminado 500ms)\n- **stallSoftMs** — Tiempo para mostrar emoji «procesando lento» (predeterminado 30000ms)\n- **stallHardMs** — Tiempo para mostrar emoji «procesamiento atascado» (predeterminado 120000ms)\n\n## Campos de configuración\n\nRuta correspondiente: `messages.statusReactions`"
+  }
+}

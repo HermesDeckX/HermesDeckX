@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HermesDeckX Template Schema",
+  "type": "object",
+  "required": ["id", "version", "type", "metadata", "content"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique template identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version"
+    },
+    "type": {
+      "enum": ["scenario", "multi-agent", "agent", "automation", "diagnostic", "recipe", "tip", "snippet", "faq"],
+      "description": "Template type"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "category"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "subcategory": { "type": "string" },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "icon": { "type": "string" },
+        "color": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "author": { "type": "string" },
+        "license": { "type": "string", "default": "MIT" },
+        "homepage": { "type": "string", "format": "uri" },
+        "newbie": { "type": "boolean" },
+        "relatedTemplates": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "IDs of related templates/knowledge items"
+        },
+        "updateFrequency": {
+          "enum": ["static", "occasional", "frequent"],
+          "description": "How often this content is updated"
+        },
+        "featured": {
+          "type": "boolean",
+          "description": "Pin this item to the top of listings"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last content update"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "channels": { "type": "array", "items": { "type": "string" } },
+        "minVersion": { "type": "string" },
+        "maxVersion": { "type": "string" }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Template content (default language: en)",
+      "properties": {
+        "soulSnippet": { "type": "string" },
+        "heartbeatSnippet": { "type": "string" },
+        "examples": { "type": "array", "items": { "type": "string" } },
+        "configs": { "type": "object" },
+        "automations": { "type": "array" },
+        "agents": { "type": "array" },
+        "workflow": { "type": "object" },
+        "body": { "type": "string", "description": "Markdown body for knowledge items (recipe/tip/faq)" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "code": { "type": "string" },
+              "file": { "type": "string", "description": "Target file path (e.g. SOUL.md)" },
+              "language": { "type": "string", "description": "Code language for syntax highlighting" }
+            }
+          },
+          "description": "Step-by-step instructions for recipes"
+        },
+        "snippet": { "type": "string", "description": "Copyable code/config snippet" },
+        "snippetLanguage": { "type": "string", "description": "Language hint for snippet syntax highlighting" },
+        "question": { "type": "string", "description": "FAQ question" },
+        "answer": { "type": "string", "description": "FAQ answer in markdown" },
+        "relatedDoctorChecks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Doctor check IDs that relate to this FAQ"
+        },
+        "prompts": {
+          "type": "object",
+          "description": "AI generation prompts for this template (en/zh only). Keys map to specific generation phases.",
+          "properties": {
+            "step1": {
+              "type": "object",
+              "description": "Prompt for wizard step1 (team structure generation). Keyed by language code (en, zh).",
+              "additionalProperties": { "type": "string" }
+            },
+            "agentFile": {
+              "type": "object",
+              "description": "Prompt template for per-agent file generation (all files combined). Keyed by language code (en, zh). Supports placeholders: {{agentName}}, {{agentRole}}, {{agentDesc}}, {{scenarioName}}.",
+              "additionalProperties": { "type": "string" }
+            },
+            "files": {
+              "type": "object",
+              "description": "Per-file prompts for AI writing individual agent workspace files. Keys: soul, agents, user, identity, heartbeat. Each value is an object keyed by language code (en, zh) with placeholder support: {{agentName}}, {{agentRole}}, {{agentDesc}}, {{scenarioName}}.",
+              "properties": {
+                "soul":      { "type": "object", "additionalProperties": { "type": "string" } },
+                "agents":    { "type": "object", "additionalProperties": { "type": "string" } },
+                "user":      { "type": "object", "additionalProperties": { "type": "string" } },
+                "identity":  { "type": "object", "additionalProperties": { "type": "string" } },
+                "heartbeat": { "type": "object", "additionalProperties": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

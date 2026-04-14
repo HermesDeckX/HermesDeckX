@@ -1,0 +1,8 @@
+{
+  "name": "Fungsi Memori Tidak Bekerja",
+  "description": "Mengatasi masalah asisten AI yang tidak bisa mengingat konten percakapan sebelumnya atau preferensi pengguna",
+  "content": {
+    "question": "Apa yang harus dilakukan jika asisten AI tidak mengingat percakapan sebelumnya?",
+    "answer": "## Pahami Mekanisme Memori\n\nSistem memori HermesAgent memiliki dua tingkat:\n1. **Memori sesi** — Konteks percakapan saat ini (manajemen otomatis)\n2. **Memori persisten** — Informasi tersimpan antar sesi (file MEMORY.md)\n\n## Langkah Penyelesaian\n\n### 1. Periksa status sesi\n- Jika baru-baru ini direset, riwayat telah dihapus\n- Periksa apakah auto-reset aktif\n- Periksa pengaturan kompresi\n\n### 2. Periksa pengaturan memori persisten\n- Apakah tool `memory` aktif?\n- Apakah MEMORY.md ada dan berisi konten?\n- Apakah `memoryFlush` aktif?\n\n### 3. Masalah umum\n\n**AI lupa preferensi**: Katakan «Ingat: saya suka X»\n\n**Percakapan terasa terputus**: Tingkatkan `compaction.threshold`\n\n## Field Konfigurasi\n\nPath: `agents.defaults.compaction`, `tools.memory`"
+  }
+}

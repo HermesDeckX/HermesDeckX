@@ -1,0 +1,7 @@
+{
+  "name": "Modell-Fallback-Kette",
+  "description": "Fallback-Modelle konfigurieren, um bei Nichtverfügbarkeit des Hauptmodells automatisch umzuschalten und kontinuierlichen Betrieb zu gewährleisten",
+  "content": {
+    "body": "## Warum Fallback-Modelle?\n\nAI-Anbieter können temporär nicht verfügbar sein (Rate-Limits, Ausfälle, unzureichendes Guthaben). Eine Fallback-Kette ermöglicht automatisches Umschalten.\n\n## In HermesDeckX konfigurieren\n\n1. « Einstellungszentrum → Modelle »\n2. « Fallback-Modelle » → « Fallback-Modell hinzufügen »\n3. Anbieter und Modell auswählen\n4. Mehrere Modelle in Prioritätsreihenfolge\n\n## Empfohlene Kombinationen\n\n| Hauptmodell | Fallback 1 | Fallback 2 |\n|-------------|-----------|------------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**Best Practices:**\n- **Verschiedene Anbieter** für Haupt und Fallback\n- Fallback-Modelle können günstiger sein\n- Mindestens 1 Fallback empfohlen, idealerweise 2+\n\n## Konfigurationsfelder\n\nPfad: `agents.defaults.model.fallbacks`\n\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

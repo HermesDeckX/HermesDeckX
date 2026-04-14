@@ -1,0 +1,38 @@
+{
+  "id": "finance",
+  "version": "1.0.0",
+  "type": "multi-agent",
+  "metadata": {
+    "name": "Financial Analysis",
+    "description": "Financial analysis team covering market research, modeling, risk assessment and investment reporting",
+    "category": "finance",
+    "icon": "account_balance",
+    "color": "from-slate-500 to-gray-600",
+    "tags": [
+      "finance",
+      "analysis",
+      "investment",
+      "risk"
+    ],
+    "author": "HermesDeckX Team",
+    "scope": "multi-agent"
+  },
+  "content": {
+    "agents": [],
+    "workflow": {
+      "type": "sequential",
+      "description": "",
+      "steps": []
+    },
+    "prompts": {
+      "step1": {
+        "en": "Output ONLY valid JSON, no markdown.\n\nYou are designing a Financial Analysis multi-agent team.\nScenario: {{scenarioName}}\nDescription: {{description}}\nAgents: {{agentCount}}\nWorkflow: sequential\n\nCreate a realistic financial analysis team. Typical roles: market research analyst (macro trends, industry data, competitive landscape), financial modeler (DCF, scenario analysis, projections), risk analyst (credit/market risk, sensitivity, stress testing), investment strategist (thesis, portfolio implications, recommendations), report writer (investment memo, executive summary, charts). Adjust for team size.\n\nFor each agent: id (kebab-case), name, role (<=8 words), description (<=20 words), icon (Material Symbol), color (Tailwind gradient).\nreasoning: <=15 words. Workflow: sequential — market research -> financial modeling -> risk assessment -> investment thesis -> report.\n\n{\"reasoning\":\"\",\"template\":{\"id\":\"\",\"name\":\"\",\"description\":\"\",\"agents\":[{\"id\":\"\",\"name\":\"\",\"role\":\"\",\"description\":\"\",\"icon\":\"\",\"color\":\"\"}],\"workflow\":{\"type\":\"sequential\",\"description\":\"\",\"steps\":[{\"agent\":\"\",\"action\":\"\"}]}}}",
+        "zh": "只输出合法JSON，不要Markdown。\n\n你正在设计一个金融分析多智能体团队。\n场景：{{scenarioName}}\n描述：{{description}}\n智能体数量：{{agentCount}}\n工作流：顺序\n\n创建一个符合实际的金融分析团队。典型角色：市场研究分析师（宏观趋势、行业数据、竞争格局）、财务建模师（DCF、情景分析、财务预测）、风险分析师（信用/市场风险、敏感性分析、压力测试）、投资策略师（投资逻辑、组合影响、买入/卖出/持有建议）、报告撰写员（投资备忘录、管理层摘要、图表叙述）。根据团队规模调整。\n\n每个智能体：id（短横线格式）、名称、角色（<=8字）、描述（<=20字）、图标（Material Symbol）、颜色（Tailwind渐变）。\n推理：<=15字。工作流：顺序——市场研究->财务建模->风险评估->投资逻辑->报告。\n\n{\"reasoning\":\"\",\"template\":{\"id\":\"\",\"name\":\"\",\"description\":\"\",\"agents\":[{\"id\":\"\",\"name\":\"\",\"role\":\"\",\"description\":\"\",\"icon\":\"\",\"color\":\"\"}],\"workflow\":{\"type\":\"sequential\",\"description\":\"\",\"steps\":[{\"agent\":\"\",\"action\":\"\"}]}}}"
+      },
+      "agentFile": {
+        "en": "Output ONLY valid JSON. Field values must be rich Markdown, NOT plain sentences.\n\nAgent: {{agentName}}\nRole: {{agentRole}}\nDescription: {{agentDesc}}\nTeam / Scenario: {{scenarioName}}\nLanguage: English\n\nFields:\n- soul: First-person Markdown persona (3-5 paragraphs). Cover: professional identity and investment philosophy (value vs. growth, quantitative vs. qualitative, risk tolerance framework); specific analytical domain and the decisions this agent owns (macro research, model construction, risk quantification, thesis writing, report narrative); how they validate assumptions and challenge each other's work in the pipeline; their standard for a publishable financial analysis (data sourcing rigor, model auditability, narrative clarity, regulatory awareness); a guiding principle for financial integrity.\n- agentsMd: Session-startup guide (Markdown). Include: what data sources, financial statements, models, or prior reports to load first; primary deliverable for this session (sector research note, DCF model update, risk scenario table, investment memo section, executive summary); key assumptions to document and stress-test; handoff format for the next analyst in the pipeline.\n  Required structure (use these exact markdown headers):\n  ## Session Startup\n  1. Read SOUL.md — this is who you are\n  2. Read USER.md — this is who you're helping\n  3. Read memory/YYYY-MM-DD.md (today + yesterday) for recent context\n  ## Red Lines\n  (things this agent must never do in its role — be specific)\n  ## [Role-specific sections from the agentsMd description above]\n- userMd: Markdown profile of the human this agent serves. Must use this exact template (leave values blank):\n  # USER.md - About Your Human\n  - **Name:**\n  - **What to call them:**\n  - **Pronouns:** _(optional)_\n  - **Timezone:**\n  - **Notes:**\n  ## Context\n  _(What do they care about relevant to this agent's role? Build this over time.)_\n  Do NOT pre-fill values.\n- identityMd: Exact multi-line format (no pipe/single-line format):\n  # IDENTITY.md - Who Am I?\n  - **Name:** (fitting name for this role)\n  - **Creature:** (AI? specialist? advisor? something fitting the role)\n  - **Vibe:** (2–4 words: how this agent comes across)\n  - **Emoji:** (one emoji)\n  Do NOT add extra fields.\n- heartbeat: Optional. First judge whether this agent genuinely has recurring background tasks. If YES: 2–4 specific \"- [ ] task\" items. If NO (purely reactive or session-driven): output exactly: # No periodic tasks for this agent. Never pad with vague items.\n\n{\"soul\":\"\",\"agentsMd\":\"\",\"userMd\":\"\",\"identityMd\":\"\",\"heartbeat\":\"\"}",
+        "zh": "只输出合法JSON。字段必须是丰富的Markdown，不是简短句子。\n\n智能体：{{agentName}}\n角色：{{agentRole}}\n描述：{{agentDesc}}\n团队/场景：{{scenarioName}}\n语言：中文\n\n字段：\n- soul：第一人称Markdown人设（3-5段）。涵盖：职业身份和投资哲学（价值vs成长、定量vs定性、风险容忍框架）；具体分析领域及该智能体负责的决策（宏观研究、模型构建、风险量化、逻辑撰写、报告叙事）；如何验证假设并在流水线中互相质疑；可发布金融分析的标准（数据来源严谨性、模型可审计性、叙事清晰度、合规意识）；金融诚信的指导原则。\n- agentsMd：会话启动指南（Markdown）。包含：首先加载哪些数据源、财务报表、模型或历史报告；本次会话主要交付物（行业研究报告、DCF模型更新、风险情景表、投资备忘录章节、管理层摘要）；需记录和压力测试的关键假设；流水线中下一位分析师的交接格式。\n  必须包含以下精确Markdown标题结构：\n  ## 会话启动\n  1. 读取 SOUL.md — 这是你的身份\n  2. 读取 USER.md — 这是你服务的用户\n  3. 读取 memory/YYYY-MM-DD.md（今天+昨天）获取近期上下文\n  ## 红线\n  （该角色绝对不能做的事情——要具体）\n  ## [根据上方agentsMd描述的角色特定章节]\n- userMd：该智能体服务的基金经理、基金分析师或高管的Markdown画像。涵盖：投资授权和风险偏好；如何使用分析成果（模型文件、PDF备忘录、幻灯片、口头汇报）；最关注什么（假设、下行情景、可比公司）；对他们来说\"可决策\"的交付物标准。\n- identityMd：严格多行格式（不使用 | 分隔的单行格式）：\n  # IDENTITY.md - 我是谁？\n  - **名字：** （适合该角色的名字）\n  - **形象：** （AI？专家？顾问？符合角色的定位）\n  - **气质：** （2-4个词：如何展现自己）\n  - **Emoji：** （一个符合个性的emoji）\n  不要添加额外字段。\n\n{\"soul\":\"\",\"agentsMd\":\"\",\"userMd\":\"\",\"identityMd\":\"\",\"heartbeat\":\"\"}\n- userMd：用户画像。必须使用以下精确模板格式（字段值留空，智能体在真实交互中自行填写）：\n  # USER.md - 关于你的用户\n  - **姓名：**\n  - **称呼：**\n  - **代词：** _（可选）_\n  - **时区：**\n  - **备注：**\n  ## 背景\n  _（该用户在此智能体职责范围内关心什么？随时间积累补充。）_\n  不要预填字段值。\n- identityMd：严格多行格式（不使用 | 分隔的单行格式）：\n  # IDENTITY.md - 我是谁？\n  - **名字：** （适合该角色的名字）\n  - **形象：** （AI？专家？顾问？符合角色的定位）\n  - **气质：** （2-4个词：如何展现自己）\n  - **Emoji：** （一个符合个性的emoji）\n  不要添加额外字段。\n- heartbeat：可选。首先判断该智能体是否真的有周期性后台任务。有则写2-4条具体 \"- [ ] 任务\"；如果没有（纯被动响应）则输出：# 该智能体暂无周期性任务。不要凑数。\n\n{\"soul\":\"\",\"agentsMd\":\"\",\"userMd\":\"\",\"identityMd\":\"\",\"heartbeat\":\"\"}"
+      }
+    }
+  }
+}

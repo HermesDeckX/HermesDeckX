@@ -1,0 +1,7 @@
+{
+  "name": "Mode de réflexion",
+  "description": "Activer la réflexion profonde pour améliorer les capacités de raisonnement complexe — améliorer la qualité pour les mathématiques, la programmation et l'analyse",
+  "content": {
+    "body": "## Qu'est-ce que le mode de réflexion ?\n\nLe mode de réflexion (pensée étendue, chaîne de pensée) permet à l'AI de « réfléchir étape par étape » avant de répondre.\n\n## Quand l'utiliser ?\n\n| Type de tâche | Recommandé ? |\n|---------------|-------------|\n| Maths/logique complexe | ✅ Oui |\n| Programmation multi-étapes | ✅ Oui |\n| Analyse de données | ✅ Oui |\n| Q&R simple | ❌ Non (gaspillage de tokens) |\n| Conversation quotidienne | ❌ Non |\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Agent » :\n\n### Mode par défaut\n- **thinkingDefault** — Mode par défaut\n  - `off` — Pas de réflexion (défaut)\n  - `minimal` — Réflexion brève\n  - `full` — Réflexion étendue complète\n\n### Basculement par conversation\n- `/think` — Activer pour le prochain message\n- `/think off` — Désactiver\n\n## Impact sur les coûts\n\n- **Réflexion brève :** ~20-50% tokens supplémentaires\n- **Réflexion complète :** ~50-200% tokens supplémentaires\n\n## Champs de configuration\n\nChemin : `agents.defaults.thinkingDefault`"
+  }
+}

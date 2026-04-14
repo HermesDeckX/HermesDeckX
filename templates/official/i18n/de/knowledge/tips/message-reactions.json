@@ -1,0 +1,7 @@
+{
+  "name": "Nachrichten-Status-Emojis",
+  "description": "Status-Emoji-Reaktionen aktivieren, damit Benutzer den AI-Verarbeitungsschritt in Echtzeit sehen können",
+  "content": {
+    "body": "## Was sind Status-Emojis?\n\nStatus-Reaktionen sind Emojis, die HermesAgent während der Verarbeitung automatisch an Benutzernachrichten heftet.\n\n## Standard-Status-Emojis\n\n| Schritt | Emoji | Bedeutung |\n|---------|-------|----------|\n| thinking | 🤔 | AI denkt nach |\n| tool | 🔧 | AI nutzt Werkzeug |\n| coding | 💻 | AI schreibt Code |\n| web | 🌐 | AI sucht im Web |\n| done | ✅ | Verarbeitung abgeschlossen |\n| error | ❌ | Verarbeitungsfehler |\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Nachrichten » → « Status-Emojis »:\n\n1. Schalter aktivieren\n2. Emojis anpassen (optional)\n3. Zeitparameter anpassen (optional)\n\n## Zeitparameter\n\n- **debounceMs** — Entprellungsverzögerung (Standard 500ms)\n- **stallSoftMs** — Zeit für « langsame Verarbeitung » (Standard 30000ms)\n- **stallHardMs** — Zeit für « Verarbeitung hängt » (Standard 120000ms)\n\n## Konfigurationsfelder\n\nPfad: `messages.statusReactions`"
+  }
+}

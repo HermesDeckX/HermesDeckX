@@ -1,0 +1,16 @@
+const o="配置 Webhook 集成",e="设置 Webhook 接收外部事件通知（GitHub、邮件、自定义服务），让 AI 助手自动响应",t={body:`HermesAgent 的 Webhook 系统可以接收来自外部服务的 HTTP 请求，并将事件转化为 AI 对话。典型场景：
+- GitHub Push/PR 事件通知到聊天频道
+- 邮件到达时自动分析并汇报
+- 监控告警触发 AI 分析和建议
+
+**配置字段说明：**
+- \`hooks.enabled\` — 是否启用 Webhook 系统
+- \`hooks.path\` — Webhook 接收路径（默认 /hooks）
+- \`hooks.token\` — 验证令牌，防止未授权请求
+- \`hooks.mappings[]\` — 路由规则，将不同 Webhook 路由到不同代理/频道`,steps:[{title:"启用 Webhook 系统",description:"前往「配置中心 → Hooks」→ 打开「启用 Hooks」开关。系统默认监听 /hooks 路径。"},{title:"设置验证令牌",description:"在 Token 字段中设置一个安全令牌（建议使用长随机字符串）。外部服务发送请求时需要在 Header 或 URL 参数中携带此令牌。"},{title:"配置路由映射",description:`点击「添加映射」创建路由规则：
+- match.path — 匹配路径（如 /github）
+- match.source — 匹配来源标识
+- action — 选择 wake（唤醒心跳）或 agent（触发代理）
+- messageTemplate — 消息模板，使用 {{body}} 引用请求内容
+- channel/to — 指定投递的频道和联系人`},{title:"在外部服务中配置",description:"在 GitHub/GitLab 等服务的 Webhook 设置中，填入你的网关地址 + hooks 路径（如 https://your-gateway:18789/hooks/github），将 Token 填入 Secret 字段。"},{title:"测试 Webhook",description:`在 GitHub 的 Webhook 设置中点击「Recent Deliveries」→「Redeliver」发送测试请求。或使用 curl 命令测试：
+curl -X POST http://localhost:18789/hooks/test -H 'Authorization: Bearer YOUR_TOKEN' -d '{"message": "test"}'。`}]},n={name:o,description:e,content:t};export{t as content,n as default,e as description,o as name};

@@ -1,0 +1,13 @@
+{
+  "name": "Respaldo y restauración",
+  "description": "Respaldar la configuración, memoria e historial de conversaciones de HermesAgent, con soporte para migración a nuevos dispositivos",
+  "content": {
+    "body": "## Qué respaldar\n\n| Elemento | Ruta | Importancia |\n|----------|------|-------------|\n| Archivo de configuración | `~/.hermesdeckx/config.yaml` | Esencial |\n| Configuración de agentes | `~/.hermesdeckx/agents/` | Esencial |\n| Archivos de memoria | `~/.hermesdeckx/memory/` | Importante |\n| Historial de sesiones | `~/.hermesdeckx/sessions/` | Opcional |\n| Credenciales | `~/.hermesdeckx/credentials/` | Importante |\n\n## Métodos de respaldo\n\n### Método 1: Respaldo manual\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### Método 2: Usando CLI\n```bash\nhermesagent config export > mi-respaldo.yaml\n```\n\n### Método 3: HermesDeckX UI\nHaga clic en «Exportar configuración» en la parte inferior del «Centro de configuración».\n\n## Restaurar\n\n1. Instalar HermesAgent: `npm install -g hermesagent@latest`\n2. Copiar archivos de respaldo a `~/.hermesdeckx/`\n3. Iniciar gateway: `hermesagent gateway run`\n\n## Campos de configuración\n\nRuta relacionada: `~/.hermesdeckx/`",
+    "steps": [
+      "Confirmar alcance del respaldo (configuración, memoria, historial)",
+      "Ejecutar respaldo con cp, CLI o UI",
+      "Guardar archivos de respaldo en lugar seguro",
+      "Para restaurar, copiar archivos a ~/.hermesdeckx/ y reiniciar gateway"
+    ]
+  }
+}

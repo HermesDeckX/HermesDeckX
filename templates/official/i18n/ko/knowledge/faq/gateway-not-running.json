@@ -1,0 +1,8 @@
+{
+  "name": "게이트웨이 미실행",
+  "description": "HermesAgent 게이트웨이가 시작되지 않거나 비정상 동작하는 문제 해결",
+  "content": {
+    "question": "게이트웨이가 시작되지 않거나 비정상 동작하는 경우 어떻게 하나요?",
+    "answer": "## 문제 해결 단계\n\n### 1. 게이트웨이 상태 확인\nHermesDeckX 대시보드 상단에서 게이트웨이 상태 표시등을 확인합니다:\n- 🟢 실행 중 — 정상\n- 🔴 중지됨 — 시작 필요\n- 🟡 시작 중 — 준비 대기\n\n### 2. 포트 사용 확인\n게이트웨이는 기본적으로 포트 18789를 사용합니다. 포트가 사용 중인 경우:\n- **Windows**: `netstat -ano | findstr 18789`\n- **macOS/Linux**: `lsof -i :18789`\n- 사용 중인 프로세스를 종료하거나 설정에서 게이트웨이 포트를 변경하세요\n\n### 3. 설정 파일 확인\n- `~/.hermesdeckx/config.yaml`이 존재하고 올바른 형식인지 확인\n- 일반적인 오류: YAML 들여쓰기 오류, 유효하지 않은 JSON 값\n- 백업 후 설정을 삭제하고 게이트웨이가 기본 설정을 생성하도록 시도\n\n### 4. Node.js 버전 확인\n- HermesAgent은 Node.js 18+ 이 필요합니다\n- `node --version`으로 버전 확인\n- Node.js 22 LTS 사용 권장\n\n### 5. 로그 확인\n- 로그 위치: `~/.hermesdeckx/logs/`\n- 최근 오류 메시지 확인\n- 로그 레벨을 `debug`로 설정하여 더 자세한 정보 획득\n\n### 6. 재설치\n위 단계로 해결되지 않는 경우:\n- `npm install -g hermesagent@latest`\n- 게이트웨이 재시작\n\n## 빠른 수정\n\nHermesDeckX에서 「게이트웨이 시작」 버튼을 클릭하거나 터미널에서 `hermesagent gateway run`을 실행합니다."
+  }
+}

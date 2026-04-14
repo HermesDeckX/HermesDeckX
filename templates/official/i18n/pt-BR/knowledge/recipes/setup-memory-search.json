@@ -1,0 +1,14 @@
+{
+  "name": "Configurar busca na memória",
+  "description": "Ativar busca semântica na memória para que a AI possa pesquisar conversas passadas e conhecimento armazenado",
+  "content": {
+    "body": "## O que é busca na memória?\n\nA busca na memória permite que a AI encontre informações relevantes em arquivos de memória históricos.\n\n## Configurar no HermesDeckX\n\n« Centro de configurações → Ferramentas »:\n\n### 1. Ativar ferramenta de memória\n- Ferramenta « Memória » deve estar ativada\n\n### 2. Ativar busca na memória\n- Ativar interruptor « Busca na memória »\n- Selecionar provedor de busca\n\n### 3. Configurar indexação\n- **autoIndex** — Indexar novos arquivos automaticamente\n- **indexOnBoot** — Reindexar ao iniciar\n- **maxResults** — Máximo de resultados por busca\n\n## Campos de configuração\n\nCaminhos: `tools.memory`, `tools.memorySearch`",
+    "steps": [
+      "Centro de configurações → Ferramentas",
+      "Ativar ferramenta de memória",
+      "Ativar busca na memória",
+      "Configurar indexação",
+      "Salvar"
+    ]
+  }
+}

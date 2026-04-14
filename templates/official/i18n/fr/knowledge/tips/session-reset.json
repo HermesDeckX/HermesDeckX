@@ -1,0 +1,7 @@
+{
+  "name": "Réinitialisation automatique de session",
+  "description": "Configurer la réinitialisation automatique quotidienne/hebdomadaire pour prévenir la croissance infinie du contexte",
+  "content": {
+    "body": "## Pourquoi réinitialiser automatiquement ?\n\nSans réinitialisation :\n- Le contexte croît infiniment\n- Les anciennes informations diluent la qualité\n- Les coûts augmentent continuellement\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Session → Réinitialisation automatique » :\n\n### Paramètres\n- **enabled** — Activer\n- **every** — Intervalle\n  - `24h` — Quotidien (recommandé)\n  - `12h` — Deux fois par jour\n  - `7d` — Hebdomadaire\n- **at** — Heure (ex : \"04:00\")\n- **timezone** — Fuseau horaire\n\n### Conserver les informations importantes\n- **keepMemory** — Conserver MEMORY.md après réinitialisation\n- Activer `memoryFlush` pour sauvegarder automatiquement\n\n## Configuration recommandée\n\n**Usage quotidien :**\n```json\n\"autoReset\": { \"enabled\": true, \"every\": \"24h\", \"at\": \"04:00\", \"keepMemory\": true }\n```\n\n**Projet de programmation :**\n```json\n\"autoReset\": { \"enabled\": true, \"every\": \"7d\", \"keepMemory\": true }\n```\n\n## Champs de configuration\n\nChemin : `session.autoReset`"
+  }
+}

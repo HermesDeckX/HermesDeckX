@@ -1,0 +1,7 @@
+{
+  "name": "Reset automático de sessão",
+  "description": "Configurar reset automático diário/semanal para prevenir crescimento infinito do contexto e aumento de custos",
+  "content": {
+    "body": "## Por que resetar automaticamente?\n\nSem reset:\n- Contexto cresce infinitamente\n- Informações antigas diluem a qualidade\n- Custos aumentam continuamente\n\n## Configurar no HermesDeckX\n\n« Centro de configurações → Sessão → Reset automático »:\n\n### Parâmetros\n- **enabled** — Ativar\n- **every** — Intervalo\n  - `24h` — Diário (recomendado)\n  - `12h` — Duas vezes ao dia\n  - `7d` — Semanal\n- **at** — Horário (ex: \"04:00\")\n- **timezone** — Fuso horário\n\n### Manter informações importantes\n- **keepMemory** — Manter MEMORY.md após reset\n- Ativar `memoryFlush` na compactação\n\n## Campos de configuração\n\nCaminho: `session.autoReset`"
+  }
+}

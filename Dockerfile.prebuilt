@@ -1,0 +1,96 @@
+# ── Stage 1: Install HermesAgent (Python — git clone + uv pip install) ──
+FROM ubuntu:22.04 AS hermesagent-builder
+ENV DEBIAN_FRONTEND=noninteractive
+ARG HERMES_AGENT_BRANCH=main
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates curl git python3 python3-dev build-essential libffi-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+RUN set -eux; \
+    echo "==> Cloning HermesAgent (branch: ${HERMES_AGENT_BRANCH})"; \
+    git clone --depth 1 --branch "${HERMES_AGENT_BRANCH}" \
+        https://github.com/NousResearch/hermes-agent.git /opt/hermesagent
+RUN set -eux; \
+    cd /opt/hermesagent; \
+    echo "==> Creating Python 3.11 venv"; \
+    uv venv venv --python 3.11; \
+    echo "==> Installing hermes-agent[all]"; \
+    VIRTUAL_ENV=/opt/hermesagent/venv uv pip install -e ".[all]"
+RUN set -eux; \
+    echo "==> Verifying hermes entry point"; \
+    /opt/hermesagent/venv/bin/hermes --version; \
+    echo "==> Cleaning caches"; \
+    rm -rf /root/.cache /tmp/* /opt/hermesagent/.git
+
+# ── Stage 2: Runtime (no build tools) ──
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN set -eux; \
+    retry_apt() { \
+      for attempt in 1 2 3; do \
+        if "$@"; then \
+          return 0; \
+        fi; \
+        echo "==> apt command failed on attempt ${attempt}: $*"; \
+        dpkg --configure -a || true; \
+        apt-get -f install -y || true; \
+        sleep 5; \
+      done; \
+      return 1; \
+    }; \
+    retry_apt apt-get update; \
+    retry_apt apt-get install -y --no-install-recommends \
+        ca-certificates curl git python3 make tzdata tini wget jq ripgrep procps lsof; \
+    retry_apt apt-get install -y --no-install-recommends ffmpeg golang; \
+    rm -rf /var/lib/apt/lists/*; \
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+
+# OCI image metadata (build-time args injected by CI)
+ARG BUILD_VERSION=0.0.0
+ARG BUILD_REVISION=unknown
+ARG BUILD_DATE=unknown
+ARG HERMES_AGENT_VERSION=latest
+ARG HERMES_AGENT_COMPAT=unknown
+LABEL org.opencontainers.image.title="HermesDeckX" \
+      org.opencontainers.image.description="Desktop management dashboard for HermesAgent AI gateway" \
+      org.opencontainers.image.version="${BUILD_VERSION}" \
+      org.opencontainers.image.revision="${BUILD_REVISION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.url="https://github.com/HermesDeckX/HermesDeckX" \
+      org.opencontainers.image.documentation="https://github.com/HermesDeckX/HermesDeckX#readme" \
+      org.opencontainers.image.source="https://github.com/HermesDeckX/HermesDeckX" \
+      org.opencontainers.image.licenses="MIT" \
+      ai.hermesdeckx.hermesagent.version="${HERMES_AGENT_VERSION}" \
+      ai.hermesdeckx.hermesagent.compat="${HERMES_AGENT_COMPAT}"
+
+WORKDIR /app
+ARG TARGETARCH
+COPY --from=hermesagent-builder /opt/hermesagent /opt/hermesagent
+COPY hermesdeckx-linux-${TARGETARCH} ./hermesdeckx
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN mkdir -p /data/hermesdeckx /data/hermesagent/state /data/hermesagent/logs /data/hermesagent/bootstrap /data/runtime/hermesdeckx /data/runtime/hermesagent && \
+    chmod +x ./hermesdeckx /app/docker-entrypoint.sh && \
+    ln -sf /app/hermesdeckx /usr/local/bin/hermesdeckx && \
+    ln -sf /opt/hermesagent/venv/bin/hermes /usr/local/bin/hermes
+VOLUME ["/data"]
+EXPOSE 19788 18789
+ENV OHD_CONFIG=/data/hermesdeckx/HermesDeckX.json \
+    OHD_DB_SQLITE_PATH=/data/hermesdeckx/HermesDeckX.db \
+    OHD_LOG_FILE=/data/hermesdeckx/HermesDeckX.log \
+    HERMES_HOME=/data/hermesagent/home \
+    HERMES_AGENT_STATE_DIR=/data/hermesagent/state \
+    OHD_GATEWAY_LOG=/data/hermesagent/logs/gateway.log \
+    OHD_SETUP_INSTALL_LOG=/data/hermesagent/logs/install.log \
+    OHD_SETUP_DOCTOR_LOG=/data/hermesagent/logs/doctor.log \
+    VIRTUAL_ENV=/opt/hermesagent/venv \
+    PATH=/opt/hermesagent/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    OHD_RUNTIME_DIR=/data/runtime \
+    OHD_BIND=0.0.0.0 \
+    OHD_PORT=19788 \
+    TZ=UTC
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -sf http://localhost:${OHD_PORT:-19788}/api/v1/health || exit 1
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+CMD ["/app/docker-entrypoint.sh"]

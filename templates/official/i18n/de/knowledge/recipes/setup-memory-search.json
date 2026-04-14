@@ -1,0 +1,14 @@
+{
+  "name": "Gedächtnissuche einrichten",
+  "description": "Semantische Gedächtnissuche aktivieren, damit die AI vergangene Gespräche und gespeichertes Wissen durchsuchen kann",
+  "content": {
+    "body": "## Was ist die Gedächtnissuche?\n\nDie Gedächtnissuche ermöglicht der AI, relevante Informationen in historischen Gedächtnisdateien zu finden.\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Werkzeuge »:\n\n### 1. Gedächtnis-Tool aktivieren\n- « Gedächtnis »-Tool muss aktiviert sein\n- AI nutzt es zum Lesen/Schreiben in `memory/`\n\n### 2. Gedächtnissuche aktivieren\n- « Gedächtnissuche » einschalten\n- Suchanbieter auswählen\n\n### 3. Indexierung konfigurieren\n- **autoIndex** — Neue Dateien automatisch indexieren\n- **indexOnBoot** — Beim Start neu indexieren\n- **maxResults** — Max. Ergebnisse pro Suche\n\n## Konfigurationsfelder\n\nPfade: `tools.memory`, `tools.memorySearch`",
+    "steps": [
+      "Einstellungszentrum → Werkzeuge",
+      "Gedächtnis-Tool aktivieren",
+      "Gedächtnissuche aktivieren",
+      "Indexierungsoptionen konfigurieren",
+      "Speichern"
+    ]
+  }
+}

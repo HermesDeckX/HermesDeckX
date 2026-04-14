@@ -1,0 +1,7 @@
+{
+  "name": "模型备用链",
+  "description": "配置备用模型（fallbacks），当主模型不可用时自动切换，确保 AI 助手永不掉线",
+  "content": {
+    "body": "## 为什么需要备用模型？\n\nAI 提供商可能因为限流（rate limit）、服务中断或账户余额不足而暂时不可用。配置备用链可以让 HermesAgent 在主模型失败时自动尝试下一个模型，保证 AI 助手始终在线。\n\n## 在 HermesDeckX 中配置\n\n1. 前往「配置中心 → 模型」\n2. 在「备用模型」区域，点击「添加备用模型」\n3. 从下拉列表中选择已配置的提供商和模型\n4. 可以添加多个备用模型，按优先级排列\n\n## 推荐搭配策略\n\n| 主模型 | 备用 1 | 备用 2 |\n|--------|--------|--------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**最佳实践：**\n- 主模型和备用模型使用**不同提供商**，避免同一家服务中断时全部失效\n- 备用模型可以选择更便宜的型号（如 gpt-4o-mini），在降级时节省成本\n- 至少配置 1 个备用模型，推荐配置 2 个\n\n## 配置字段\n\n对应配置路径：`agents.defaults.model.fallbacks`\n\n值为模型名称数组，如：\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

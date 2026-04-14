@@ -1,0 +1,13 @@
+{
+  "name": "Sauvegarde et restauration",
+  "description": "Sauvegarder la configuration, mémoire et historique de conversations d'HermesAgent, avec support de migration vers de nouveaux appareils",
+  "content": {
+    "body": "## Que sauvegarder\n\n| Élément | Chemin | Importance |\n|---------|--------|------------|\n| Fichier de configuration | `~/.hermesdeckx/config.yaml` | Essentiel |\n| Configuration des agents | `~/.hermesdeckx/agents/` | Essentiel |\n| Fichiers mémoire | `~/.hermesdeckx/memory/` | Important |\n| Historique de sessions | `~/.hermesdeckx/sessions/` | Optionnel |\n| Identifiants | `~/.hermesdeckx/credentials/` | Important |\n\n## Méthodes de sauvegarde\n\n### Méthode 1 : Sauvegarde manuelle\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### Méthode 2 : Via CLI\n```bash\nhermesagent config export > ma-sauvegarde.yaml\n```\n\n### Méthode 3 : Interface HermesDeckX\nCliquez sur « Exporter la configuration » en bas du « Centre de configuration ».\n\n## Restaurer\n\n1. Installer HermesAgent : `npm install -g hermesagent@latest`\n2. Copier les fichiers dans `~/.hermesdeckx/`\n3. Démarrer la passerelle : `hermesagent gateway run`\n\n## Champs de configuration\n\nChemin : `~/.hermesdeckx/`",
+    "steps": [
+      "Confirmer le périmètre de sauvegarde",
+      "Exécuter la sauvegarde",
+      "Stocker les fichiers en lieu sûr",
+      "Pour restaurer, copier dans ~/.hermesdeckx/ et redémarrer"
+    ]
+  }
+}

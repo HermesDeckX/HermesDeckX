@@ -1,0 +1,7 @@
+{
+  "name": "Politique de permissions d'outils",
+  "description": "Snippet de configuration des permissions d'outils : contrôler la portée et le niveau d'accès des outils disponibles pour l'AI selon le scénario",
+  "content": {
+    "snippet": "## Exemples de politique d'outils\n\n### Permissions minimales (chat uniquement)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### Assistant de programmation\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### Accès complet + restrictions personnalisées\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

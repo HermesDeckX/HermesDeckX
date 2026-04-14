@@ -1,0 +1,15 @@
+{
+  "name": "Configurar tarefas agendadas",
+  "description": "Usar tarefas heartbeat para que a AI execute verificações, envie resumos e realize manutenção automaticamente",
+  "content": {
+    "body": "## O que são tarefas Heartbeat?\n\nHeartbeat é o sistema de tarefas agendadas do HermesAgent:\n- Enviar resumo de notícias toda manhã\n- Verificar e-mails a cada hora\n- Gerar relatórios semanais\n\n## Configurar no HermesDeckX\n\n« Centro de configurações → Agendamento »:\n\n- **enabled** — Ativar heartbeat\n- **intervalMinutes** — Intervalo de execução\n- **model** — Modelo econômico recomendado\n\n### Horário ativo\n- **activeHoursStart/End** — ex: 8:00-22:00\n- **timezone** — Fuso horário\n\n## Campos de configuração\n\nCaminho: `heartbeat`",
+    "steps": [
+      "Centro de configurações → Agendamento",
+      "Ativar heartbeat",
+      "Configurar intervalo e horário",
+      "Selecionar modelo",
+      "Criar instruções",
+      "Salvar"
+    ]
+  }
+}

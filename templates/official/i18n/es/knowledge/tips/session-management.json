@@ -1,0 +1,7 @@
+{
+  "name": "Gestión de sesiones",
+  "description": "Configurar alcance de sesión, reinicio automático y estrategia de mantenimiento para mejorar la continuidad de conversación",
+  "content": {
+    "body": "## ¿Qué es una sesión?\n\nUna sesión es una serie continua de contexto de conversación. HermesAgent mantiene el historial dentro de la sesión para que la AI pueda referenciar mensajes anteriores.\n\n## Alcance de sesión\n\n«Centro de configuración → Sesión → Alcance»:\n\n| Alcance | Descripción |\n|---------|-------------|\n| **channel** | Una sesión por canal (todos los usuarios del canal comparten contexto) |\n| **user** | Una sesión por usuario (cada usuario tiene contexto independiente) |\n| **thread** | Una sesión por hilo/tema (granularidad más fina) |\n\n## Reinicio automático\n\n«Centro de configuración → Sesión → Reinicio automático»:\n- **enabled** — Activar reinicio automático\n- **every** — Intervalo de reinicio (ej: \"24h\" diario, \"7d\" semanal)\n- **keepMemory** — Mantener contenido de MEMORY.md después del reinicio\n\n## Comandos de sesión\n\nLos usuarios pueden controlar la sesión con comandos de chat:\n- `/reset` — Reiniciar sesión actual manualmente\n- `/compact` — Activar compresión de contexto\n- `/session` — Ver información de sesión actual\n\n## Campos de configuración\n\nRutas correspondientes: `session.scope`, `session.autoReset`, `session.maintenance`"
+  }
+}

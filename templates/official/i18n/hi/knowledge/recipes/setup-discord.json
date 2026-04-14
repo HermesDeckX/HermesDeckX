@@ -1,0 +1,15 @@
+{
+  "name": "Discord बॉट सेटअप",
+  "description": "Discord बॉट बनाएं और HermesAgent गेटवे से कनेक्ट करें",
+  "content": {
+    "body": "## Discord बॉट बनाएं\n\n### 1. Discord एप्लिकेशन बनाएं\n1. discord.com/developers/applications पर जाएं\n2. «New Application» क्लिक करें\n3. «Bot» पेज → «Add Bot»\n\n### 2. टोकन प्राप्त करें\n1. «Reset Token» क्लिक करें\n2. टोकन कॉपी करें\n3. «Message Content Intent» सक्रिय करें (महत्वपूर्ण!)\n\n### 3. बॉट को सर्वर पर आमंत्रित करें\n1. «OAuth2 → URL Generator»\n2. `bot` अनुमति चुनें\n3. URL कॉपी करें और खोलें\n\n### 4. HermesDeckX में कॉन्फ़िगर करें\n1. «सेटिंग सेंटर → चैनल»\n2. «चैनल जोड़ें» → Discord\n3. टोकन पेस्ट करें\n4. सेव करें",
+    "steps": [
+      "Discord एप्लिकेशन बनाएं",
+      "बॉट बनाएं और टोकन कॉपी करें",
+      "Message Content Intent सक्रिय करें",
+      "आमंत्रण लिंक जनरेट करें",
+      "HermesDeckX में Discord चैनल जोड़ें",
+      "टोकन पेस्ट करें और सेव करें"
+    ]
+  }
+}

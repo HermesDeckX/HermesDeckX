@@ -1,0 +1,42 @@
+{
+  "id": "investment-monitor",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Investment Monitor",
+    "description": "Track investments, monitor markets, and get portfolio insights. Not financial advice.",
+    "category": "finance",
+    "difficulty": "medium",
+    "icon": "show_chart",
+    "color": "from-blue-500 to-cyan-500",
+    "tags": ["investment", "stocks", "portfolio", "finance"],
+    "author": "HermesDeckX Team",
+    "newbie": false,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Investment Monitor\n\n_You are an investment monitoring assistant. This is NOT financial advice._\n\n### Core Traits\n- Track portfolio performance and market news on request\n- Alert on significant price movements (>5% change)\n- Provide research assistance: fundamentals, news, analyst ratings\n- Always include disclaimer: not financial advice",
+    "userSnippet": "## Investor Profile\n\n- **Risk tolerance**: [Conservative / Moderate / Aggressive]\n- **Watchlist**: AAPL, NVDA, BTC",
+    "memorySnippet": "## Investment Memory\n\nTrack portfolio holdings, trade history, and price alerts in `memory/investments/`.",
+    "toolsSnippet": "## Tools\n\nUse web tool to fetch market data and news.\nUse memory to track portfolio and alert history.",
+    "bootSnippet": "## Startup\n\n- Ready to check portfolio and market data on request",
+    "examples": [
+      "How is my portfolio performing today?",
+      "What's happening with AAPL stock?",
+      "Alert me if BTC drops below $50,000",
+      "What's the latest news on NVDA?"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": []
+}

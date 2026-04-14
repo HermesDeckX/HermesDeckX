@@ -1,0 +1,193 @@
+// Unified HTTP request wrapper with JWT token (via Cookie) and error code translation.
+
+import { translateApiError } from './errorCodes';
+
+const TOKEN_STORAGE_KEY = 'claw_ws_token';
+let wsTokenCache: string | null = null;
+
+export function getToken(): string | null {
+  if (wsTokenCache) return wsTokenCache;
+  try {
+    wsTokenCache = window.sessionStorage.getItem(TOKEN_STORAGE_KEY);
+    return wsTokenCache;
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token: string): void {
+  wsTokenCache = token || null;
+  try {
+    if (token) window.sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+    else window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch {
+    // ignore storage failures
+  }
+}
+
+export function clearToken(): void {
+  wsTokenCache = null;
+  try {
+    window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch {
+    // ignore storage failures
+  }
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error_code?: string;
+  timestamp: string;
+  request_id: string;
+}
+
+interface GetCacheEntry<T = any> {
+  expiresAt: number;
+  value?: T;
+  inflight?: Promise<T>;
+}
+
+const getCache = new Map<string, GetCacheEntry<any>>();
+
+export class ApiError extends Error {
+  code: string;
+  status: number;
+  constructor(code: string, message: string, status: number) {
+    super(message);
+    this.code = code;
+    this.status = status;
+  }
+}
+
+async function request<T = any>(
+  url: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  };
+
+  // Credentials 'include' ensures cookies are sent with the request
+  const res = await fetch(url, { ...options, headers, credentials: 'include' });
+
+  // 401 → clear stale token and reload to force login screen
+  // Exclude endpoints where 401 means "wrong password", not "session expired"
+  if (res.status === 401 && !url.includes('/unlock-preview')) {
+    if (!url.includes('/auth/login') && !url.includes('/auth/needs-setup') && !url.includes('/auth/me')) {
+      // Clear stale session token to break any potential reload loop
+      clearToken();
+      // Debounce: only reload if we haven't reloaded in the last 3 seconds
+      const lastReload = parseInt(sessionStorage.getItem('_last401Reload') || '0', 10);
+      if (Date.now() - lastReload > 3000) {
+        sessionStorage.setItem('_last401Reload', String(Date.now()));
+        window.location.reload();
+      }
+    }
+    throw new ApiError('AUTH_UNAUTHORIZED', translateApiError('AUTH_UNAUTHORIZED', 'session expired'), 401);
+  }
+
+  // Guard: detect HTML responses (SPA fallback for unregistered routes, version mismatch, etc.)
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await res.text();
+    if (text.trimStart().startsWith('<')) {
+      throw new ApiError(
+        'API_NOT_AVAILABLE',
+        translateApiError('API_NOT_AVAILABLE', `API endpoint not available: ${url} (received HTML instead of JSON — the backend may need to be updated)`),
+        res.status,
+      );
+    }
+    // Try to parse as JSON anyway (some endpoints may omit content-type header)
+    try {
+      const parsed = JSON.parse(text);
+      const apiRes = parsed as ApiResponse<T>;
+      if (!apiRes.success) {
+        const code = apiRes.error_code || 'UNKNOWN';
+        const msg = translateApiError(code, apiRes.message || 'Request failed');
+        throw new ApiError(code, msg, res.status);
+      }
+      return apiRes.data as T;
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError('INVALID_RESPONSE', translateApiError('INVALID_RESPONSE', `Invalid response from ${url}`), res.status);
+    }
+  }
+
+  const json: ApiResponse<T> = await res.json();
+
+  if (!json.success) {
+    const code = json.error_code || 'UNKNOWN';
+    const msg = translateApiError(code, json.message || 'Request failed');
+    throw new ApiError(code, msg, res.status);
+  }
+
+  return json.data as T;
+}
+
+export function get<T = any>(url: string): Promise<T> {
+  return request<T>(url, { method: 'GET' });
+}
+
+export function getCached<T = any>(url: string, ttlMs = 5000, force = false): Promise<T> {
+  const now = Date.now();
+  const cached = getCache.get(url) as GetCacheEntry<T> | undefined;
+
+  if (!force && cached && cached.value !== undefined && cached.expiresAt > now) {
+    return Promise.resolve(cached.value);
+  }
+
+  if (cached?.inflight) {
+    return cached.inflight;
+  }
+
+  const inflight = get<T>(url)
+    .then((value) => {
+      getCache.set(url, {
+        value,
+        expiresAt: Date.now() + Math.max(0, ttlMs),
+      });
+      return value;
+    })
+    .catch((err) => {
+      // Keep previous cached value on failures, if any.
+      if (cached?.value !== undefined) {
+        getCache.set(url, {
+          value: cached.value,
+          expiresAt: cached.expiresAt,
+        });
+      } else {
+        getCache.delete(url);
+      }
+      throw err;
+    });
+
+  getCache.set(url, {
+    value: cached?.value,
+    expiresAt: cached?.expiresAt || 0,
+    inflight,
+  });
+
+  return inflight;
+}
+
+export function post<T = any>(url: string, body?: any, opts?: { signal?: AbortSignal }): Promise<T> {
+  return request<T>(url, {
+    method: 'POST',
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    signal: opts?.signal,
+  });
+}
+
+export function put<T = any>(url: string, body?: any): Promise<T> {
+  return request<T>(url, {
+    method: 'PUT',
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+}
+
+export function del<T = any>(url: string): Promise<T> {
+  return request<T>(url, { method: 'DELETE' });
+}

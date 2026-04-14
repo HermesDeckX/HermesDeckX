@@ -1,0 +1,7 @@
+{
+  "name": "보안 강화",
+  "description": "포괄적 보안 설정 — 접근 제어, 도구 제한, 네트워크 정책, 암호화",
+  "content": {
+    "body": "## 보안 설정 체크리스트\n\n### 1. 인증 활성화\n「설정 센터 → 게이트웨이 → 인증」으로 이동:\n- 인증 모드 선택: `token` (권장) 또는 `password`\n- Token 모드: 랜덤 토큰을 생성하고 모든 요청에 Authorization 헤더 포함\n- **localhost 외부 접근 시 반드시 활성화**\n\n### 2. TLS 암호화 설정\n- localhost 외부 접근 시 TLS 활성화\n- 자동 생성 인증서 또는 사용자 정의 인증서 사용\n\n### 3. 채널 접근 제한\n각 채널에 설정:\n- **allowFrom** — 특정 사용자 ID만 Bot 사용 가능\n- **dmPolicy** — `allowFrom`으로 설정하여 DM 접근 제한\n- **groupPolicy** — 그룹 메시지 응답 동작 제어\n\n### 4. 도구 권한 제한\n- 적절한 도구 프로필 선택 (`full` / `coding` / `messaging` / `minimal`)\n- deny 리스트로 위험한 도구 차단\n- exec allowlist로 실행 가능한 명령 제한\n\n### 5. 샌드박스 활성화\n- Docker 샌드박스로 코드 실행 활성화\n- 워크스페이스 접근을 `ro` (읽기 전용)로 설정\n- 컨테이너 리소스 제한\n\n## 권장 보안 레벨\n\n| 레벨 | 적용 시나리오 | 설정 |\n|------|------------|------|\n| **기본** | 개인 사용, 로컬만 | 기본 설정 |\n| **표준** | LAN / Tailscale | 인증 + allowFrom |\n| **높음** | 공용 네트워크 | 인증 + TLS + allowFrom + 샌드박스 + 도구 제한 |\n\n## 설정 필드\n\n관련 경로: `gateway.auth`, `gateway.tls`, `channels[].allowFrom`, `tools.profile`, `agents.defaults.sandbox`"
+  }
+}

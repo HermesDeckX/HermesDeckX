@@ -1,0 +1,8 @@
+{
+  "name": "Saluran Terputus",
+  "description": "Mengatasi masalah saluran pesan (Telegram, Discord, WhatsApp, dll.) yang terputus atau tidak bisa mengirim/menerima pesan",
+  "content": {
+    "question": "Apa yang harus dilakukan jika saluran pesan terputus atau tidak bisa mengirim/menerima pesan?",
+    "answer": "## Langkah Penyelesaian\n\n### 1. Periksa status saluran di dasbor\nBuka dasbor HermesDeckX dan periksa indikator:\n- 🟢 Terhubung — Normal\n- 🔴 Terputus — Perlu perbaikan\n- 🟡 Menghubungkan — Menunggu atau mencoba ulang\n\n### 2. Periksa validitas token\nBuka «Pusat Pengaturan → Saluran»:\n- **Telegram** — Token mungkin telah direset oleh BotFather\n- **Discord** — Token mungkin telah direset di Developer Portal\n- **WhatsApp** — Sesi QR code mungkin kedaluwarsa, pindai ulang\n\n### 3. Periksa koneksi jaringan\n- Telegram dan Discord memerlukan akses ke server API\n- WhatsApp menggunakan WebSocket, memerlukan jaringan stabil\n- Di lingkungan proxy, verifikasi pengaturan\n\n### 4. Periksa pengaturan saluran\n- Pastikan `enabled` tidak diatur ke false\n- Pastikan aturan `allowFrom` tidak memblokir secara keliru\n\n### 5. Hubungkan kembali\n- Klik «Hubungkan Ulang» di dasbor\n- Atau simpan pengaturan untuk memicu koneksi ulang\n- Upaya terakhir: restart gateway\n\n## Perbaikan Cepat\n\nJalankan diagnostik di «Pusat Kesehatan» → Periksa channel.connected."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Mode Berpikir",
+  "description": "Aktifkan pemikiran mendalam untuk meningkatkan kemampuan penalaran kompleks — tingkatkan kualitas dalam matematika, pemrograman, dan analisis",
+  "content": {
+    "body": "## Apa itu Mode Berpikir?\n\nMode berpikir (pemikiran diperluas, rantai pemikiran) memungkinkan AI «berpikir langkah demi langkah» sebelum menjawab.\n\n## Kapan Menggunakan?\n\n| Jenis Tugas | Direkomendasikan? |\n|-------------|-------------------|\n| Matematika/logika kompleks | ✅ Ya |\n| Pemrograman multi-langkah | ✅ Ya |\n| Analisis data | ✅ Ya |\n| Q&A sederhana | ❌ Tidak (pemborosan token) |\n| Percakapan harian | ❌ Tidak |\n\n## Konfigurasi di HermesDeckX\n\n### Mode Default\n- **thinkingDefault**\n  - `off` — Tanpa pemikiran (default)\n  - `minimal` — Pemikiran singkat\n  - `full` — Pemikiran diperluas penuh\n\n### Beralih Per Percakapan\n- `/think` — Aktifkan untuk pesan berikutnya\n- `/think off` — Nonaktifkan\n\n## Dampak Biaya\n\n- **Pemikiran singkat:** ~20-50% token tambahan\n- **Pemikiran penuh:** ~50-200% token tambahan\n\n## Field Konfigurasi\n\nPath: `agents.defaults.thinkingDefault`"
+  }
+}

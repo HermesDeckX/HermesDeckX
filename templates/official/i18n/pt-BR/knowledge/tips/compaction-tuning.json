@@ -1,0 +1,7 @@
+{
+  "name": "Ajuste de compactação",
+  "description": "Ajustar finamente os parâmetros de compactação de conversa — equilibrar retenção de contexto e custo de tokens",
+  "content": {
+    "body": "## O que é compactação de conversa?\n\nQuando o histórico fica muito longo, a compactação condensa automaticamente em um resumo, mantendo informações importantes enquanto reduz o consumo de tokens.\n\n## Configurar no HermesDeckX\n\n« Centro de configurações → Agente → Compactação »:\n\n### Parâmetros principais\n\n- **threshold** — Limiar de tokens para acionar compactação (padrão 50000)\n  - Muito pequeno: compactação frequente, possível perda de contexto\n  - Muito grande: alto consumo, respostas mais lentas\n  - Recomendado: 30000-80000\n\n- **maxOutputTokens** — Comprimento máximo do resumo\n  - Recomendado: 20-30% do threshold\n\n### Flush de memória\n\n- **memoryFlush** — Salvar informações importantes em MEMORY.md automaticamente\n  - Fortemente recomendado\n\n### Estratégia de compactação\n\n- `summarize` — Gerar resumo (padrão, mais eficaz)\n- `truncate` — Cortar mensagens antigas (mais rápido, mas perde informação)\n\n## Configuração recomendada\n\n**Conversa diária**: threshold=50000, memoryFlush=true\n**Projeto de programação**: threshold=80000, memoryFlush=true\n**Sensível a custos**: threshold=30000, memoryFlush=true\n\n## Campos de configuração\n\nCaminho: `agents.defaults.compaction`"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Penyesuaian Kompresi",
+  "description": "Sesuaikan parameter kompresi percakapan — seimbangkan retensi konteks dan biaya token",
+  "content": {
+    "body": "## Apa itu Kompresi Percakapan?\n\nSaat riwayat menjadi terlalu panjang, kompresi secara otomatis mengondensi riwayat menjadi ringkasan, mempertahankan informasi penting sambil mengurangi konsumsi token.\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Agen → Kompresi»:\n\n### Parameter Utama\n\n- **threshold** — Ambang token untuk memicu kompresi (default 50000)\n  - Terlalu kecil: kompresi sering, risiko kehilangan konteks\n  - Terlalu besar: konsumsi tinggi, respons lebih lambat\n  - Rekomendasi: 30000-80000\n\n- **maxOutputTokens** — Panjang maksimum ringkasan\n  - Rekomendasi: 20-30% dari threshold\n\n### Memory Flush\n\n- **memoryFlush** — Simpan info penting ke MEMORY.md secara otomatis\n  - Sangat direkomendasikan\n\n### Strategi Kompresi\n\n- `summarize` — Buat ringkasan (default, paling efektif)\n- `truncate` — Potong pesan lama (lebih cepat tapi kehilangan info)\n\n## Pengaturan Rekomendasi\n\n**Percakapan harian**: threshold=50000, memoryFlush=true\n**Proyek programming**: threshold=80000, memoryFlush=true\n**Hemat biaya**: threshold=30000, memoryFlush=true\n\n## Field Konfigurasi\n\nPath: `agents.defaults.compaction`"
+  }
+}

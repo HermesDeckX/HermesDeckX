@@ -1,0 +1,7 @@
+{
+  "name": "Audiotranskription",
+  "description": "Audiotranskription aktivieren, damit der AI-Assistent Sprachnachrichten verstehen kann. Unterstützt Whisper, Groq, Gemini",
+  "content": {
+    "body": "## Warum Audiotranskription aktivieren?\n\nViele Chat-Plattformen unterstützen Sprachnachrichten. Mit aktivierter Transkription kann der AI-Assistent:\n- Sprachnachrichten automatisch in Text umwandeln\n- Sprach-Inhalte verstehen und darauf antworten\n- Mehrsprachige Spracherkennung unterstützen\n\n## Unterstützte Anbieter\n\n| Anbieter | Merkmale | Kosten |\n|----------|---------|--------|\n| **OpenAI Whisper** | Hohe Genauigkeit, mehrsprachig | Pro Dauer |\n| **Groq** | Ultra-schnell | Pro Dauer |\n| **Gemini** | Nativ multimodal | Pro Token |\n\n## In HermesDeckX konfigurieren\n\n1. « Einstellungszentrum → Werkzeuge »\n2. Bereich « Audiotranskription » finden\n3. Schalter aktivieren\n4. Anbieter auswählen\n5. API-Schlüssel prüfen\n\n## Konfigurationsfelder\n\nPfad: `tools.audio.transcription`"
+  }
+}

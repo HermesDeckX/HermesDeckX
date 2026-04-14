@@ -1,0 +1,7 @@
+{
+  "name": "成本最佳化",
+  "description": "全方位降低 AI 使用成本——模型選擇、壓縮、心跳和工具策略",
+  "content": {
+    "body": "## 成本最佳化清單\n\n### 1. 選擇合適的模型\n- 日常對話：GPT-4o-mini / Claude Haiku / Gemini Flash（低成本）\n- 複雜任務：GPT-4o / Claude Sonnet（按需使用）\n- 避免預設使用最貴的模型\n\n### 2. 啟用壓縮\n- 前往「設定中心 → 代理 → 壓縮」\n- 設定合適的 threshold（建議 30000-50000）\n- 啟用 memoryFlush 確保資訊不遺失\n\n### 3. 心跳最佳化\n- 心跳模型使用最便宜的模型\n- 增大間隔（如 30-60 分鐘）\n- 設定活動時段，非工作時間停止心跳\n\n### 4. 子代理策略\n- 子代理使用便宜模型（如 GPT-4o-mini）\n- 限制子代理深度和數量\n\n### 5. 工具控制\n- 使用 `minimal` 或 `messaging` 設定檔減少工具定義 Token\n- 關閉不需要的工具\n\n### 6. 工作階段管理\n- 啟用每日自動重設\n- 定期執行 /compact 壓縮歷史\n\n## 設定欄位\n\n相關路徑：`agents.defaults.model`、`agents.defaults.compaction`、`heartbeat`、`tools.profile`"
+  }
+}

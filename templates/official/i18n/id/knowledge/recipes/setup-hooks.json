@@ -1,0 +1,14 @@
+{
+  "name": "Setup Webhooks",
+  "description": "Gunakan Webhooks untuk mengirim event eksternal (GitHub, alert, dll.) ke AI untuk diproses",
+  "content": {
+    "body": "## Apa itu Hooks?\n\nHooks memungkinkan sistem eksternal mengirim event ke HermesAgent. AI dapat memprosesnya secara otomatis.\n\n## Skenario Umum\n\n| Skenario | Sumber | Pemrosesan AI |\n|----------|--------|---------------|\n| Code review | GitHub Webhook | AI review PR |\n| Alert server | Monitoring | AI analisis dan notifikasi |\n| Submit form | Form web | AI proses dan respons |\n\n## Konfigurasi di HermesDeckX\n\n1. «Pusat Pengaturan → Hooks»\n2. «Tambah hook»\n3. URL Webhook unik dibuat\n4. Konfigurasi pemetaan\n5. Masukkan URL di sistem eksternal",
+    "steps": [
+      "Pusat Pengaturan → Hooks",
+      "Buat hook baru",
+      "Set template pemetaan",
+      "Salin URL Webhook",
+      "Konfigurasi di sistem eksternal"
+    ]
+  }
+}

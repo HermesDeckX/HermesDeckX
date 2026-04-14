@@ -1,0 +1,7 @@
+{
+  "name": "Otomasi Browser",
+  "description": "Aktifkan otomasi browser agar AI mengoperasikan halaman web — mengisi form, mengekstrak informasi, mengotomasi proses",
+  "content": {
+    "body": "## Apa itu Otomasi Browser?\n\nOtomasi memungkinkan asisten AI mengoperasikan browser seperti manusia:\n- Membuka dan menavigasi halaman web\n- Mengisi form dan mengklik tombol\n- Mengekstrak informasi dari halaman\n- Mengambil screenshot\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Tools → Browser»:\n\n### Pengaturan Dasar\n- **enabled** — Aktifkan tool browser\n- **headless** — Mode headless\n- **defaultTimeout** — Batas waktu\n\n### Pengaturan Keamanan\n- **allowedDomains** — Daftar domain yang diizinkan\n- **blockedDomains** — Domain yang diblokir\n- **maxPages** — Maksimum halaman terbuka\n\n## Field Konfigurasi\n\nPath: `tools.browser`"
+  }
+}

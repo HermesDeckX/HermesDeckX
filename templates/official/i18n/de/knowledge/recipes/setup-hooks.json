@@ -1,0 +1,14 @@
+{
+  "name": "Webhooks einrichten",
+  "description": "Webhooks verwenden, um externe Ereignisse (GitHub, Monitoring-Alerts usw.) zur AI-Verarbeitung zu senden",
+  "content": {
+    "body": "## Was sind Hooks?\n\nHooks ermöglichen externen Systemen, Ereignisse an HermesAgent zu senden. Die AI kann sie automatisch verarbeiten.\n\n## Häufige Szenarien\n\n| Szenario | Quelle | AI-Verarbeitung |\n|----------|--------|----------------|\n| Code-Review | GitHub Webhook | AI reviewt PR und kommentiert |\n| Server-Alerts | Monitoring | AI analysiert und benachrichtigt |\n| Formulareinreichung | Web-Formular | AI verarbeitet und antwortet |\n\n## In HermesDeckX konfigurieren\n\n1. « Einstellungszentrum → Hooks »\n2. « Hook hinzufügen »\n3. System generiert eindeutige Webhook-URL\n4. Event-Mapping konfigurieren\n5. URL im externen System eintragen\n\n## Konfigurationsfelder\n\nPfad: `hooks`",
+    "steps": [
+      "Einstellungszentrum → Hooks",
+      "Neuen Hook erstellen",
+      "Mapping-Template definieren",
+      "Webhook-URL kopieren",
+      "URL im externen System eintragen"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Automatisation du navigateur",
+  "description": "Activer l'automatisation du navigateur pour que l'AI manipule les pages web — remplir des formulaires, extraire des informations, automatiser des processus",
+  "content": {
+    "body": "## Qu'est-ce que l'automatisation du navigateur ?\n\nL'automatisation permet à l'assistant AI de manipuler le navigateur comme un humain :\n- Ouvrir et parcourir des pages web\n- Remplir des formulaires et cliquer sur des boutons\n- Extraire des informations\n- Prendre des captures d'écran\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Outils → Navigateur » :\n\n### Configuration de base\n- **enabled** — Activer l'outil navigateur\n- **headless** — Mode sans tête\n- **defaultTimeout** — Délai d'expiration\n\n### Configuration de sécurité\n- **allowedDomains** — Liste de domaines autorisés\n- **blockedDomains** — Domaines bloqués\n- **maxPages** — Maximum de pages ouvertes simultanément\n\n## Champs de configuration\n\nChemin : `tools.browser`"
+  }
+}

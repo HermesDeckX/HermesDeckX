@@ -1,0 +1,7 @@
+{
+  "name": "Registro e depuração",
+  "description": "Configurar nível de log, formato de saída e ferramentas de diagnóstico para resolver problemas do HermesAgent eficientemente",
+  "content": {
+    "body": "## Configuração de registro\n\n« Centro de configurações → Registro »:\n\n### Níveis de log\n\n| Nível | Descrição | Cenário |\n|-------|-----------|--------|\n| **silent** | Sem saída | Não recomendado |\n| **error** | Apenas erros | Produção |\n| **warn** | Erros + avisos | Produção (recomendado) |\n| **info** | Info de execução | Uso diário (padrão) |\n| **debug** | Info de depuração | Ativar temporariamente |\n| **trace** | Mais detalhado | Depuração profunda |\n\n### Formato de saída\n\n- **pretty** — Saída formatada com cores (desenvolvimento)\n- **compact** — Saída compacta (produção)\n- **json** — Formato JSON (sistemas de coleta de logs)\n\n## Campos de configuração\n\nCaminhos: `logging` e `diagnostics`"
+  }
+}

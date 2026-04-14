@@ -1,0 +1,13 @@
+{
+  "name": "備份與還原",
+  "description": "備份 HermesAgent 設定、記憶和對話歷史，支援遷移到新裝置",
+  "content": {
+    "body": "## 需要備份的內容\n\n| 項目 | 路徑 | 重要性 |\n|------|------|--------|\n| 設定檔案 | `~/.hermesdeckx/config.yaml` | 必備 |\n| 代理設定 | `~/.hermesdeckx/agents/` | 必備 |\n| 記憶檔案 | `~/.hermesdeckx/memory/` | 重要 |\n| 工作階段歷史 | `~/.hermesdeckx/sessions/` | 選用 |\n| 憑證 | `~/.hermesdeckx/credentials/` | 重要 |\n\n## 備份方法\n\n### 方式一：手動備份\n```bash\n# 備份整個設定目錄\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### 方式二：使用 CLI\n```bash\n# 匯出設定\nhermesagent config export > my-config-backup.yaml\n```\n\n### 方式三：HermesDeckX UI\n在「設定中心」底部點擊「匯出設定」按鈕。\n\n## 還原方法\n\n### 還原到新裝置\n1. 安裝 HermesAgent：`npm install -g hermesagent@latest`\n2. 複製備份檔案到 `~/.hermesdeckx/`\n3. 啟動閘道器：`hermesagent gateway run`\n\n### 還原設定檔案\n```bash\nhermesagent config import < my-config-backup.yaml\n```\n\n## 注意事項\n\n- API Key 等敏感資訊會一併備份，注意保管\n- 不同版本間的設定格式可能不同，還原後檢查是否有警告\n- WhatsApp 工作階段資料無法跨裝置遷移，需要重新掃碼\n\n## 設定欄位\n\n相關路徑：`~/.hermesdeckx/`",
+    "steps": [
+      "確認備份範圍（設定、記憶、歷史）",
+      "使用 cp、CLI 或 UI 進行備份",
+      "將備份檔案儲存到安全位置",
+      "還原時複製檔案到 ~/.hermesdeckx/ 並重啟閘道器"
+    ]
+  }
+}

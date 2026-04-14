@@ -1,0 +1,32 @@
+{
+  "name": "内容工厂",
+  "description": "研究、写作、编辑、发布的端到端内容生产流水线",
+  "agents": {
+    "researcher": {
+      "name": "研究员",
+      "role": "收集和分析信息"
+    },
+    "writer": {
+      "name": "作家",
+      "role": "创作初稿"
+    },
+    "editor": {
+      "name": "编辑",
+      "role": "审核和优化内容"
+    },
+    "publisher": {
+      "name": "发布者",
+      "role": "格式化和分发"
+    }
+  },
+  "workflow": {
+    "description": "四阶段内容生产流水线"
+  },
+  "content": {
+    "examples": [
+      "创建一篇关于2026年AI趋势的博客文章",
+      "制作一份关于生产力技巧的新闻通讯",
+      "撰写并发布产品公告"
+    ]
+  }
+}

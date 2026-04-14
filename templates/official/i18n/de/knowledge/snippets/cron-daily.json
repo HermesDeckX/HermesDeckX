@@ -1,0 +1,7 @@
+{
+  "name": "Täglicher Zusammenfassungs-Heartbeat",
+  "description": "Heartbeat-Konfigurationssnippet: Jeden Morgen Nachrichten-, Wetter- und Aufgabenzusammenfassung senden",
+  "content": {
+    "snippet": "## Heartbeat-Prüfung\n\n| Element | Aktion |\n|---------|--------|\n| Tägliche Zusammenfassung | Wetter und wichtige Nachrichten prüfen, Morgenzusammenfassung senden |\n| Aufgaben-Erinnerung | Heute fällige Aufgaben prüfen |\n| Kalendertermine | Heutige Termine prüfen |\n\n`target: \"none\"` verwenden wenn keine Benachrichtigung nötig"
+  }
+}

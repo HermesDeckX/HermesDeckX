@@ -1,0 +1,23 @@
+{
+  "id": "snippet-hook-mapping",
+  "type": "snippet",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "Webhook 映射配置片段",
+    "description": "GitHub Push/PR 事件通知到聊天频道的 Webhook 映射配置示例",
+    "category": "config",
+    "tags": ["hooks", "webhook", "github", "mapping", "integration"],
+    "difficulty": "medium",
+    "i18n": {
+      "en": {
+        "name": "Webhook Mapping Config Snippet",
+        "description": "Example webhook mapping config for GitHub push/PR event notifications to chat channels"
+      }
+    }
+  },
+  "content": {
+    "snippet": "// hooks.mappings 配置示例\n// 在「配置中心 → Hooks」中添加以下映射\n\n// 映射 1: GitHub Push 事件 → 通知到 Telegram\n{\n  \"id\": \"github-push\",\n  \"match\": {\n    \"path\": \"/github\",\n    \"source\": \"github\"\n  },\n  \"action\": \"agent\",\n  \"messageTemplate\": \"GitHub Push 事件：{{body.repository.full_name}} 收到 {{body.commits.length}} 个提交，最新: {{body.head_commit.message}}\",\n  \"channel\": \"telegram\",\n  \"to\": \"YOUR_CHAT_ID\"\n}\n\n// 映射 2: GitHub PR 事件 → 唤醒 AI 分析\n{\n  \"id\": \"github-pr\",\n  \"match\": {\n    \"path\": \"/github-pr\"\n  },\n  \"action\": \"agent\",\n  \"messageTemplate\": \"有新的 PR 需要 Review：{{body.pull_request.title}} by {{body.pull_request.user.login}}，请分析变更内容并给出建议。\",\n  \"channel\": \"telegram\",\n  \"model\": \"claude-sonnet\"\n}\n\n// 映射 3: 通用 Webhook → 唤醒心跳\n{\n  \"id\": \"generic-wake\",\n  \"match\": {\n    \"path\": \"/wake\"\n  },\n  \"action\": \"wake\",\n  \"wakeMode\": \"now\"\n}",
+    "snippetLanguage": "jsonc",
+    "editorSection": "hooks"
+  }
+}

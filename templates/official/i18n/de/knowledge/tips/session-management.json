@@ -1,0 +1,7 @@
+{
+  "name": "Sitzungsverwaltung",
+  "description": "Sitzungsumfang, automatischen Reset und Wartungsstrategie konfigurieren für bessere Gesprächskontinuität",
+  "content": {
+    "body": "## Was ist eine Sitzung?\n\nEine Sitzung ist eine Reihe zusammenhängender Gesprächskontexte. HermesAgent pflegt den Verlauf innerhalb einer Sitzung.\n\n## Sitzungsumfang\n\n| Umfang | Beschreibung |\n|--------|-------------|\n| **channel** | Eine Sitzung pro Kanal (alle Benutzer teilen Kontext) |\n| **user** | Eine Sitzung pro Benutzer (unabhängiger Kontext) |\n| **thread** | Eine Sitzung pro Thread (feinste Granularität) |\n\n## Automatischer Reset\n\n- **enabled** — Aktivieren\n- **every** — Intervall (\"24h\", \"7d\")\n- **keepMemory** — MEMORY.md nach Reset behalten\n\n## Sitzungsbefehle\n\n- `/reset` — Manuell zurücksetzen\n- `/compact` — Komprimierung auslösen\n- `/session` — Sitzungsinfo anzeigen\n\n## Konfigurationsfelder\n\nPfade: `session.scope`, `session.autoReset`, `session.maintenance`"
+  }
+}

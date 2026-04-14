@@ -1,0 +1,8 @@
+{
+  "name": "Sandbox-Berechtigungsproblem",
+  "description": "Probleme mit unzureichenden Docker-Sandbox-Berechtigungen, Dateizugriffsverweigerung oder Containerstartfehler lösen",
+  "content": {
+    "question": "Was tun bei Berechtigungsproblemen im Sandbox-Modus?",
+    "answer": "## Häufige Berechtigungsprobleme\n\n### 1. Docker nicht installiert oder nicht gestartet\n- Docker Desktop installiert und gestartet?\n- **Windows**: Docker Desktop öffnen\n- **macOS**: Docker Desktop öffnen\n- **Linux**: `sudo systemctl start docker`\n\n### 2. Container startet nicht\n- Docker-Image nicht vorhanden: `docker pull`\n- Unzureichender Speicher\n- Unzureichender Festplattenspeicher\n\n### 3. Dateizugriff verweigert\n- Workspace-Zugriffsmodus prüfen: `none` / `ro` / `rw`\n- Bei Schreibbedarf auf `rw` ändern\n\n### 4. Netzwerkzugriffsprobleme\n- Sandbox kann Netzwerkzugriff standardmäßig einschränken\n\n### 5. Ausführungsberechtigungen\n- Manche Skripte erfordern Ausführungsrechte\n\n## Alternativen\n\n- Sandbox temporär deaktivieren (nur vertrauenswürdige Umgebungen)\n- Podman als Alternative verwenden\n\n## Konfigurationsfelder\n\nPfad: `agents.defaults.sandbox`"
+  }
+}

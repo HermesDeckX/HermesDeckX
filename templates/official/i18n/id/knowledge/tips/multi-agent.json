@@ -1,0 +1,7 @@
+{
+  "name": "Kolaborasi Multi-Agen",
+  "description": "Gunakan agen berbeda untuk skenario berbeda, masing-masing dengan kepribadian, memori, dan kemampuan independen",
+  "content": {
+    "body": "## Apa itu Multi-Agen?\n\nMulti-agen memungkinkan pembuatan beberapa karakter AI independen. Setiap Agent memiliki:\n\n- **IDENTITY.md** — Identitas dan kepribadian independen\n- **SOUL.md** — Aturan perilaku independen\n- **MEMORY/** — Sistem memori independen\n- **Kemampuan** — Konfigurasi kemampuan independen\n\n## Skenario Penggunaan\n\n| Skenario | Contoh Agent |\n|----------|-------------|\n| Kerja vs pribadi | «Asisten kerja» untuk email dan kode, «Asisten pribadi» untuk jadwal |\n| Indonesia vs Inggris | Satu Agent berbahasa Indonesia, satu berbahasa Inggris |\n| Proyek berbeda | Satu Agent per proyek, terisolasi sepenuhnya |\n| Berbagi tim | Agent khusus per anggota tim |\n\n## Konfigurasi\n\n### 1. Buat Agent baru\n«Pusat Pengaturan → Agen → Tambah Agen»\n\n### 2. Tetapkan saluran\nSetiap Agent dapat dihubungkan ke saluran berbeda.\n\n### 3. Konfigurasi independen\nIDENTITY.md, SOUL.md, dan kemampuan independen per Agent.\n\n## Lanjutan: Kolaborasi Antar Agent\n\n- **Memori bersama** — File memori antar agen\n- **Routing pesan** — Penugasan otomatis ke Agent yang tepat\n- **Workflow** — Agen berkolaborasi langkah demi langkah\n\n## Best Practice\n\n- Mulai dengan 2 agen, perluas bertahap\n- Diferensiasi peran jelas di IDENTITY.md\n- Gunakan panel «Manajemen Multi-Agen» di HermesDeckX"
+  }
+}

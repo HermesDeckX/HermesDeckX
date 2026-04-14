@@ -1,0 +1,8 @@
+{
+  "name": "Hohe Token-Kosten",
+  "description": "Token-Verbrauch des AI-Modells analysieren und optimieren, um API-Kosten zu senken",
+  "content": {
+    "question": "Was tun bei zu hohen Token-Kosten? Wie API-Kosten senken?",
+    "answer": "## Kostenanalyse\n\n### 1. Nutzungsstatistiken prüfen\nGehen Sie zur « Nutzung »-Seite:\n- Täglichen/wöchentlichen/monatlichen Verbrauch anzeigen\n- Nach Modell, Kanal, Benutzer sortieren\n\n### 2. Häufige Ursachen\n\n| Ursache | Auswirkung | Lösung |\n|---------|-----------|--------|\n| Zu langer Verlauf | Massiver Verlauf bei jeder Anfrage | Komprimierung oder Auto-Reset aktivieren |\n| Teure Modelle | GPT-4.5, Claude Opus usw. | Zu GPT-4o-mini wechseln |\n| Häufige Tool-Aufrufe | Zusätzliche Tokens pro Aufruf | Tool-Richtlinie anpassen |\n| Zu viele Subagenten | Unabhängiger Verbrauch | Tiefe und Anzahl begrenzen |\n\n### 3. Optimierungsstrategien\n\n**Komprimierungseinstellungen** (am effektivsten):\n- « Einstellungszentrum → Agent → Komprimierung »\n- `threshold` auf 30000-50000 setzen\n- `memoryFlush` aktivieren\n\n**Modellauswahl**:\n- Alltag: GPT-4o-mini oder Claude Haiku\n- Komplexe Aufgaben: GPT-4o oder Claude Sonnet\n\n## Konfigurationsfelder\n\nPfade: `agents.defaults.model`, `agents.defaults.compaction`, `heartbeat`"
+  }
+}

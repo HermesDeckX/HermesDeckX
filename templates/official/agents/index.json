@@ -1,0 +1,12 @@
+{
+  "category": "agents",
+  "version": "1.0.0",
+  "templates": [
+    "personas/professional.json",
+    "personas/friendly.json",
+    "personas/butler.json",
+    "personas/scholar.json",
+    "personas/concise.json",
+    "personas/creative.json"
+  ]
+}

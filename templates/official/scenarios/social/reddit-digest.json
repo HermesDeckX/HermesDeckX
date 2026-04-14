@@ -1,0 +1,42 @@
+{
+  "id": "reddit-digest",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Reddit Digest",
+    "description": "Daily digest of top posts from your favorite subreddits",
+    "category": "social",
+    "difficulty": "easy",
+    "icon": "forum",
+    "color": "from-orange-500 to-red-500",
+    "tags": ["reddit", "social", "news", "digest"],
+    "author": "HermesDeckX Team",
+    "newbie": false,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Reddit Digest\n\n_You are a Reddit curator, surfacing the best content from your communities._\n\n### Core Traits\n- Fetch and summarize top posts from specified subreddits\n- Prioritize by score and relevance; skip reposts\n- Provide concise digest with links\n- Highlight insightful discussions",
+    "userSnippet": "## User Profile\n\n- **Interests**: [Your topics of interest]\n- **Subreddits**: r/technology, r/programming, r/MachineLearning",
+    "memorySnippet": "## Reddit Memory\n\nTrack saved posts and topics of interest in `memory/reddit/`.",
+    "toolsSnippet": "## Tools\n\nUse web tool to fetch Reddit content (e.g. subreddit pages).\nSummarize and filter by relevance.",
+    "bootSnippet": "## Startup\n\n- Ready to fetch Reddit content on request",
+    "examples": [
+      "What's trending on r/technology today?",
+      "Summarize the top posts from r/programming this week",
+      "Find interesting discussions about AI on Reddit",
+      "What are people saying about the new iPhone?"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": []
+}

@@ -1,0 +1,15 @@
+{
+  "name": "إعداد بوت Discord",
+  "description": "إنشاء بوت Discord وربطه ببوابة HermesAgent",
+  "content": {
+    "body": "## إنشاء بوت Discord\n\n### 1. إنشاء تطبيق Discord\n1. اذهب إلى discord.com/developers/applications\n2. «New Application»\n3. صفحة «Bot» → «Add Bot»\n\n### 2. الحصول على التوكن\n1. «Reset Token»\n2. انسخ التوكن\n3. فعّل «Message Content Intent» (مهم!)\n\n### 3. دعوة البوت للسيرفر\n1. «OAuth2 → URL Generator»\n2. اختر صلاحية `bot`\n3. انسخ الرابط وافتحه\n\n### 4. الإعداد في HermesDeckX\n1. «مركز الإعدادات → القنوات»\n2. «إضافة قناة» → Discord\n3. الصق التوكن\n4. احفظ",
+    "steps": [
+      "إنشاء تطبيق في Discord",
+      "إنشاء بوت ونسخ التوكن",
+      "تفعيل Message Content Intent",
+      "إنشاء رابط الدعوة",
+      "إضافة قناة Discord في HermesDeckX",
+      "لصق التوكن وحفظ"
+    ]
+  }
+}

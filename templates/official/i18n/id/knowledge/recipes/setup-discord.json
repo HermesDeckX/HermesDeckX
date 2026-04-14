@@ -1,0 +1,15 @@
+{
+  "name": "Setup Bot Discord",
+  "description": "Buat bot Discord dan hubungkan ke gateway HermesAgent",
+  "content": {
+    "body": "## Buat Bot Discord\n\n### 1. Buat aplikasi Discord\n1. Buka discord.com/developers/applications\n2. «New Application»\n3. Halaman «Bot» → «Add Bot»\n\n### 2. Dapatkan token\n1. «Reset Token»\n2. Salin token\n3. Aktifkan «Message Content Intent» (penting!)\n\n### 3. Undang bot ke server\n1. «OAuth2 → URL Generator»\n2. Pilih izin `bot`\n3. Salin URL dan buka\n\n### 4. Konfigurasi di HermesDeckX\n1. «Pusat Pengaturan → Saluran»\n2. «Tambah Saluran» → Discord\n3. Tempel token\n4. Simpan",
+    "steps": [
+      "Buat aplikasi di Discord",
+      "Buat bot dan salin token",
+      "Aktifkan Message Content Intent",
+      "Buat link undangan",
+      "Tambah saluran Discord di HermesDeckX",
+      "Tempel token dan simpan"
+    ]
+  }
+}

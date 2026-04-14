@@ -1,0 +1,7 @@
+{
+  "name": "Transkripsi Audio",
+  "description": "Aktifkan transkripsi audio agar asisten AI memahami pesan suara. Mendukung Whisper, Groq, Gemini",
+  "content": {
+    "body": "## Mengapa Mengaktifkan Transkripsi Audio?\n\nBanyak platform chat mendukung pesan suara. Dengan transkripsi aktif, asisten AI dapat:\n- Mengonversi pesan suara ke teks secara otomatis\n- Memahami dan merespons konten suara\n- Mendukung pengenalan suara multibahasa\n\n## Penyedia yang Didukung\n\n| Penyedia | Fitur | Biaya |\n|----------|-------|-------|\n| **OpenAI Whisper** | Akurasi tinggi, multibahasa | Per durasi |\n| **Groq** | Sangat cepat | Per durasi |\n| **Gemini** | Multimodal native | Per token |\n\n## Konfigurasi di HermesDeckX\n\n1. «Pusat Pengaturan → Tools»\n2. Temukan area «Transkripsi Audio»\n3. Aktifkan sakelar\n4. Pilih penyedia\n5. Pastikan kunci API terkonfigurasi\n\n## Field Konfigurasi\n\nPath: `tools.audio.transcription`"
+  }
+}

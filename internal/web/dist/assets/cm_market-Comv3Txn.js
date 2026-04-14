@@ -1,0 +1,1 @@
+const e={title:"技能市場",subtitle:"擴充套件 Agent 能力",loading:"載入中...",active:"已啟用",searchPlaceholder:"搜尋技能...",noSkills:"未找到技能",ready:"就緒",needsSetup:"需要配置",configure:"配置",select:"選擇...",cancel:"取消",saving:"儲存中...",configured:"技能已配置",enabled:"技能已啟用",disabled:"技能已禁用"},l={skillsMarket:e};export{l as default,e as skillsMarket};

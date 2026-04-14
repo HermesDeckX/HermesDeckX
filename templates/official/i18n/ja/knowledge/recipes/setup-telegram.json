@@ -1,0 +1,14 @@
+{
+  "name": "Telegram Bot の設定",
+  "description": "Telegram Bot を作成し HermesAgent ゲートウェイに接続する",
+  "content": {
+    "body": "## Telegram Bot の作成\n\n### 1. BotFather で Bot を作成\n1. Telegram で @BotFather を検索\n2. `/newbot` を送信\n3. Bot 名を入力（表示名）\n4. Bot ユーザー名を入力（`bot` で終わる必要あり）\n5. BotFather がトークンを返すのでコピー\n\n### 2. HermesDeckX での設定\n1. 「設定センター → チャンネル」へ\n2. 「チャンネルを追加」→ Telegram を選択\n3. Bot トークンを貼り付け\n4. 設定を保存\n\n### 3. 接続の確認\n- ダッシュボードで Telegram チャンネルが 🟢 表示されるはず\n- Telegram で Bot にメッセージを送信\n- Bot が返信するはず\n\n## 詳細設定\n\n### アクセス制御\n- `allowFrom` で使用可能なユーザー ID を制限\n- `dmPolicy` で DM アクセスを制御\n\n### グループでの使用\n- Bot をグループに追加\n- `groupPolicy` でグループ返信動作を制御\n- デフォルトでは Bot は @メンション のメッセージのみに返信\n\n## ユーザー ID の取得\n@userinfobot にメッセージを送信すると Telegram ユーザー ID を取得できます。\n\n## 設定フィールド\n\n対応する設定パス：`channels[].type: \"telegram\"`",
+    "steps": [
+      "Telegram で @BotFather を見つける",
+      "/newbot を送信して新しい Bot を作成",
+      "BotFather が返すトークンをコピー",
+      "HermesDeckX 設定センターで Telegram チャンネルを追加",
+      "トークンを貼り付けて保存"
+    ]
+  }
+}

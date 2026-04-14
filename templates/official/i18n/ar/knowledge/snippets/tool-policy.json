@@ -1,0 +1,7 @@
+{
+  "name": "سياسة صلاحيات الأدوات",
+  "description": "مقتطف إعداد صلاحيات الأدوات: التحكم في نطاق ومستوى وصول الأدوات المتاحة للذكاء الاصطناعي",
+  "content": {
+    "snippet": "## أمثلة سياسة الأدوات\n\n### صلاحيات دنيا (دردشة فقط)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### مساعد برمجة\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### وصول كامل + قيود مخصصة\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "RT_GROUP_ICON": {
+    "#1": {
+      "0000": "icon.ico"
+    }
+  },
+  "RT_MANIFEST": {
+    "#1": {
+      "0409": {
+        "identity": {
+          "name": "HermesDeckX",
+          "version": "0.0.0.0"
+        },
+        "description": "HermesDeckX - HermesAgent Management Dashboard",
+        "minimum-os": "vista",
+        "execution-level": "asInvoker",
+        "dpi-awareness": "permonitorv2",
+        "use-common-controls": true
+      }
+    }
+  },
+  "RT_VERSION": {
+    "#1": {
+      "0000": {
+        "fixed": {
+          "file_version": "0.0.0.0",
+          "product_version": "0.0.0.0"
+        },
+        "info": {
+          "0409": {
+            "CompanyName": "HermesDeckX",
+            "FileDescription": "HermesDeckX",
+            "ProductName": "HermesDeckX",
+            "LegalCopyright": "Copyright (c) HermesDeckX contributors",
+            "OriginalFilename": "hermesdeckx.exe",
+            "ProductVersion": "",
+            "FileVersion": ""
+          }
+        }
+      }
+    }
+  }
+}

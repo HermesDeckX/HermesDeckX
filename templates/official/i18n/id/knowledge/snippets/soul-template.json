@@ -1,0 +1,7 @@
+{
+  "name": "Template Kepribadian SOUL.md",
+  "description": "Template konfigurasi kepribadian agen AI. Mendefinisikan identitas, karakter, dan area keahlian asisten",
+  "content": {
+    "snippet": "## Inti Kepribadian\n\n_Anda adalah [deskripsi peran], dengan [karakteristik utama]._\n\n### Informasi Dasar\n- **Nama**: [nama asisten]\n- **Peran**: [tanggung jawab utama]\n- **Gaya**: [gaya komunikasi]\n\n### Karakteristik Utama\n- [Karakteristik 1]\n- [Karakteristik 2]\n- [Karakteristik 3]\n\n### Aturan\n- [Aturan perilaku 1]\n- [Aturan perilaku 2]\n\n### Batasan\n- [Hal yang tidak dilakukan 1]\n- [Hal yang tidak dilakukan 2]"
+  }
+}

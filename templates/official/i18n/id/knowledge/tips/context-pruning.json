@@ -1,0 +1,7 @@
+{
+  "name": "Pemangkasan Konteks",
+  "description": "Kontrol jumlah konteks yang dikirim ke AI — kurangi system prompt dan riwayat yang tidak perlu untuk menghemat token",
+  "content": {
+    "body": "## Mengapa Memangkas Konteks?\n\nSetiap permintaan AI mengirim konteks lengkap:\n- System prompt (SOUL.md, USER.md, dll.)\n- Riwayat percakapan\n- Definisi tool\n- Konten memori\n\nLebih banyak konteks = biaya lebih tinggi dan respons potensial lebih lambat.\n\n## Strategi Pemangkasan\n\n### 1. Optimalkan system prompt\n- Jaga SOUL.md singkat (di bawah 500 kata)\n- Hapus penjelasan yang tidak perlu\n- Gunakan daftar daripada paragraf panjang\n\n### 2. Kontrol riwayat\n- Aktifkan kompresi\n- Konfigurasi auto-reset\n- Gunakan `/compact` secara manual\n\n### 3. Batasi tool\n- Gunakan profil tool yang sesuai\n- Setiap definisi tool mengonsumsi token\n\n### 4. Optimalkan memori\n- Bersihkan file lama secara berkala\n\n## Estimasi Dampak\n\n| Optimasi | Penghematan Token |\n|----------|-------------------|\n| Pemangkasan prompt | 10-20% |\n| Pengaturan kompresi | 30-60% |\n| Profil minimal vs full | 15-25% |\n| Optimasi memori | 5-15% |\n\n## Field Konfigurasi\n\nPath: `agents.defaults.compaction`, `tools.profile`, `session.autoReset`"
+  }
+}

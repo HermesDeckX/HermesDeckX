@@ -1,0 +1,7 @@
+{
+  "name": "Optimisation des coûts",
+  "description": "Réduire les coûts d'utilisation de l'AI de manière globale — sélection de modèle, compression, heartbeat et stratégie d'outils",
+  "content": {
+    "body": "## Liste d'optimisation des coûts\n\n### 1. Choisir le bon modèle\n- Conversations quotidiennes : GPT-4o-mini / Claude Haiku / Gemini Flash\n- Tâches complexes : GPT-4o / Claude Sonnet\n- Ne pas utiliser le modèle le plus cher par défaut\n\n### 2. Activer la compression\n- Définir un threshold adapté (recommandé 30000-50000)\n- Activer memoryFlush\n\n### 3. Optimiser le heartbeat\n- Modèle le moins cher pour le heartbeat\n- Augmenter l'intervalle (30-60 min)\n- Configurer la plage horaire active\n\n### 4. Stratégie de sous-agents\n- Modèles économiques pour les sous-agents\n- Limiter profondeur et nombre\n\n### 5. Contrôle des outils\n- Profil `minimal` ou `messaging`\n- Désactiver les outils inutiles\n\n### 6. Gestion des sessions\n- Réinitialisation automatique quotidienne\n- `/compact` périodique\n\n## Champs de configuration\n\nChemins : `agents.defaults.model`, `agents.defaults.compaction`, `heartbeat`, `tools.profile`"
+  }
+}

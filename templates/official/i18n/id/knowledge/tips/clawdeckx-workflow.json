@@ -1,0 +1,7 @@
+{
+  "name": "Alur Kerja HermesDeckX",
+  "description": "Kelola asisten AI secara efisien melalui antarmuka visual HermesDeckX — pintasan, navigasi panel, dan operasi lanjutan",
+  "content": {
+    "body": "## Pintasan HermesDeckX\n\n| Pintasan | Fungsi |\n|----------|--------|\n| `Ctrl/Cmd + K` | Palet perintah cepat |\n| `Ctrl/Cmd + ,` | Buka pengaturan |\n| `Ctrl/Cmd + Shift + D` | Buka dasbor |\n| `Ctrl/Cmd + Shift + H` | Buka pusat kesehatan |\n\n## Navigasi Panel\n\n### Dasbor\n- Status real-time semua saluran\n- Monitor penggunaan token dan biaya\n- Lihat sesi aktif\n\n### Pusat Pengaturan\n- Bagian: Saluran, Model, Agen, Tools, Penjadwalan\n- Deskripsi dan nilai default untuk setiap item\n- Berlaku langsung saat disimpan\n\n### Pusat Kesehatan\n- Diagnostik semua komponen satu klik\n- Saran perbaikan otomatis\n\n### Perpustakaan Template Skenario\n- Jelajahi dan instal skenario preset\n- Terapkan konfigurasi satu klik"
+  }
+}

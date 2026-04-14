@@ -1,0 +1,32 @@
+{
+  "name": "Pabrik Konten",
+  "description": "Pipeline produksi konten end-to-end: riset, penulisan, editing, publikasi",
+  "agents": {
+    "researcher": {
+      "name": "Peneliti",
+      "role": "Mengumpulkan dan menganalisis informasi"
+    },
+    "writer": {
+      "name": "Penulis",
+      "role": "Membuat draf pertama"
+    },
+    "editor": {
+      "name": "Editor",
+      "role": "Mereview dan mengoptimasi konten"
+    },
+    "publisher": {
+      "name": "Publisher",
+      "role": "Memformat dan mendistribusikan"
+    }
+  },
+  "workflow": {
+    "description": "Pipeline produksi konten empat tahap"
+  },
+  "content": {
+    "examples": [
+      "Buat blog post tentang tren AI 2026",
+      "Siapkan newsletter tentang tips produktivitas",
+      "Tulis dan publikasikan pengumuman produk"
+    ]
+  }
+}

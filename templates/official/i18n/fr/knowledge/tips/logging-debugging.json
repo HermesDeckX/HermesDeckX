@@ -1,0 +1,7 @@
+{
+  "name": "Journalisation et débogage",
+  "description": "Configurer le niveau de journalisation, le format de sortie et les outils de diagnostic pour résoudre efficacement les problèmes d'HermesAgent",
+  "content": {
+    "body": "## Configuration de journalisation\n\n« Centre de configuration → Journalisation » :\n\n### Niveaux de log\n\n| Niveau | Description | Scénario |\n|--------|-------------|----------|\n| **silent** | Aucune sortie | Non recommandé |\n| **error** | Erreurs uniquement | Production |\n| **warn** | Erreurs + avertissements | Production (recommandé) |\n| **info** | Infos d'exécution | Usage quotidien (défaut) |\n| **debug** | Infos de débogage | Activer temporairement |\n| **trace** | Le plus détaillé | Débogage approfondi |\n\n### Format de sortie console\n\n- **pretty** — Sortie formatée avec couleurs (développement)\n- **compact** — Sortie compacte (production)\n- **json** — Format JSON (systèmes de collecte de logs)\n\n### Logs fichier\n\n- **file** — Chemin du fichier log\n- **maxFileBytes** — Taille max (rotation automatique)\n\n## Champs de configuration\n\nChemins : `logging` et `diagnostics`"
+  }
+}

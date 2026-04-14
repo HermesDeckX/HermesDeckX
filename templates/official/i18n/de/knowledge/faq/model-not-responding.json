@@ -1,0 +1,8 @@
+{
+  "name": "Modell antwortet nicht",
+  "description": "Fehlerbehebung wenn das AI-Modell nicht antwortet oder die Zeitüberschreitung erreicht — API-Schlüssel, Kontingent und Netzwerk prüfen",
+  "content": {
+    "question": "Was tun, wenn das AI-Modell nicht antwortet oder die Zeitüberschreitung erreicht?",
+    "answer": "## Fehlerbehebungsschritte\n\n### 1. API-Schlüssel prüfen\n- Schlüssel eingegeben und korrekt?\n- Nicht abgelaufen oder widerrufen?\n- Schlüssel in der Anbieterkonsole neu generieren\n\n### 2. Kontingent und Guthaben prüfen\n- **OpenAI** — platform.openai.com\n- **Anthropic** — console.anthropic.com\n- **Google** — Cloud Console\n\n### 3. Modellverfügbarkeit prüfen\n- Modellname korrekt geschrieben?\n- Manche Modelle erfordern spezielle Zugriffsrechte\n- Anderes Modell zum Testen verwenden\n\n### 4. Netzwerkverbindung prüfen\n\n### 5. Fallback-Modell verwenden\n- Fallback-Kette für hohe Verfügbarkeit konfigurieren\n\n## Schnellfix\n\nDiagnose → model.reachable prüfen."
+  }
+}

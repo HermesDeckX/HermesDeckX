@@ -1,0 +1,7 @@
+{
+  "name": "Política de permisos de herramientas",
+  "description": "Fragmento de configuración de permisos de herramientas: controlar el alcance y nivel de acceso de herramientas que la AI puede usar según el escenario",
+  "content": {
+    "snippet": "## Ejemplos de política de herramientas\n\n### Permisos mínimos (solo chat)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### Asistente de programación\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### Acceso completo + restricciones personalizadas\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

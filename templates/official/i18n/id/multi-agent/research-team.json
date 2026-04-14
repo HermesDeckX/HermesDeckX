@@ -1,0 +1,32 @@
+{
+  "name": "Tim Riset",
+  "description": "Tim riset kolaboratif dengan peneliti utama, analis, dan reviewer",
+  "agents": {
+    "lead-researcher": {
+      "name": "Peneliti Utama",
+      "role": "Memandu riset dan mensintesis temuan"
+    },
+    "data-analyst": {
+      "name": "Analis Data",
+      "role": "Menganalisis data dan menemukan pola"
+    },
+    "domain-expert": {
+      "name": "Ahli Domain",
+      "role": "Menyediakan pengetahuan khusus"
+    },
+    "critic": {
+      "name": "Reviewer Kritis",
+      "role": "Menantang asumsi dan memverifikasi"
+    }
+  },
+  "workflow": {
+    "description": "Riset paralel dengan review kritis"
+  },
+  "content": {
+    "examples": [
+      "Riset dampak AI pada kesehatan",
+      "Analisis tren pasar kendaraan listrik",
+      "Selidiki praktik terbaik kerja remote"
+    ]
+  }
+}

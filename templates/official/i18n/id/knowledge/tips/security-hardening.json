@@ -1,0 +1,7 @@
+{
+  "name": "Penguatan Keamanan",
+  "description": "Konfigurasi keamanan komprehensif — kontrol akses, pembatasan tool, kebijakan jaringan, dan enkripsi",
+  "content": {
+    "body": "## Checklist Konfigurasi Keamanan\n\n### 1. Aktifkan autentikasi\n- Mode `token` (direkomendasikan) atau `password`\n- **Wajib untuk akses di luar localhost**\n\n### 2. Konfigurasi enkripsi TLS\n- Aktifkan TLS untuk akses eksternal\n\n### 3. Batasi akses saluran\nPer saluran:\n- **allowFrom** — Hanya ID pengguna tertentu\n- **dmPolicy** — Batasi DM\n- **groupPolicy** — Kontrol respons grup\n\n### 4. Batasi izin tool\n- Profil sesuai (`full` / `coding` / `messaging` / `minimal`)\n- Daftar deny untuk tool berbahaya\n- exec allowlist untuk perintah\n\n### 5. Aktifkan sandbox\n- Docker sandbox untuk eksekusi kode\n- Workspace pada `ro`\n\n## Level Keamanan Rekomendasi\n\n| Level | Skenario | Konfigurasi |\n|-------|----------|-------------|\n| **Dasar** | Pribadi, lokal | Default |\n| **Standar** | LAN / Tailscale | Auth + allowFrom |\n| **Tinggi** | Jaringan publik | Auth + TLS + allowFrom + sandbox + pembatasan |\n\n## Field Konfigurasi\n\nPath: `gateway.auth`, `gateway.tls`, `channels[].allowFrom`, `tools.profile`, `agents.defaults.sandbox`"
+  }
+}

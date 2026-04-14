@@ -1,0 +1,19 @@
+{
+  "skillsMarket": {
+    "title": "Skill-Marktplatz",
+    "subtitle": "Agent-Fähigkeiten erweitern",
+    "loading": "Laden...",
+    "active": "aktiv",
+    "searchPlaceholder": "Skills suchen...",
+    "noSkills": "Keine Skills gefunden",
+    "ready": "Bereit",
+    "needsSetup": "Einrichtung erforderlich",
+    "configure": "Konfigurieren",
+    "select": "Auswählen...",
+    "cancel": "Abbrechen",
+    "saving": "Speichern...",
+    "configured": "Skill konfiguriert",
+    "enabled": "Skill aktiviert",
+    "disabled": "Skill deaktiviert"
+  }
+}

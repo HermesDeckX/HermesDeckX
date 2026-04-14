@@ -1,0 +1,15 @@
+{
+  "name": "त्वरित शुरुआत",
+  "description": "HermesAgent गेटवे स्थापित करें, कॉन्फ़िगर करें और 5 मिनट में पहली बातचीत शुरू करें",
+  "content": {
+    "body": "## पूर्वापेक्षाएं\n\n- Node.js 22+ (LTS अनुशंसित)\n- AI प्रदाता का API कुंजी (OpenAI / Anthropic / Google आदि)\n\n## चरण\n\n### 1. HermesAgent स्थापित करें\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. कॉन्फ़िगरेशन आरंभ करें\n\n```bash\nhermesagent init\n```\n\n### 3. गेटवे शुरू करें\n\n```bash\nhermesagent gateway run\n```\n\n### 4. HermesDeckX कनेक्ट करें\n\nHermesDeckX खोलें और गेटवे पता दर्ज करें।\n\n### 5. चैट चैनल कनेक्ट करें (वैकल्पिक)\n\n1. «सेटिंग सेंटर → चैनल»\n2. चैनल प्रकार चुनें\n3. बॉट टोकन दर्ज करें\n4. सेव करें",
+    "steps": [
+      "Node.js 22+ स्थापित करें",
+      "npm install -g hermesagent@latest",
+      "hermesagent init चलाएं",
+      "API कुंजी दर्ज करें",
+      "hermesagent gateway run",
+      "HermesDeckX कनेक्ट करें"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "設定 Webhook 鉤子",
+  "description": "使用 Webhook 將外部事件（GitHub、監控告警等）推送給 AI 處理",
+  "content": {
+    "body": "## 什麼是 Hooks？\n\nHooks（鉤子）讓外部系統能將事件推送給 HermesAgent。AI 收到事件後可以自動處理並回報結果。\n\n## 常見使用場景\n\n| 場景 | 來源 | AI 處理 |\n|------|------|---------|\n| 程式碼審查 | GitHub Webhook | AI 審查 PR 並留言 |\n| 伺服器告警 | 監控系統 | AI 分析告警並通知 |\n| 表單提交 | 網站表單 | AI 處理並回覆 |\n| 排程觸發 | Cron 服務 | AI 執行定期任務 |\n\n## 在 HermesDeckX 中設定\n\n前往「設定中心 → 鉤子」：\n\n### 1. 建立鉤子\n- 點擊「新增鉤子」\n- 設定名稱和描述\n- 系統會生成一個唯一的 Webhook URL\n\n### 2. 設定映射\n定義事件如何映射為 AI 指令：\n```yaml\nhooks:\n  - name: github-pr\n    mapping: |\n      收到 GitHub PR 事件：\n      儲存庫：{{repo}}\n      標題：{{title}}\n      請審查此 PR 並提供回饋。\n```\n\n### 3. 在外部系統設定\n將生成的 Webhook URL 填入外部系統（如 GitHub → Settings → Webhooks）。\n\n## 安全性\n\n- 每個鉤子都有唯一的密鑰\n- 支援 HMAC 簽名驗證\n- 可以限制來源 IP\n\n## 設定欄位\n\n對應設定路徑：`hooks`",
+    "steps": [
+      "前往「設定中心 → 鉤子」",
+      "建立新鉤子並設定名稱",
+      "定義事件映射模板",
+      "複製生成的 Webhook URL",
+      "在外部系統中設定 Webhook 指向此 URL"
+    ]
+  }
+}

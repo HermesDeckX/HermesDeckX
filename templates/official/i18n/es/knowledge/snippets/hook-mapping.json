@@ -1,0 +1,7 @@
+{
+  "name": "Mapeo de hook para GitHub PR",
+  "description": "Fragmento de mapeo Webhook: convertir eventos de GitHub Pull Request en instrucciones de revisión de código AI",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"Revisión automática de código al crear un GitHub PR\"\n    mapping: |\n      Evento de GitHub Pull Request recibido:\n\n      **Repositorio**: {{repository.full_name}}\n      **Título**: {{pull_request.title}}\n      **Autor**: {{pull_request.user.login}}\n      **Descripción**: {{pull_request.body}}\n\n      Por favor revise este PR:\n      1. Verificar calidad del código y mejores prácticas\n      2. Buscar bugs potenciales y problemas de seguridad\n      3. Proporcionar sugerencias de mejora\n      4. Dar retroalimentación amigable y constructiva"
+  }
+}

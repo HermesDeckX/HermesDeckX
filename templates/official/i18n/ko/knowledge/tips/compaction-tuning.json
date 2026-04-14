@@ -1,0 +1,7 @@
+{
+  "name": "압축 튜닝",
+  "description": "대화 압축 파라미터 미세 조정 — 컨텍스트 보존과 토큰 비용의 균형",
+  "content": {
+    "body": "## 대화 압축이란?\n\n대화 기록이 너무 길어지면 압축 기능이 자동으로 기록을 요약으로 축약하여 중요한 정보를 유지하면서 토큰 소비를 줄입니다.\n\n## HermesDeckX에서 설정\n\n「설정 센터 → 에이전트 → 압축」으로 이동:\n\n### 핵심 파라미터\n\n- **threshold** — 압축을 트리거하는 토큰 임계값 (기본 50000)\n  - 너무 작음: 잦은 압축, 컨텍스트 손실 가능\n  - 너무 큼: 높은 토큰 소비, 응답 느려짐\n  - 권장 범위: 30000-80000\n\n- **maxOutputTokens** — 압축 후 요약의 최대 길이\n  - 권장: threshold의 20-30%\n\n### 메모리 플러시\n\n- **memoryFlush** — 압축 시 중요 정보를 MEMORY.md에 자동 기록\n  - 활성화 강력 권장\n  - 압축으로 인한 중요 세부사항 손실 방지\n\n### 압축 전략\n\n- **strategy** — 압축 알고리즘\n  - `summarize` — 요약 생성 (기본, 가장 효과적)\n  - `truncate` — 오래된 메시지 직접 잘라내기 (가장 빠르지만 정보 손실)\n\n## 권장 설정\n\n**일상 대화**: threshold=50000, memoryFlush=true\n**코딩 프로젝트**: threshold=80000, memoryFlush=true\n**비용 중시**: threshold=30000, memoryFlush=true\n\n## 설정 필드\n\n해당 설정 경로: `agents.defaults.compaction`"
+  }
+}

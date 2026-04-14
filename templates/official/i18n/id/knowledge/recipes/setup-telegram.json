@@ -1,0 +1,14 @@
+{
+  "name": "Setup Bot Telegram",
+  "description": "Buat bot Telegram dan hubungkan ke gateway HermesAgent",
+  "content": {
+    "body": "## Buat Bot Telegram\n\n### 1. Buat bot via BotFather\n1. Cari @BotFather di Telegram\n2. Kirim `/newbot`\n3. Masukkan nama bot\n4. Masukkan username (harus diakhiri `bot`)\n5. Salin token\n\n### 2. Konfigurasi di HermesDeckX\n1. «Pusat Pengaturan → Saluran»\n2. «Tambah Saluran» → Telegram\n3. Tempel token\n4. Simpan\n\n### 3. Verifikasi koneksi\n- Saluran harus menampilkan 🟢\n- Kirim pesan ke bot\n- Bot harus merespons",
+    "steps": [
+      "Cari @BotFather",
+      "/newbot untuk membuat bot",
+      "Salin token",
+      "Tambah saluran Telegram di HermesDeckX",
+      "Tempel token dan simpan"
+    ]
+  }
+}

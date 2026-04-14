@@ -1,0 +1,8 @@
+{
+  "name": "Model Tidak Merespons",
+  "description": "Mengatasi masalah model AI yang tidak merespons atau timeout — periksa kunci API, kuota, dan jaringan",
+  "content": {
+    "question": "Apa yang harus dilakukan jika model AI tidak merespons atau timeout?",
+    "answer": "## Langkah Penyelesaian\n\n### 1. Periksa kunci API\n- Kunci sudah dimasukkan dan benar?\n- Belum kedaluwarsa atau dicabut?\n- Coba regenerasi di konsol penyedia\n\n### 2. Periksa kuota dan saldo\n- **OpenAI** — platform.openai.com\n- **Anthropic** — console.anthropic.com\n- **Google** — Cloud Console\n\n### 3. Periksa ketersediaan model\n- Nama model benar?\n- Beberapa model memerlukan izin khusus\n- Coba model lain\n\n### 4. Periksa koneksi jaringan\n\n### 5. Gunakan model fallback\n- Konfigurasi rantai fallback\n\n## Perbaikan Cepat\n\nDiagnostik → Periksa model.reachable."
+  }
+}

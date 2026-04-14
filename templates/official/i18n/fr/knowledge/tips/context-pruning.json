@@ -1,0 +1,7 @@
+{
+  "name": "Élagage du contexte",
+  "description": "Contrôler la quantité de contexte envoyé à l'AI — réduire les prompts système et l'historique inutiles pour économiser des tokens",
+  "content": {
+    "body": "## Pourquoi élaguer le contexte ?\n\nChaque requête AI envoie le contexte complet :\n- Prompts système (SOUL.md, USER.md, etc.)\n- Historique de conversation\n- Définitions d'outils\n- Contenu mémoire\n\nPlus de contexte = coût plus élevé et réponses potentiellement plus lentes.\n\n## Stratégies d'élagage\n\n### 1. Optimiser les prompts système\n- Garder SOUL.md concis (moins de 500 mots recommandé)\n- Supprimer les explications inutiles\n- Utiliser des listes plutôt que des paragraphes\n\n### 2. Contrôler l'historique\n- Activer la compression\n- Configurer la réinitialisation automatique\n- Utiliser `/compact` manuellement\n\n### 3. Limiter le nombre d'outils\n- Utiliser le profil d'outils adapté au scénario\n- Chaque définition d'outil consomme des tokens\n\n### 4. Optimiser la mémoire\n- Nettoyer régulièrement les anciens fichiers mémoire\n\n## Estimation d'impact\n\n| Optimisation | Économie de tokens |\n|-------------|-------------------|\n| Élagage prompts système | 10-20% |\n| Configuration compression | 30-60% |\n| Profil outils minimal vs full | 15-25% |\n| Optimisation mémoire | 5-15% |\n\n## Champs de configuration\n\nChemins : `agents.defaults.compaction`, `tools.profile`, `session.autoReset`"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "模型無回應",
+  "description": "排查 AI 模型不回應或回應超時的問題——檢查 API Key、配額和網路",
+  "content": {
+    "question": "AI 模型不回應或回應超時怎麼辦？",
+    "answer": "## 排查步驟\n\n### 1. 檢查 API Key\n前往「設定中心 → 模型提供商」：\n- 確認 API Key 已填入且正確\n- 確認 API Key 未過期或被撤銷\n- 嘗試在提供商控制台重新生成 Key\n\n### 2. 檢查配額和額度\n- **OpenAI** — 檢查 platform.openai.com 的用量頁面\n- **Anthropic** — 檢查 console.anthropic.com 的用量\n- **Google** — 檢查 Cloud Console 的 API 配額\n- 確認帳戶有足夠餘額\n\n### 3. 檢查模型可用性\n- 確認所選模型名稱拼寫正確\n- 某些模型可能需要特殊存取權限（如 GPT-4.5）\n- 嘗試切換到其他模型測試\n\n### 4. 檢查網路連線\n- 確認能存取提供商的 API 端點\n- 如果使用代理，確認代理設定正確\n- 嘗試直接呼叫 API 測試：`curl https://api.openai.com/v1/models`\n\n### 5. 檢查逾時設定\n- 預設逾時通常為 30-60 秒\n- 複雜任務可能需要更長時間\n- 檢查是否有防火牆或安全軟體攔截\n\n### 6. 使用備援模型\n- 設定 fallback 模型鏈確保高可用\n- 主模型失敗時自動切換到備援模型\n\n## 快速修復\n\n在「健康中心」執行診斷 → 查看 model.reachable 檢查項。"
+  }
+}

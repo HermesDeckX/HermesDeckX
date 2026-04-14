@@ -1,0 +1,7 @@
+{
+  "name": "Webhook Mapping Config Snippet",
+  "description": "Example webhook mapping config for GitHub push/PR event notifications to chat channels",
+  "content": {
+    "snippet": "// hooks.mappings configuration example\n// Add the following mappings in Config Center → Hooks\n\n// Mapping 1: GitHub Push event → Notify via Telegram\n{\n  \"id\": \"github-push\",\n  \"match\": {\n    \"path\": \"/github\",\n    \"source\": \"github\"\n  },\n  \"action\": \"agent\",\n  \"messageTemplate\": \"GitHub Push event: {{body.repository.full_name}} received {{body.commits.length}} commits, latest: {{body.head_commit.message}}\",\n  \"channel\": \"telegram\",\n  \"to\": \"YOUR_CHAT_ID\"\n}\n\n// Mapping 2: GitHub PR event → Wake AI for analysis\n{\n  \"id\": \"github-pr\",\n  \"match\": {\n    \"path\": \"/github-pr\"\n  },\n  \"action\": \"agent\",\n  \"messageTemplate\": \"New PR needs review: {{body.pull_request.title}} by {{body.pull_request.user.login}}, please analyze changes and provide suggestions.\",\n  \"channel\": \"telegram\",\n  \"model\": \"claude-sonnet\"\n}\n\n// Mapping 3: Generic Webhook → Wake heartbeat\n{\n  \"id\": \"generic-wake\",\n  \"match\": {\n    \"path\": \"/wake\"\n  },\n  \"action\": \"wake\",\n  \"wakeMode\": \"now\"\n}"
+  }
+}

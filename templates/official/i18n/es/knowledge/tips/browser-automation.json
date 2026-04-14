@@ -1,0 +1,7 @@
+{
+  "name": "Automatización del navegador",
+  "description": "Activar automatización del navegador para que la AI opere páginas web — llenar formularios, extraer información, automatizar procesos",
+  "content": {
+    "body": "## ¿Qué es la automatización del navegador?\n\nLa automatización del navegador permite que el asistente AI opere el navegador como una persona:\n- Abrir y navegar páginas web\n- Llenar formularios y hacer clic en botones\n- Extraer información de páginas web\n- Tomar capturas de pantalla\n\n## Configurar en HermesDeckX\n\n«Centro de configuración → Herramientas → Navegador»:\n\n### Configuración básica\n- **enabled** — Activar herramienta de navegador\n- **headless** — Modo sin cabeza (no mostrar ventana del navegador)\n- **defaultTimeout** — Tiempo de espera de operación\n\n### Configuración de seguridad\n- **allowedDomains** — Lista de dominios permitidos (recomendado)\n- **blockedDomains** — Dominios bloqueados\n- **maxPages** — Máximo de páginas abiertas simultáneamente\n\n## Campos de configuración\n\nRuta correspondiente: `tools.browser`"
+  }
+}

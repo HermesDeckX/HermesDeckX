@@ -1,0 +1,7 @@
+{
+  "name": "비용 최적화",
+  "description": "AI 사용 비용을 포괄적으로 절감 — 모델 선택, 압축, 하트비트, 도구 전략",
+  "content": {
+    "body": "## 비용 최적화 체크리스트\n\n### 1. 적절한 모델 선택\n- 일상 대화: GPT-4o-mini / Claude Haiku / Gemini Flash (저비용)\n- 복잡한 작업: GPT-4o / Claude Sonnet (필요시 사용)\n- 기본으로 가장 비싼 모델을 사용하지 않도록\n\n### 2. 압축 활성화\n- 「설정 센터 → 에이전트 → 압축」으로 이동\n- 적절한 threshold 설정 (권장 30000-50000)\n- memoryFlush를 활성화하여 정보 손실 방지\n\n### 3. 하트비트 최적화\n- 하트비트 모델은 가장 저렴한 모델 사용\n- 간격을 늘리기 (30-60분 등)\n- 활성 시간대를 설정하고 비근무 시간에 하트비트 중지\n\n### 4. 서브에이전트 전략\n- 서브에이전트는 저렴한 모델 사용 (GPT-4o-mini 등)\n- 서브에이전트 깊이와 수 제한\n\n### 5. 도구 제어\n- `minimal` 또는 `messaging` 프로필로 도구 정의 토큰 절감\n- 불필요한 도구 비활성화\n\n### 6. 세션 관리\n- 매일 자동 리셋 활성화\n- 정기적으로 /compact로 기록 압축\n\n## 설정 필드\n\n관련 경로: `agents.defaults.model`, `agents.defaults.compaction`, `heartbeat`, `tools.profile`"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Modèle ne répond pas",
+  "description": "Résoudre les problèmes lorsque le modèle AI ne répond pas ou expire — vérifier clé API, quota et réseau",
+  "content": {
+    "question": "Que faire si le modèle AI ne répond pas ou expire ?",
+    "answer": "## Étapes de résolution\n\n### 1. Vérifier la clé API\nAllez dans « Centre de configuration → Fournisseurs de modèles » :\n- Confirmez que la clé API est saisie et correcte\n- Confirmez qu'elle n'a pas expiré ou été révoquée\n- Essayez de régénérer la clé dans la console du fournisseur\n\n### 2. Vérifier le quota et le solde\n- **OpenAI** — Vérifiez la page d'utilisation sur platform.openai.com\n- **Anthropic** — Vérifiez l'utilisation sur console.anthropic.com\n- **Google** — Vérifiez le quota API dans Cloud Console\n\n### 3. Vérifier la disponibilité du modèle\n- Confirmez l'orthographe du nom du modèle\n- Certains modèles nécessitent des permissions spéciales\n- Essayez un autre modèle\n\n### 4. Vérifier la connexion réseau\n- Confirmez l'accès au point de terminaison API\n- Si proxy, vérifiez la configuration\n\n### 5. Utiliser un modèle de repli\n- Configurez une chaîne de modèles de repli\n\n## Solution rapide\n\nLancez un diagnostic → Vérifiez model.reachable."
+  }
+}

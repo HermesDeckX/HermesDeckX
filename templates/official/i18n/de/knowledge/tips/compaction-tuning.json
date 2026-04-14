@@ -1,0 +1,7 @@
+{
+  "name": "Komprimierungseinstellung",
+  "description": "Komprimierungsparameter für Gespräche feinabstimmen — Balance zwischen Kontexterhaltung und Token-Kosten",
+  "content": {
+    "body": "## Was ist Gesprächskomprimierung?\n\nWenn der Gesprächsverlauf zu lang wird, kondensiert die Komprimierung den Verlauf automatisch zu einer Zusammenfassung, wobei wichtige Informationen erhalten bleiben.\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Agent → Komprimierung »:\n\n### Hauptparameter\n\n- **threshold** — Token-Schwellenwert für Komprimierung (Standard 50000)\n  - Zu klein: häufige Komprimierung, Kontextverlust möglich\n  - Zu groß: hoher Token-Verbrauch, langsamere Antworten\n  - Empfohlen: 30000-80000\n\n- **maxOutputTokens** — Max. Länge der Zusammenfassung\n  - Empfohlen: 20-30% des threshold\n\n### Gedächtnis-Flush\n\n- **memoryFlush** — Wichtige Infos automatisch in MEMORY.md speichern\n  - Dringend empfohlen\n\n### Komprimierungsstrategie\n\n- `summarize` — Zusammenfassung erstellen (Standard, am effektivsten)\n- `truncate` — Alte Nachrichten abschneiden (schneller, aber Infoverlust)\n\n## Empfohlene Einstellungen\n\n**Alltag**: threshold=50000, memoryFlush=true\n**Programmierung**: threshold=80000, memoryFlush=true\n**Kostensensibel**: threshold=30000, memoryFlush=true\n\n## Konfigurationsfelder\n\nPfad: `agents.defaults.compaction`"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Mulai Cepat",
+  "description": "Instal, konfigurasi, dan mulai percakapan pertama dengan gateway HermesAgent dalam 5 menit",
+  "content": {
+    "body": "## Prasyarat\n\n- Node.js 22+ (LTS direkomendasikan)\n- Kunci API penyedia AI (OpenAI / Anthropic / Google, dll.)\n\n## Langkah\n\n### 1. Instal HermesAgent\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. Inisialisasi konfigurasi\n\n```bash\nhermesagent init\n```\n\n### 3. Mulai gateway\n\n```bash\nhermesagent gateway run\n```\n\n### 4. Hubungkan HermesDeckX\n\nBuka HermesDeckX dan masukkan alamat gateway.\n\n### 5. Hubungkan saluran chat (opsional)\n\n1. «Pusat Pengaturan → Saluran»\n2. Pilih jenis saluran\n3. Masukkan token bot\n4. Simpan",
+    "steps": [
+      "Instal Node.js 22+",
+      "npm install -g hermesagent@latest",
+      "hermesagent init",
+      "Masukkan kunci API",
+      "hermesagent gateway run",
+      "Hubungkan HermesDeckX"
+    ]
+  }
+}

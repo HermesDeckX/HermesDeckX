@@ -1,0 +1,7 @@
+{
+  "name": "ツール権限ポリシー",
+  "description": "ツール権限設定スニペット：シナリオに応じて AI が使用できるツールの範囲とアクセスレベルを制御",
+  "content": {
+    "snippet": "## ツールポリシー例\n\n### 最小権限（チャットのみ）\n```json\n{\n  \"tools\": {\n    \"profile\": \"minimal\"\n  }\n}\n```\n\n### コーディングアシスタント\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": {\n      \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"]\n    }\n  }\n}\n```\n\n### フルアクセス + カスタム制限\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": {\n      \"search\": { \"enabled\": true },\n      \"fetch\": { \"enabled\": false }\n    }\n  }\n}\n```\n\n### プロバイダー別\n```json\n{\n  \"tools\": {\n    \"byProvider\": {\n      \"openai\": { \"profile\": \"full\" },\n      \"anthropic\": { \"profile\": \"coding\" }\n    }\n  }\n}\n```"
+  }
+}

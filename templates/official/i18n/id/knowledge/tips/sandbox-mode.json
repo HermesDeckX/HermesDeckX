@@ -1,0 +1,7 @@
+{
+  "name": "Eksekusi Kode Sandbox",
+  "description": "Aktifkan Docker sandbox untuk eksekusi kode AI yang aman — isolasi sistem file dan akses jaringan",
+  "content": {
+    "body": "## Apa itu Mode Sandbox?\n\nMode sandbox menjalankan kode yang dihasilkan AI dalam container Docker terisolasi, mencegah modifikasi langsung file host atau permintaan jaringan tidak sah.\n\n## Mengapa Sandbox?\n\nTanpa sandbox, AI dapat:\n- Memodifikasi atau menghapus file sistem\n- Menjalankan perintah sembarangan\n- Mengakses data sensitif\n\nDengan sandbox:\n- Kode berjalan di container terisolasi\n- Akses file terkontrol (none / ro / rw)\n- Akses jaringan dibatasi\n- Penggunaan sumber daya terbatas\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Agen → Sandbox»:\n\n1. Aktifkan sandbox\n2. Pilih jenis: `docker` (direkomendasikan) atau `podman`\n3. Konfigurasi image Docker\n4. Atur mode akses workspace\n\n## Mode Akses Workspace\n\n| Mode | Deskripsi |\n|------|----------|\n| **none** | Tanpa akses ke file host |\n| **ro** | Hanya baca |\n| **rw** | Baca dan tulis |\n\n## Field Konfigurasi\n\nPath: `agents.defaults.sandbox`"
+  }
+}

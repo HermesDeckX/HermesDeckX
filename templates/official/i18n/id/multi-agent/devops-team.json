@@ -1,0 +1,32 @@
+{
+  "name": "Tim DevOps",
+  "description": "Tim respons insiden otomatis dan manajemen infrastruktur",
+  "agents": {
+    "monitor": {
+      "name": "Monitor",
+      "role": "Memantau sistem dan mendeteksi masalah"
+    },
+    "responder": {
+      "name": "First Responder",
+      "role": "Triase awal dan perbaikan cepat"
+    },
+    "engineer": {
+      "name": "SRE Engineer",
+      "role": "Investigasi mendalam dan perbaikan"
+    },
+    "communicator": {
+      "name": "Komunikator",
+      "role": "Update stakeholder"
+    }
+  },
+  "workflow": {
+    "description": "Alur kerja respons insiden"
+  },
+  "content": {
+    "examples": [
+      "Tangani downtime server",
+      "Respons peringatan CPU tinggi",
+      "Kelola insiden keamanan"
+    ]
+  }
+}

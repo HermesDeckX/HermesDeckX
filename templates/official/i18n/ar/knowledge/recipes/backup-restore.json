@@ -1,0 +1,13 @@
+{
+  "name": "النسخ الاحتياطي والاستعادة",
+  "description": "نسخ احتياطي لإعدادات وذاكرة وسجل محادثات HermesAgent مع دعم الترحيل لأجهزة جديدة",
+  "content": {
+    "body": "## ماذا تنسخ؟\n\n| العنصر | المسار | الأهمية |\n|--------|--------|--------|\n| ملف الإعدادات | `~/.hermesdeckx/config.yaml` | أساسي |\n| إعدادات الوكلاء | `~/.hermesdeckx/agents/` | أساسي |\n| ملفات الذاكرة | `~/.hermesdeckx/memory/` | مهم |\n| سجل الجلسات | `~/.hermesdeckx/sessions/` | اختياري |\n| بيانات الاعتماد | `~/.hermesdeckx/credentials/` | مهم |\n\n## طرق النسخ الاحتياطي\n\n### الطريقة 1: يدوي\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### الطريقة 2: CLI\n```bash\nhermesagent config export > backup.yaml\n```\n\n### الطريقة 3: واجهة HermesDeckX\n«تصدير الإعدادات» أسفل مركز الإعدادات.\n\n## الاستعادة\n\n1. تثبيت HermesAgent\n2. نسخ الملفات إلى `~/.hermesdeckx/`\n3. تشغيل البوابة",
+    "steps": [
+      "تحديد نطاق النسخ",
+      "تنفيذ النسخ",
+      "التخزين بأمان",
+      "للاستعادة، انسخ إلى ~/.hermesdeckx/ وأعد التشغيل"
+    ]
+  }
+}

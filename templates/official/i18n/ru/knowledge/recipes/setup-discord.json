@@ -1,0 +1,15 @@
+{
+  "name": "Настроить бота Discord",
+  "description": "Создать бота Discord и подключить его к шлюзу HermesAgent",
+  "content": {
+    "body": "## Создание бота Discord\n\n### 1. Создать приложение Discord\n1. Перейдите на discord.com/developers/applications\n2. «New Application»\n3. Страница «Bot» → «Add Bot»\n\n### 2. Получить токен\n1. «Reset Token»\n2. Скопировать токен\n3. Включить «Message Content Intent» (важно!)\n\n### 3. Пригласить бота на сервер\n1. «OAuth2 → URL Generator»\n2. Выбрать разрешение `bot`\n3. Скопировать URL и открыть\n4. Выбрать сервер\n\n### 4. Настроить в HermesDeckX\n1. «Центр настроек → Каналы»\n2. «Добавить канал» → Discord\n3. Вставить токен\n4. Сохранить\n\n## Поля конфигурации\n\nПуть: `channels[].type: \"discord\"`",
+    "steps": [
+      "Создать приложение в Discord",
+      "Создать бота и скопировать токен",
+      "Включить Message Content Intent",
+      "Сгенерировать ссылку-приглашение",
+      "Добавить канал Discord в HermesDeckX",
+      "Вставить токен и сохранить"
+    ]
+  }
+}

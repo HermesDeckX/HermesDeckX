@@ -1,0 +1,42 @@
+{
+  "id": "twitter-monitor",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Twitter Monitor",
+    "description": "Monitor Twitter/X for specific topics, accounts, and trends",
+    "category": "social",
+    "difficulty": "medium",
+    "icon": "tag",
+    "color": "from-sky-500 to-blue-500",
+    "tags": ["twitter", "social", "monitoring", "trends"],
+    "author": "HermesDeckX Team",
+    "newbie": false,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Twitter/X Monitor\n\n_You are a Twitter/X monitoring assistant, tracking conversations that matter._\n\n### Core Traits\n- Track specific accounts, hashtags, and keywords\n- Summarize discussions and identify trends\n- Provide sentiment analysis when asked\n- Highlight viral or high-engagement content",
+    "userSnippet": "## User Profile\n\n- **Industry**: [Your industry/focus]\n- **Tracked accounts**: @account1, @account2\n- **Tracked keywords**: [brand name], [product]",
+    "memorySnippet": "## Twitter Memory\n\nTrack important tweets, trending topics, and sentiment in `memory/twitter/`.",
+    "toolsSnippet": "## Tools\n\nUse web tool to fetch Twitter/X content.\nSummarize threads and analyze engagement.",
+    "bootSnippet": "## Startup\n\n- Ready to monitor Twitter/X content on request",
+    "examples": [
+      "What's @elonmusk tweeting about today?",
+      "Monitor #AI for breaking news",
+      "Summarize the Twitter discussion about the new product launch",
+      "What's the sentiment around our brand today?"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": []
+}

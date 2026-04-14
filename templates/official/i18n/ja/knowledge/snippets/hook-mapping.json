@@ -1,0 +1,7 @@
+{
+  "name": "GitHub PR フックマッピング",
+  "description": "Webhook マッピングスニペット：GitHub Pull Request イベントを AI コードレビュー指示に変換",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"GitHub PR 作成時に自動コードレビュー\"\n    mapping: |\n      GitHub Pull Request イベントを受信：\n\n      **リポジトリ**：{{repository.full_name}}\n      **タイトル**：{{pull_request.title}}\n      **作成者**：{{pull_request.user.login}}\n      **説明**：{{pull_request.body}}\n      **変更ファイル数**：{{pull_request.changed_files}}\n      **追加行数**：+{{pull_request.additions}}\n      **削除行数**：-{{pull_request.deletions}}\n\n      この PR をレビューしてください：\n      1. コード品質とベストプラクティスをチェック\n      2. 潜在的なバグとセキュリティ問題を探す\n      3. 改善提案を提供\n      4. フレンドリーで建設的なフィードバックを提供"
+  }
+}

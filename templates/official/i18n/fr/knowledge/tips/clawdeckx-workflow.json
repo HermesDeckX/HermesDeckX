@@ -1,0 +1,7 @@
+{
+  "name": "Flux de travail HermesDeckX",
+  "description": "Gérer efficacement l'assistant AI avec l'interface visuelle de HermesDeckX — raccourcis, navigation de panneaux et opérations avancées",
+  "content": {
+    "body": "## Raccourcis HermesDeckX\n\n| Raccourci | Fonction |\n|-----------|----------|\n| `Ctrl/Cmd + K` | Palette de commandes rapides |\n| `Ctrl/Cmd + ,` | Ouvrir les paramètres |\n| `Ctrl/Cmd + Shift + D` | Ouvrir le tableau de bord |\n| `Ctrl/Cmd + Shift + H` | Ouvrir le centre de santé |\n\n## Navigation des panneaux\n\n### Tableau de bord\n- Voir l'état de tous les canaux en temps réel\n- Surveiller l'utilisation des tokens et les coûts\n- Voir les sessions actives\n\n### Centre de configuration\n- Organisé par sections : Canaux, Modèles, Agents, Outils, Planification\n- Description et valeur par défaut pour chaque élément\n- Application immédiate après sauvegarde\n\n### Centre de santé\n- Diagnostic de tous les composants en un clic\n- Suggestions de correction automatique\n\n### Bibliothèque de templates de scénarios\n- Parcourir et installer des scénarios préétablis\n- Appliquer une configuration en un clic"
+  }
+}

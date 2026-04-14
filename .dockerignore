@@ -1,0 +1,38 @@
+# Git
+.git
+.gitattributes
+.gitignore
+
+# IDE / editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# CI/CD
+.github
+
+# Documentation
+*.md
+!README.md
+LICENSE
+
+# Development artifacts
+scripts/
+assets/screenshots/
+AGENTS.md
+COMMIT_CONVENTION.md
+
+# Frontend dev dependencies (rebuilt in Docker)
+web/node_modules
+web/dist
+
+# Go build cache
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (avoid recursive context)
+docker-compose.yml

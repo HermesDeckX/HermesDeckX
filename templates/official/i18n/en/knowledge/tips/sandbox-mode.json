@@ -1,0 +1,7 @@
+{
+  "name": "Sandbox Code Execution",
+  "description": "Enable Docker sandbox for safe AI code execution — isolate file system and network access",
+  "content": {
+    "body": "## What is Sandbox Mode?\n\nSandbox mode runs AI-generated code in an isolated Docker container, preventing it from directly modifying files on the host or making unauthorized network requests. This is the recommended approach for letting AI execute code.\n\n## Why Use a Sandbox?\n\nWithout a sandbox, AI can directly:\n- Modify or delete files on your system\n- Execute arbitrary commands\n- Access sensitive data\n\nWith a sandbox:\n- Code runs in an isolated container\n- File access is controllable (none / read-only / read-write)\n- Network access is restricted\n- Resource usage is limited (CPU, memory)\n\n## Configure in HermesDeckX\n\nGo to Config Center → Agents → Sandbox:\n\n1. Turn on \"Enable Sandbox\"\n2. Select sandbox type: `docker` (recommended) or `podman`\n3. Configure the Docker image (default: official HermesAgent sandbox image)\n4. Set workspace access mode\n\n## Workspace Access Modes\n\n| Mode | Description |\n|------|-------------|\n| **none** | No access to host files |\n| **ro** | Read-only access (AI can read but not modify) |\n| **rw** | Read-write access (AI can read and modify) |\n\n## Resource Limits\n\n- **memory** — Container memory limit (e.g., \"512m\", \"1g\")\n- **cpus** — CPU core limit (e.g., 1, 2)\n- **pidsLimit** — Maximum process count (prevents fork bombs)\n\n## Configuration Field\n\nConfig path: `agents.defaults.sandbox`"
+  }
+}

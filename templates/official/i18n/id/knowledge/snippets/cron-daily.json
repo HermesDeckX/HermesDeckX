@@ -1,0 +1,7 @@
+{
+  "name": "Heartbeat Ringkasan Harian",
+  "description": "Snippet konfigurasi heartbeat: kirim ringkasan harian berita, cuaca, dan tugas setiap pagi",
+  "content": {
+    "snippet": "## Pengecekan Heartbeat\n\n| Item | Aksi |\n|------|------|\n| Ringkasan harian | Periksa cuaca dan berita penting, kirim ringkasan pagi |\n| Pengingat tugas | Periksa tugas yang jatuh tempo hari ini |\n| Event kalender | Periksa event terjadwal |\n\nGunakan `target: \"none\"` saat notifikasi tidak diperlukan"
+  }
+}

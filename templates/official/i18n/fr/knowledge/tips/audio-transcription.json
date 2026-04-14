@@ -1,0 +1,7 @@
+{
+  "name": "Transcription audio",
+  "description": "Activer la transcription audio pour que l'assistant AI comprenne les messages vocaux. Supporte Whisper, Groq, Gemini",
+  "content": {
+    "body": "## Pourquoi activer la transcription audio ?\n\nDe nombreuses plateformes de chat supportent les messages vocaux. En activant la transcription, l'assistant AI peut :\n- Convertir automatiquement les messages vocaux en texte\n- Comprendre et répondre au contenu vocal\n- Supporter la reconnaissance vocale multilingue\n\n## Fournisseurs supportés\n\n| Fournisseur | Caractéristiques | Coût |\n|-------------|-----------------|------|\n| **OpenAI Whisper** | Haute précision, multilingue | Par durée |\n| **Groq** | Ultra rapide | Par durée |\n| **Gemini** | Multimodal natif | Par tokens |\n\n## Configurer dans HermesDeckX\n\n1. Allez dans « Centre de configuration → Outils »\n2. Trouvez la zone « Transcription audio »\n3. Activez l'interrupteur\n4. Sélectionnez le fournisseur\n5. Confirmez que la clé API est configurée\n\n## Champs de configuration\n\nChemin : `tools.audio.transcription`"
+  }
+}

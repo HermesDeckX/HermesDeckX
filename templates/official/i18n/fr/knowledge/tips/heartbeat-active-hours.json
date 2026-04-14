@@ -1,0 +1,7 @@
+{
+  "name": "Plage horaire active du heartbeat",
+  "description": "Configurer la plage horaire active du heartbeat AI — vérifier uniquement pendant les heures de travail, économiser des tokens la nuit et le week-end",
+  "content": {
+    "body": "## Pourquoi configurer une plage horaire ?\n\nLes tâches heartbeat consomment des tokens à chaque déclenchement. En fonctionnement 24h/24 :\n- Gaspillage de tokens la nuit et le week-end\n- Notifications intempestives\n- Réduction de coûts de 50-70% possible\n\n## Configurer dans HermesDeckX\n\n« Centre de configuration → Planification → Plage horaire active » :\n\n### Paramètres\n- **activeHoursStart** — Heure de début (ex : \"08:00\")\n- **activeHoursEnd** — Heure de fin (ex : \"22:00\")\n- **timezone** — Fuseau horaire (ex : \"Europe/Paris\")\n\n## Combinaison avec l'intervalle heartbeat\n\n| Plage horaire | Intervalle | Déclenchements/jour | Coût |\n|---------------|-----------|---------------------|------|\n| 8:00-22:00 | 30 min | 28 | Moyen |\n| 8:00-22:00 | 60 min | 14 | Faible |\n| 9:00-18:00 | 60 min | 9 | Minimal |\n\n## Champs de configuration\n\nChemins : `heartbeat.activeHoursStart`, `heartbeat.activeHoursEnd`, `heartbeat.timezone`"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "tip-tool-profiles",
+  "type": "tip",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "工具权限配置",
+    "description": "通过工具配置文件（profile）控制 AI 助手可以使用哪些工具，平衡能力与安全",
+    "category": "security",
+    "tags": ["tools", "profile", "permission", "security", "allow", "deny"],
+    "difficulty": "medium",
+    "i18n": {
+      "en": {
+        "name": "Tool Permission Profiles",
+        "description": "Control which tools your AI can use via profiles — balance capability and security"
+      }
+    }
+  },
+  "content": {
+    "body": "## 工具配置文件（Profile）\n\nHermesAgent 提供 4 种预设的工具配置文件，控制 AI 可以使用的工具范围：\n\n| Profile | 说明 | 适用场景 |\n|---------|------|----------|\n| **full** | 所有工具可用（默认） | 个人使用，信任环境 |\n| **coding** | 代码编辑、命令执行、文件操作 | 编程助手 |\n| **messaging** | 消息发送、基本对话 | 纯聊天场景 |\n| **minimal** | 最小权限，仅基本对话 | 高安全要求 |\n\n## 在 HermesDeckX 中配置\n\n1. 前往「配置中心 → 工具」\n2. 在「工具配置文件」下拉列表中选择合适的 Profile\n3. 如需更精细的控制，使用 allow/deny 列表\n\n## 精细权限控制\n\n- **deny** — 明确禁止的工具列表（黑名单）\n- **allow** — 仅允许的工具列表（白名单，覆盖 profile）\n- **alsoAllow** — 在 profile 基础上额外允许的工具\n- **byProvider** — 按提供商设置不同权限\n\n**注意：** allow 和 alsoAllow 不能同时使用。如果你设置了 allow，它会完全覆盖 profile 的工具列表。\n\n## 按代理设置不同权限\n\n每个代理可以有独立的工具权限。在「配置中心 → 代理」→ 选择代理 → 工具设置中配置。这样你可以让编程代理有完整权限，而聊天代理只有最小权限。\n\n## 配置字段\n\n对应配置路径：`tools.profile`\n\n值为 `minimal` | `coding` | `messaging` | `full`",
+    "editorSection": "tools",
+    "statusCheck": {
+      "type": "config_field",
+      "field": "tools.profile",
+      "okWhen": "truthy",
+      "okTemplate": "已设置工具配置文件",
+      "failTemplate": "使用默认 full 配置文件"
+    }
+  }
+}

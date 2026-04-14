@@ -1,0 +1,7 @@
+{
+  "name": "도구 권한 정책",
+  "description": "도구 권한 설정 스니펫: 시나리오에 따라 AI가 사용할 수 있는 도구 범위와 접근 레벨 제어",
+  "content": {
+    "snippet": "## 도구 정책 예시\n\n### 최소 권한 (채팅만)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### 코딩 어시스턴트\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### 전체 접근 + 사용자 정의 제한\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

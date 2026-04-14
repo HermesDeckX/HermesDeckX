@@ -1,0 +1,7 @@
+{
+  "name": "浏览器自动化",
+  "description": "启用浏览器自动化让 AI 助手可以浏览网页、填写表单、截图和交互",
+  "content": {
+    "body": "## 浏览器自动化能力\n\n启用后，AI 助手可以：\n- 打开网页并阅读内容\n- 点击按钮、填写表单\n- 截取页面截图\n- 执行 JavaScript 代码（evaluateEnabled）\n- 使用 Chrome DevTools Protocol (CDP) 进行高级操作\n\n## 在 HermesDeckX 中配置\n\n1. 前往「配置中心 → 浏览器」\n2. 打开「启用浏览器」开关\n3. 推荐同时启用「页面评估」（evaluateEnabled）以获得完整交互能力\n\n## 配置选项\n\n| 选项 | 说明 | 默认值 |\n|------|------|--------|\n| **enabled** | 是否启用浏览器 | false |\n| **evaluateEnabled** | 允许在页面中执行 JS | false |\n| **headless** | 无头模式（不显示窗口） | true |\n| **noSandbox** | 关闭 Chrome 沙箱（容器环境需要） | false |\n| **executablePath** | 自定义 Chrome 路径 | 自动检测 |\n\n## 浏览器配置文件（Profiles）\n\n你可以创建多个浏览器配置文件，每个有独立的 CDP 端口和设置：\n\n- 前往「配置中心 → 浏览器 → 配置文件」\n- 添加新配置文件，指定 cdpPort 或 cdpUrl\n- 适用场景：一个 profile 用于自动化，另一个用于登录态保持\n\n## SSRF 安全策略\n\n默认禁止浏览器访问内网地址（防止 SSRF 攻击）。如果你需要访问内网服务：\n- 在「SSRF 策略」中添加 allowedHostnames\n- **不建议** 启用 allowPrivateNetwork，除非你完全信任 AI 的操作\n\n## 配置字段\n\n对应配置路径：`browser.enabled` 和 `browser.evaluateEnabled`"
+  }
+}

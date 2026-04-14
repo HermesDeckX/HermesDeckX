@@ -1,0 +1,7 @@
+{
+  "name": "Pencarian Web Lanjutan",
+  "description": "Aktifkan pencarian web agar asisten AI mendapatkan informasi terkini secara real-time. Mendukung Brave, Perplexity, Gemini, Grok, Kimi",
+  "content": {
+    "body": "## Mengapa Mengaktifkan Pencarian Web?\n\nModel AI memiliki tanggal cutoff data pelatihan. Dengan pencarian web, asisten dapat:\n- Mencari berita, cuaca, harga saham real-time\n- Mencari dokumentasi teknis dan referensi API\n- Memverifikasi akurasi pengetahuannya sendiri\n\n## Penyedia Pencarian yang Didukung\n\n| Penyedia | Fitur | Kunci API |\n|----------|-------|----------|\n| **Brave** | Privasi, kuota gratis | Diperlukan |\n| **Perplexity** | Hasil ditingkatkan AI | Diperlukan |\n| **Gemini** | Kemampuan Google Search | Diperlukan |\n| **Grok** | Integrasi platform X | Diperlukan |\n| **Kimi** | Dioptimalkan untuk Cina | Diperlukan |\n\n## Konfigurasi di HermesDeckX\n\n1. «Pusat Pengaturan → Tools»\n2. Area «Pencarian Web»\n3. Aktifkan sakelar\n4. Pilih penyedia\n5. Masukkan kunci API\n\n## Parameter yang Dapat Disesuaikan\n\n- **maxResults** — Maksimum hasil (default 5)\n- **timeoutSeconds** — Batas waktu\n- **cacheTtlMinutes** — Durasi cache\n\n## Field Konfigurasi\n\nPath: `tools.web.search.enabled` dan `tools.web.search.provider`"
+  }
+}

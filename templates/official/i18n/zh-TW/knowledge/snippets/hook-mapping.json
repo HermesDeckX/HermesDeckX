@@ -1,0 +1,7 @@
+{
+  "name": "GitHub PR 鉤子映射",
+  "description": "Webhook 映射片段：將 GitHub Pull Request 事件轉換為 AI 程式碼審查指令",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"GitHub PR 建立時自動審查程式碼\"\n    mapping: |\n      收到 GitHub Pull Request 事件：\n\n      **儲存庫**：{{repository.full_name}}\n      **標題**：{{pull_request.title}}\n      **作者**：{{pull_request.user.login}}\n      **描述**：{{pull_request.body}}\n      **變更檔案數**：{{pull_request.changed_files}}\n      **新增行數**：+{{pull_request.additions}}\n      **刪除行數**：-{{pull_request.deletions}}\n\n      請審查此 PR：\n      1. 檢查程式碼品質和最佳實踐\n      2. 尋找潛在的 bug 和安全問題\n      3. 提供改進建議\n      4. 以友善、建設性的方式回饋"
+  }
+}

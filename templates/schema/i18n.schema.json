@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HermesDeckX Template i18n Schema",
+  "type": "object",
+  "description": "Template translation override file",
+  "patternProperties": {
+    "^[a-z0-9-]+$": {
+      "type": "object",
+      "description": "Translation for template ID",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "content": {
+          "type": "object",
+          "properties": {
+            "soulSnippet": { "type": "string" },
+            "heartbeatSnippet": { "type": "string" },
+            "examples": { "type": "array", "items": { "type": "string" } },
+            "body": { "type": "string", "description": "Translated markdown body for knowledge items" },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              },
+              "description": "Translated recipe steps (title + description only, code stays original)"
+            },
+            "snippet": { "type": "string", "description": "Translated snippet (rare, most snippets are language-neutral)" },
+            "question": { "type": "string", "description": "Translated FAQ question" },
+            "answer": { "type": "string", "description": "Translated FAQ answer" }
+          }
+        },
+        "agents": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9-]+$": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "role": { "type": "string" },
+                "description": { "type": "string" }
+              }
+            }
+          }
+        },
+        "workflow": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "steps": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

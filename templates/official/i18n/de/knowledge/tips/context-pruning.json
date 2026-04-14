@@ -1,0 +1,7 @@
+{
+  "name": "Kontextbereinigung",
+  "description": "Kontextmenge für die AI steuern — unnötige Systemprompts und Verlaufsnachrichten reduzieren, um Tokens zu sparen",
+  "content": {
+    "body": "## Warum Kontext bereinigen?\n\nJede AI-Anfrage sendet den vollständigen Kontext:\n- Systemprompts (SOUL.md, USER.md usw.)\n- Gesprächsverlauf\n- Werkzeugdefinitionen\n- Gedächtnisinhalte\n\nMehr Kontext = höhere Kosten und potenziell langsamere Antworten.\n\n## Bereinigungsstrategien\n\n### 1. Systemprompts optimieren\n- SOUL.md knapp halten (unter 500 Wörter empfohlen)\n- Unnötige Erklärungen entfernen\n- Aufzählungspunkte statt lange Absätze\n\n### 2. Verlauf kontrollieren\n- Komprimierung aktivieren\n- Auto-Reset konfigurieren\n- `/compact` manuell nutzen\n\n### 3. Werkzeuganzahl begrenzen\n- Passendes Werkzeugprofil verwenden\n- Jede Werkzeugdefinition verbraucht Tokens\n\n### 4. Gedächtnis optimieren\n- Alte Dateien regelmäßig bereinigen\n\n## Kostenauswirkung\n\n| Optimierung | Token-Einsparung |\n|-------------|------------------|\n| Systemprompt-Bereinigung | 10-20% |\n| Komprimierung | 30-60% |\n| Werkzeugprofil minimal vs full | 15-25% |\n| Gedächtnisoptimierung | 5-15% |\n\n## Konfigurationsfelder\n\nPfade: `agents.defaults.compaction`, `tools.profile`, `session.autoReset`"
+  }
+}

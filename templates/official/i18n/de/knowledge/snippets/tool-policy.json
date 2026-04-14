@@ -1,0 +1,7 @@
+{
+  "name": "Werkzeug-Berechtigungsrichtlinie",
+  "description": "Werkzeug-Berechtigungs-Snippet: Umfang und Zugriffslevel der AI-Werkzeuge je nach Szenario steuern",
+  "content": {
+    "snippet": "## Werkzeugrichtlinien-Beispiele\n\n### Minimale Berechtigungen (nur Chat)\n```json\n{ \"tools\": { \"profile\": \"minimal\" } }\n```\n\n### Programmierassistent\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": { \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"] }\n  }\n}\n```\n\n### Vollzugriff + benutzerdefinierte Einschränkungen\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": { \"search\": { \"enabled\": true }, \"fetch\": { \"enabled\": false } }\n  }\n}\n```"
+  }
+}

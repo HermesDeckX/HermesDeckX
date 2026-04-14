@@ -1,0 +1,8 @@
+{
+  "name": "Problema de permisos del sandbox",
+  "description": "Resolver problemas de permisos insuficientes del sandbox Docker, acceso denegado a archivos o fallo al iniciar contenedor",
+  "content": {
+    "question": "¿Qué hacer si hay problemas de permisos en modo sandbox?",
+    "answer": "## Problemas comunes de permisos\n\n### 1. Docker no instalado o no ejecutándose\n- Confirme que Docker Desktop está instalado y ejecutándose\n- **Windows**: Abra la aplicación Docker Desktop\n- **macOS**: Abra Docker Desktop\n- **Linux**: `sudo systemctl start docker`\n\n### 2. Fallo al iniciar contenedor\nCausas comunes:\n- La imagen Docker no existe: ejecute `docker pull`\n- Memoria insuficiente: aumente el límite de memoria de Docker\n- Espacio en disco insuficiente: limpie imágenes y contenedores no utilizados\n\n### 3. Acceso denegado a archivos\n- Verifique el modo de acceso al workspace: `none` / `ro` / `rw`\n- Si necesita escritura, cambie el modo a `rw`\n- Confirme que la ruta de montaje es correcta\n\n### 4. Problemas de acceso a red\n- El sandbox puede restringir el acceso a red por defecto\n- Si necesita red, confirme que la política de red lo permite\n\n### 5. Permisos de ejecución\n- Algunos scripts pueden requerir permisos de ejecución\n- Confirme que el usuario dentro del contenedor tiene permisos suficientes\n\n## Alternativas\n\nSi el sandbox Docker tiene problemas, temporalmente:\n- Desactive el modo sandbox (solo en entornos confiables)\n- Use un modo de acceso más permisivo\n- Use Podman como runtime de contenedor alternativo\n\n## Campos de configuración\n\nRuta correspondiente: `agents.defaults.sandbox`"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Modo de pensamento",
+  "description": "Ativar pensamento profundo para melhorar capacidade de raciocínio complexo — melhorar qualidade em matemática, programação e análise",
+  "content": {
+    "body": "## O que é o modo de pensamento?\n\nO modo de pensamento (pensamento estendido, cadeia de pensamento) permite que a AI « pense passo a passo » antes de responder.\n\n## Quando usar?\n\n| Tipo de tarefa | Recomendado? |\n|---------------|-------------|\n| Matemática/lógica complexa | ✅ Sim |\n| Programação multi-etapas | ✅ Sim |\n| Análise de dados | ✅ Sim |\n| Q&A simples | ❌ Não (desperdício de tokens) |\n| Conversa do dia a dia | ❌ Não |\n\n## Configurar no HermesDeckX\n\n### Modo padrão\n- **thinkingDefault**\n  - `off` — Sem pensamento (padrão)\n  - `minimal` — Pensamento breve\n  - `full` — Pensamento estendido completo\n\n### Alternar por conversa\n- `/think` — Ativar para próxima mensagem\n- `/think off` — Desativar\n\n## Impacto nos custos\n\n- **Pensamento breve:** ~20-50% tokens extras\n- **Pensamento completo:** ~50-200% tokens extras\n\n## Campos de configuração\n\nCaminho: `agents.defaults.thinkingDefault`"
+  }
+}

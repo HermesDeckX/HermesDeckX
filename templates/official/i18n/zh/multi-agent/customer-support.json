@@ -1,0 +1,28 @@
+{
+  "name": "客服团队",
+  "description": "分层客户支持，支持路由和升级",
+  "agents": {
+    "greeter": {
+      "name": "接待员",
+      "role": "初次接触和路由"
+    },
+    "specialist": {
+      "name": "支持专员",
+      "role": "处理常见问题"
+    },
+    "supervisor": {
+      "name": "主管",
+      "role": "处理升级问题"
+    }
+  },
+  "workflow": {
+    "description": "分层支持与升级"
+  },
+  "content": {
+    "examples": [
+      "帮助客户解决账单问题",
+      "排查产品问题",
+      "处理服务投诉"
+    ]
+  }
+}

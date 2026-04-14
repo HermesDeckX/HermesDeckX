@@ -1,0 +1,7 @@
+{
+  "name": "Browser-Automatisierung",
+  "description": "Browser-Automatisierung aktivieren, damit die AI Webseiten bedienen kann — Formulare ausfüllen, Informationen extrahieren, Prozesse automatisieren",
+  "content": {
+    "body": "## Was ist Browser-Automatisierung?\n\nBrowser-Automatisierung ermöglicht dem AI-Assistenten, den Browser wie ein Mensch zu bedienen:\n- Webseiten öffnen und navigieren\n- Formulare ausfüllen und Buttons klicken\n- Informationen von Webseiten extrahieren\n- Screenshots erstellen\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Werkzeuge → Browser »:\n\n### Grundeinstellungen\n- **enabled** — Browser-Tool aktivieren\n- **headless** — Headless-Modus\n- **defaultTimeout** — Zeitüberschreitung\n\n### Sicherheitseinstellungen\n- **allowedDomains** — Liste erlaubter Domains\n- **blockedDomains** — Blockierte Domains\n- **maxPages** — Max. gleichzeitig geöffnete Seiten\n\n## Konfigurationsfelder\n\nPfad: `tools.browser`"
+  }
+}

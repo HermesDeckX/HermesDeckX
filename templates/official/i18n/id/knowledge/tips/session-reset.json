@@ -1,0 +1,7 @@
+{
+  "name": "Auto-Reset Sesi",
+  "description": "Konfigurasi auto-reset sesi harian/mingguan untuk mencegah pertumbuhan konteks tanpa batas dan peningkatan biaya",
+  "content": {
+    "body": "## Mengapa Auto-Reset?\n\nTanpa reset:\n- Konteks tumbuh tanpa batas\n- Informasi lama mengencerkan kualitas\n- Biaya terus meningkat\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Sesi → Auto-Reset»:\n\n### Parameter\n- **enabled** — Aktifkan\n- **every** — Interval\n  - `24h` — Harian (direkomendasikan)\n  - `12h` — Dua kali sehari\n  - `7d` — Mingguan\n- **at** — Waktu (misal \"04:00\")\n- **timezone** — Zona waktu\n\n### Pertahankan Info Penting\n- **keepMemory** — Pertahankan MEMORY.md setelah reset\n- Aktifkan `memoryFlush` di pengaturan kompresi\n\n## Field Konfigurasi\n\nPath: `session.autoReset`"
+  }
+}

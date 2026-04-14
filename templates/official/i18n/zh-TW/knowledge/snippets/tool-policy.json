@@ -1,0 +1,7 @@
+{
+  "name": "工具權限策略",
+  "description": "工具權限設定片段：按場景控制 AI 可使用的工具範圍和存取層級",
+  "content": {
+    "snippet": "## 工具策略範例\n\n### 最小權限（純聊天）\n```json\n{\n  \"tools\": {\n    \"profile\": \"minimal\"\n  }\n}\n```\n\n### 程式設計助手\n```json\n{\n  \"tools\": {\n    \"profile\": \"coding\",\n    \"deny\": [\"exec.rm\", \"exec.sudo\"],\n    \"exec\": {\n      \"allowlist\": [\"node\", \"npm\", \"git\", \"python\"]\n    }\n  }\n}\n```\n\n### 完整存取 + 自訂限制\n```json\n{\n  \"tools\": {\n    \"profile\": \"full\",\n    \"deny\": [\"browser\"],\n    \"web\": {\n      \"search\": { \"enabled\": true },\n      \"fetch\": { \"enabled\": false }\n    }\n  }\n}\n```\n\n### 按提供商區分\n```json\n{\n  \"tools\": {\n    \"byProvider\": {\n      \"openai\": { \"profile\": \"full\" },\n      \"anthropic\": { \"profile\": \"coding\" }\n    }\n  }\n}\n```"
+  }
+}

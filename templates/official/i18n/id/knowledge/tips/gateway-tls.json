@@ -1,0 +1,7 @@
+{
+  "name": "Enkripsi TLS Gateway",
+  "description": "Aktifkan enkripsi HTTPS/TLS untuk gateway — lindungi akses jarak jauh dan komunikasi API",
+  "content": {
+    "body": "## Kapan TLS Diperlukan?\n\n- Akses gateway dari luar localhost (LAN, jaringan publik)\n- Akses melalui Tailscale / VPN (direkomendasikan)\n- Menyediakan endpoint Webhook\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Gateway → TLS»:\n\n### Metode 1: Sertifikat otomatis (paling mudah)\n- Aktifkan «TLS Otomatis»\n- Sertifikat self-signed dibuat otomatis\n- Untuk penggunaan pribadi dan jaringan internal\n\n### Metode 2: Sertifikat kustom\n- **cert** — File sertifikat (.pem)\n- **key** — File kunci privat (.pem)\n- Untuk produksi dan akses publik\n\n### Metode 3: Reverse proxy\n- Nginx / Caddy menangani TLS\n- Gateway menggunakan HTTP secara internal\n\n## Field Konfigurasi\n\nPath: `gateway.tls`"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Fluxo de trabalho HermesDeckX",
+  "description": "Gerenciar eficientemente o assistente AI com a interface visual do HermesDeckX — atalhos, navegação de painéis e operações avançadas",
+  "content": {
+    "body": "## Atalhos do HermesDeckX\n\n| Atalho | Função |\n|--------|--------|\n| `Ctrl/Cmd + K` | Paleta de comandos rápidos |\n| `Ctrl/Cmd + ,` | Abrir configurações |\n| `Ctrl/Cmd + Shift + D` | Abrir painel |\n| `Ctrl/Cmd + Shift + H` | Abrir centro de saúde |\n\n## Navegação de painéis\n\n### Painel de controle\n- Status em tempo real de todos os canais\n- Monitorar uso de tokens e custos\n- Ver sessões ativas\n\n### Centro de configurações\n- Seções: Canais, Modelos, Agentes, Ferramentas, Agendamento\n- Descrição e valor padrão para cada item\n- Aplicação imediata ao salvar\n\n### Centro de saúde\n- Diagnóstico com um clique\n- Sugestões de correção automática\n\n### Biblioteca de templates de cenários\n- Explorar e instalar cenários pré-configurados\n- Aplicar configuração com um clique"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Chaîne de modèles de repli",
+  "description": "Configurer des modèles de repli pour basculer automatiquement quand le modèle principal n'est pas disponible",
+  "content": {
+    "body": "## Pourquoi des modèles de repli ?\n\nLes fournisseurs AI peuvent être temporairement indisponibles (limites de débit, pannes, solde insuffisant). Une chaîne de repli permet à HermesAgent de tenter automatiquement le modèle suivant.\n\n## Configurer dans HermesDeckX\n\n1. « Centre de configuration → Modèles »\n2. « Modèles de repli » → « Ajouter un modèle de repli »\n3. Sélectionner fournisseur et modèle\n4. Ajouter plusieurs modèles par ordre de priorité\n\n## Stratégie de combinaison recommandée\n\n| Modèle principal | Repli 1 | Repli 2 |\n|-----------------|---------|----------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**Bonnes pratiques :**\n- Utiliser des **fournisseurs différents** pour principal et repli\n- Les modèles de repli peuvent être moins chers\n- Minimum 1 repli recommandé, idéalement 2+\n\n## Champs de configuration\n\nChemin : `agents.defaults.model.fallbacks`\n\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

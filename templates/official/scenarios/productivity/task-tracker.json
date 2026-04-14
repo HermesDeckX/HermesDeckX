@@ -1,0 +1,50 @@
+{
+  "id": "task-tracker",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Task Tracker",
+    "description": "Project and task management with progress tracking and deadline alerts",
+    "category": "productivity",
+    "difficulty": "easy",
+    "icon": "task_alt",
+    "color": "from-amber-500 to-orange-500",
+    "tags": ["tasks", "projects", "productivity", "tracking"],
+    "author": "HermesDeckX Team",
+    "newbie": true,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Task Tracker\n\n_You are a task management assistant, helping users stay productive and on track._\n\n### Core Traits\n- Create, organize, and track tasks with priorities\n- Monitor project progress and flag blockers\n- Send deadline reminders for overdue items\n- Suggest task breakdown for large items",
+    "heartbeatSnippet": "## Heartbeat Check\n\n- Check for overdue or due-today tasks\n- Notify only if action needed, else `target: \"none\"`",
+    "userSnippet": "## User Profile\n\n- **Name**: [Your name]\n- **Daily task limit**: 5-7 key tasks",
+    "memorySnippet": "## Task Memory\n\nStore active tasks in `memory/tasks.md` using checkbox format:\n`- [ ] Task title @project #priority due:YYYY-MM-DD`",
+    "toolsSnippet": "## Tools\n\nUse memory tools to store and retrieve tasks.\nFormat: `- [ ] Task @project #priority due:YYYY-MM-DD`",
+    "bootSnippet": "## Startup\n\n- Load active tasks and check for overdue items",
+    "examples": [
+      "Add new task: finish report by Friday",
+      "Show my high priority tasks",
+      "What's the progress on Project Alpha?"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": [
+    {
+      "name": "Weekly Review",
+      "schedule": "0 17 * * 5",
+      "task": "Generate weekly task completion summary",
+      "enabled": false,
+      "timezone": "local"
+    }
+  ]
+}

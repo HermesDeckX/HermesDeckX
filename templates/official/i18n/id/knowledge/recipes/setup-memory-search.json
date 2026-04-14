@@ -1,0 +1,14 @@
+{
+  "name": "Setup Pencarian Memori",
+  "description": "Aktifkan pencarian semantik memori agar AI bisa mencari percakapan lama dan pengetahuan tersimpan",
+  "content": {
+    "body": "## Apa itu Pencarian Memori?\n\nPencarian memori memungkinkan AI menemukan informasi relevan dalam file memori historis.\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Tools»:\n\n### 1. Aktifkan tool memori\n- Tool «Memori» harus aktif\n\n### 2. Aktifkan pencarian memori\n- Aktifkan sakelar «Pencarian Memori»\n- Pilih penyedia pencarian\n\n### 3. Konfigurasi indexing\n- **autoIndex** — Index file baru secara otomatis\n- **indexOnBoot** — Re-index saat boot\n- **maxResults** — Maksimum hasil",
+    "steps": [
+      "Pusat Pengaturan → Tools",
+      "Aktifkan tool memori",
+      "Aktifkan pencarian memori",
+      "Konfigurasi indexing",
+      "Simpan"
+    ]
+  }
+}

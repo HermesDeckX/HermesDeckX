@@ -1,0 +1,7 @@
+{
+  "name": "تعزيز الأمان",
+  "description": "إعداد أمني شامل — التحكم في الوصول وتقييد الأدوات وسياسات الشبكة والتشفير",
+  "content": {
+    "body": "## قائمة إعداد الأمان\n\n### 1. تفعيل المصادقة\n- وضع `token` (موصى) أو `password`\n- **إلزامي للوصول من خارج localhost**\n\n### 2. إعداد تشفير TLS\n- تفعيل TLS للوصول الخارجي\n\n### 3. تقييد الوصول للقنوات\nلكل قناة:\n- **allowFrom** — معرفات مستخدمين محددة فقط\n- **dmPolicy** — تقييد DM\n- **groupPolicy** — التحكم في ردود المجموعة\n\n### 4. تقييد الأدوات\n- ملف تعريف مناسب (`full` / `coding` / `messaging` / `minimal`)\n- قائمة deny للأدوات الخطيرة\n- exec allowlist للأوامر\n\n### 5. تفعيل صندوق الرمل\n- Docker sandbox لتنفيذ الكود\n- Workspace في `ro` افتراضياً\n\n## مستويات الأمان الموصاة\n\n| المستوى | السيناريو | الإعداد |\n|---------|----------|--------|\n| **أساسي** | شخصي، محلي | افتراضي |\n| **قياسي** | LAN / Tailscale | Auth + allowFrom |\n| **عالي** | شبكة عامة | Auth + TLS + allowFrom + sandbox + قيود |\n\n## حقول الإعدادات\n\nالمسارات: `gateway.auth`، `gateway.tls`، `channels[].allowFrom`، `tools.profile`، `agents.defaults.sandbox`"
+  }
+}

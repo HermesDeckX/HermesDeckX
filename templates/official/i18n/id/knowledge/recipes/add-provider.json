@@ -1,0 +1,14 @@
+{
+  "name": "Tambah Penyedia AI",
+  "description": "Konfigurasi kunci API dan opsi penyedia model AI seperti OpenAI, Anthropic, Google",
+  "content": {
+    "body": "## Penyedia yang Didukung\n\n| Penyedia | Contoh Model | Fitur |\n|----------|-------------|-------|\n| **OpenAI** | GPT-4o, GPT-4o-mini | Ekosistem paling matang |\n| **Anthropic** | Claude Sonnet, Haiku | Keamanan tinggi, konteks panjang |\n| **Google** | Gemini Pro, Flash | Multimodal, biaya rendah |\n| **DeepSeek** | DeepSeek Chat, Coder | Nilai terbaik |\n| **Ollama** | Llama, Mistral | Deploy lokal, gratis |\n\n## Konfigurasi di HermesDeckX\n\n1. «Pusat Pengaturan → Penyedia Model»\n2. «Tambah Penyedia»\n3. Pilih jenis dan masukkan kunci API\n4. Pilih model\n5. Simpan",
+    "steps": [
+      "Pusat Pengaturan → Penyedia",
+      "Tambah penyedia",
+      "Jenis dan kunci API",
+      "Pilih model",
+      "Simpan"
+    ]
+  }
+}

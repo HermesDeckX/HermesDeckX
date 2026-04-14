@@ -1,0 +1,15 @@
+{
+  "name": "Geplante Aufgaben einrichten",
+  "description": "Heartbeat-Aufgaben verwenden, damit die AI automatisch Prüfungen, Zusammenfassungen und Wartungsarbeiten durchführt",
+  "content": {
+    "body": "## Was sind Heartbeat-Aufgaben?\n\nHeartbeat ist das System für geplante Aufgaben in HermesAgent:\n- Tägliche Nachrichtenzusammenfassung senden\n- Stündlich E-Mails prüfen\n- Wöchentliche Berichte erstellen\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Planung »:\n\n- **enabled** — Heartbeat aktivieren\n- **intervalMinutes** — Ausführungsintervall\n- **model** — Günstiges Modell empfohlen\n\n### Aktive Zeitfenster\n- **activeHoursStart/End** — z.B. 8:00-22:00\n- **timezone** — Zeitzone\n\n## Konfigurationsfelder\n\nPfad: `heartbeat`",
+    "steps": [
+      "Einstellungszentrum → Planung",
+      "Heartbeat aktivieren",
+      "Intervall und Zeitfenster konfigurieren",
+      "Heartbeat-Modell auswählen",
+      "Anweisungen erstellen",
+      "Speichern"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "البداية السريعة",
+  "description": "ثبّت وهيّئ وابدأ أول محادثة مع بوابة HermesAgent في 5 دقائق",
+  "content": {
+    "body": "## المتطلبات\n\n- Node.js 22+ (يُنصح بإصدار LTS)\n- مفتاح API من مزود ذكاء اصطناعي (OpenAI / Anthropic / Google)\n\n## الخطوات\n\n### 1. تثبيت HermesAgent\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. تهيئة الإعدادات\n\n```bash\nhermesagent init\n```\n\n### 3. تشغيل البوابة\n\n```bash\nhermesagent gateway run\n```\n\n### 4. ربط HermesDeckX\n\nافتح HermesDeckX وأدخل عنوان البوابة.\n\n### 5. ربط قناة دردشة (اختياري)\n\n1. «مركز الإعدادات → القنوات»\n2. اختر نوع القناة\n3. أدخل توكن البوت\n4. احفظ",
+    "steps": [
+      "تثبيت Node.js 22+",
+      "npm install -g hermesagent@latest",
+      "hermesagent init",
+      "إدخال مفتاح API",
+      "hermesagent gateway run",
+      "ربط HermesDeckX"
+    ]
+  }
+}

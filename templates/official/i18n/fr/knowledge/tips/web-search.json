@@ -1,0 +1,7 @@
+{
+  "name": "Recherche web améliorée",
+  "description": "Activer la recherche web pour que l'assistant AI puisse consulter des informations actualisées en temps réel. Supporte Brave, Perplexity, Gemini, Grok, Kimi",
+  "content": {
+    "body": "## Pourquoi activer la recherche web ?\n\nLes modèles AI ont une date de coupure dans leurs données d'entraînement. Avec la recherche web, l'assistant peut :\n- Chercher des actualités, météo, cours de bourse en temps réel\n- Chercher de la documentation technique et des références API\n- Vérifier l'exactitude de ses connaissances\n\n## Fournisseurs de recherche supportés\n\n| Fournisseur | Caractéristiques | Clé API |\n|-------------|-----------------|----------|\n| **Brave** | Vie privée, quota gratuit | Requise |\n| **Perplexity** | Résultats améliorés par AI | Requise |\n| **Gemini** | Capacité de recherche Google | Requise |\n| **Grok** | Intégration plateforme X | Requise |\n| **Kimi** | Optimisé pour le chinois | Requise |\n\n## Configurer dans HermesDeckX\n\n1. « Centre de configuration → Outils »\n2. Zone « Recherche web »\n3. Activer l'interrupteur\n4. Sélectionner le fournisseur\n5. Entrer la clé API\n\n## Paramètres ajustables\n\n- **maxResults** — Maximum de résultats (défaut 5)\n- **timeoutSeconds** — Délai d'expiration\n- **cacheTtlMinutes** — Durée du cache\n\n## Champs de configuration\n\nChemins : `tools.web.search.enabled` et `tools.web.search.provider`"
+  }
+}

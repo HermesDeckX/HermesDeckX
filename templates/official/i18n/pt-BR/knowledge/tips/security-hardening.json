@@ -1,0 +1,7 @@
+{
+  "name": "Hardening de segurança",
+  "description": "Configuração abrangente de segurança — controle de acesso, restrição de ferramentas, políticas de rede e criptografia",
+  "content": {
+    "body": "## Checklist de configuração de segurança\n\n### 1. Ativar autenticação\n- Modo `token` (recomendado) ou `password`\n- **Obrigatório para acesso fora de localhost**\n\n### 2. Configurar criptografia TLS\n- Ativar TLS para acesso externo\n\n### 3. Restringir acesso aos canais\nPor canal:\n- **allowFrom** — Apenas IDs específicos podem usar o Bot\n- **dmPolicy** — Restringir DMs\n- **groupPolicy** — Controlar respostas em grupo\n\n### 4. Restringir permissões de ferramentas\n- Perfil adequado (`full` / `coding` / `messaging` / `minimal`)\n- Lista deny para ferramentas perigosas\n- exec allowlist para comandos\n\n### 5. Ativar sandbox\n- Docker sandbox para execução de código\n- Workspace em `ro` quando possível\n\n## Níveis de segurança recomendados\n\n| Nível | Cenário | Configuração |\n|-------|---------|-------------|\n| **Básico** | Pessoal, local | Padrão |\n| **Padrão** | LAN / Tailscale | Auth + allowFrom |\n| **Alto** | Rede pública | Auth + TLS + allowFrom + sandbox + restrições |\n\n## Campos de configuração\n\nCaminhos: `gateway.auth`, `gateway.tls`, `channels[].allowFrom`, `tools.profile`, `agents.defaults.sandbox`"
+  }
+}

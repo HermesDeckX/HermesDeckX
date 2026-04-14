@@ -1,0 +1,8 @@
+{
+  "name": "Função de memória não funciona",
+  "description": "Resolver problemas quando o assistente AI não consegue lembrar conteúdo de conversas anteriores ou preferências do usuário",
+  "content": {
+    "question": "O que fazer se o assistente AI não lembrar de conversas anteriores?",
+    "answer": "## Entender o mecanismo de memória\n\nO sistema de memória do HermesAgent tem dois níveis:\n1. **Memória de sessão** — Contexto da conversa atual (gerenciamento automático)\n2. **Memória persistente** — Informações salvas entre sessões (arquivo MEMORY.md)\n\n## Passos para resolução\n\n### 1. Verificar status da sessão\n- Se houve reset recente, o histórico foi apagado\n- Verificar se auto-reset está ativado\n- Verificar configurações de compactação\n\n### 2. Verificar configuração de memória persistente\n- Ferramenta `memory` está ativada?\n- MEMORY.md existe e tem conteúdo?\n- `memoryFlush` está ativado?\n\n### 3. Problemas comuns\n\n**AI esqueceu preferências**: Diga « Lembre-se: eu gosto de X »\n\n**Conversa parece desconexa**: Aumente `compaction.threshold`\n\n## Campos de configuração\n\nCaminhos: `agents.defaults.compaction`, `tools.memory`"
+  }
+}

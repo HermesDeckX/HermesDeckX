@@ -1,0 +1,7 @@
+{
+  "name": "Heartbeat résumé quotidien",
+  "description": "Snippet de configuration heartbeat : envoyer un résumé quotidien de nouvelles, météo et tâches chaque matin",
+  "content": {
+    "snippet": "## Vérification heartbeat\n\n| Élément | Action |\n|---------|--------|\n| Résumé quotidien | Vérifier la météo et les actualités, envoyer un résumé matinal |\n| Rappel de tâches | Vérifier les tâches à échéance aujourd'hui |\n| Événements calendrier | Vérifier les événements programmés |\n\nUtiliser `target: \"none\"` quand aucune notification n'est nécessaire"
+  }
+}

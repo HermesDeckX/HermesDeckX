@@ -1,0 +1,7 @@
+{
+  "name": "Roteamento multi-canal",
+  "description": "Atender múltiplas plataformas de chat com uma AI, com regras de comportamento diferentes por canal",
+  "content": {
+    "body": "## O que é roteamento multi-canal?\n\nO roteamento multi-canal conecta o assistente AI simultaneamente ao Telegram, Discord, WhatsApp, Signal, etc., com **regras independentes por canal**.\n\n## Por quê?\n\n- **Gestão unificada** — Uma AI para todas as plataformas\n- **Comportamento diferenciado** — Canal de trabalho formal, canal pessoal descontraído\n- **Controle de acesso** — Diferentes allowFrom e dmPolicy por canal\n\n## Configuração\n\n### 1. Adicionar múltiplos canais\nAdicionar plataformas e inserir Tokens.\n\n### 2. Configurar regras de roteamento\nCada canal configurável independentemente:\n- **dmPolicy** — Quem pode iniciar DM (`open` / `allowlist` / `closed`)\n- **allowFrom** — Lista branca\n- **groupPolicy** — Estratégia de resposta em grupo\n\n### 3. Override SOUL por canal\nCada canal pode ter seu próprio SOUL.md.\n\n## Campos de configuração\n\nCaminhos: `channels[].dmPolicy`, `channels[].allowFrom`, `channels[].groupPolicy`"
+  }
+}

@@ -1,0 +1,643 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/fonts/material-symbols-outlined-full.woff2') format('woff2');
+}
+
+@theme {
+  /* ── Brand ── */
+  --color-primary: #007bff;
+  --color-background-dark: #0f1923;
+
+  /* ── macOS Traffic Lights ── */
+  --color-mac-red: #ff5f57;
+  --color-mac-yellow: #febc2e;
+  --color-mac-green: #28c840;
+
+  /* ── Semantic Surface (light defaults; dark override below) ── */
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8fafc;
+  --color-surface-sunken: #f1f5f9;
+  --color-surface-overlay: rgba(255, 255, 255, 0.85);
+
+  /* ── Semantic Border ── */
+  --color-border: #e2e8f0;
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+
+  /* ── Semantic Text ── */
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-text-disabled: #cbd5e1;
+
+  /* ── Status ── */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* ── Spacing scale (reference) ── */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-badge: 6px;
+  --radius-input: 8px;
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* ── Sci-Tech Glow (light defaults) ── */
+  --glow-cyan: rgba(0, 200, 255, 0.15);
+  --glow-blue: rgba(0, 123, 255, 0.12);
+  --glow-purple: rgba(139, 92, 246, 0.10);
+  --glow-green: rgba(34, 197, 94, 0.12);
+  --glow-amber: rgba(245, 158, 11, 0.10);
+  --glow-red: rgba(239, 68, 68, 0.10);
+  --color-neon-cyan: #00c8ff;
+  --color-neon-blue: #3b82f6;
+  --color-neon-purple: #8b5cf6;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+/* ── Dark mode token overrides ── */
+.dark {
+  --color-surface: #1a1a1e;
+  --color-surface-raised: rgba(255, 255, 255, 0.03);
+  --color-surface-sunken: rgba(255, 255, 255, 0.02);
+  --color-surface-overlay: rgba(30, 30, 34, 0.92);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-text: rgba(255, 255, 255, 0.9);
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.35);
+  --color-text-disabled: rgba(255, 255, 255, 0.15);
+
+  /* ── Sci-Tech Glow (dark — vibrant) ── */
+  --glow-cyan: rgba(0, 210, 255, 0.35);
+  --glow-blue: rgba(59, 130, 246, 0.30);
+  --glow-purple: rgba(139, 92, 246, 0.25);
+  --glow-green: rgba(34, 197, 94, 0.30);
+  --glow-amber: rgba(245, 158, 11, 0.25);
+  --glow-red: rgba(239, 68, 68, 0.25);
+  --color-neon-cyan: #00d4ff;
+  --color-neon-blue: #60a5fa;
+  --color-neon-purple: #a78bfa;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease;
+}
+
+.mac-glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .mac-glass {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mac-window-shadow {
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.dark .mac-window-shadow {
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── 全局滚动条美化 ── */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right-rtl {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.25s ease-out;
+}
+
+[dir="rtl"] .animate-slide-in-right {
+  animation-name: slide-in-right-rtl;
+}
+
+@keyframes mac-toast-in {
+  from {
+    transform: translateY(-20px) scale(0.96);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mac-toast-out {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-20px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+.animate-mac-toast-in {
+  animation: mac-toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-mac-toast-out {
+  animation: mac-toast-out 0.25s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shimmer-rtl {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
+
+[dir="rtl"] .animate-shimmer {
+  animation-name: shimmer-rtl;
+}
+
+/* ── macOS Window Animations ── */
+@keyframes win-open {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes win-close {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+
+.animate-win-open {
+  animation: win-open 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-win-close {
+  animation: win-close 0.2s cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+
+/* Minimize genie — scale down + slide to bottom */
+@keyframes win-minimize {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.15) translateY(60vh);
+    opacity: 0;
+  }
+}
+
+.animate-win-minimize {
+  animation: win-minimize 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+  pointer-events: none;
+}
+
+/* Dock bounce notification */
+@keyframes dock-bounce {
+  0%, 100% { transform: translateY(0); }
+  20% { transform: translateY(-14px); }
+  40% { transform: translateY(0); }
+  55% { transform: translateY(-8px); }
+  70% { transform: translateY(0); }
+  82% { transform: translateY(-3px); }
+  92% { transform: translateY(0); }
+}
+
+.animate-dock-bounce {
+  animation: dock-bounce 0.8s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+/* Window drag shadow enhancement */
+.mac-window-shadow-drag {
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.dark .mac-window-shadow-drag {
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+/* Window inactive state — dimmed title bar */
+.mac-window-inactive header {
+  opacity: 0.6;
+}
+
+.mac-window-shadow-inactive {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.dark .mac-window-shadow-inactive {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* ── Markdown body styles ── */
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+.markdown-body h1 { font-size: 1.25em; }
+.markdown-body h2 { font-size: 1.1em; }
+.markdown-body h3 { font-size: 1em; }
+.markdown-body p { margin: 0.4em 0; }
+.markdown-body ul, .markdown-body ol { padding-inline-start: 1.5em; margin: 0.4em 0; }
+.markdown-body li { margin: 0.15em 0; }
+.markdown-body blockquote {
+  border-inline-start: 3px solid rgba(0, 0, 0, 0.1);
+  padding-inline-start: 0.8em;
+  margin: 0.5em 0;
+  opacity: 0.8;
+}
+.dark .markdown-body blockquote {
+  border-inline-start-color: rgba(255, 255, 255, 0.1);
+}
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin: 0.8em 0;
+}
+.dark .markdown-body hr {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Streaming cursor blink ── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-cursor-blink {
+  animation: cursor-blink 0.8s step-end infinite;
+}
+
+/* ── Card grid entrance animation ── */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-card-enter {
+  animation: card-enter 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Image gallery fade-in ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* ═══════════════════════════════════════════
+   Sci-Tech Glow System
+   Pure CSS — zero JS overhead
+   ═══════════════════════════════════════════ */
+
+/* ── Glow border utilities ── */
+.glow-border-cyan {
+  box-shadow: 0 0 0 1px var(--glow-cyan), 0 0 12px var(--glow-cyan), inset 0 0 8px rgba(0, 210, 255, 0.03);
+}
+.glow-border-blue {
+  box-shadow: 0 0 0 1px var(--glow-blue), 0 0 12px var(--glow-blue), inset 0 0 8px rgba(59, 130, 246, 0.03);
+}
+.glow-border-purple {
+  box-shadow: 0 0 0 1px var(--glow-purple), 0 0 12px var(--glow-purple);
+}
+.glow-border-green {
+  box-shadow: 0 0 0 1px var(--glow-green), 0 0 12px var(--glow-green);
+}
+.glow-border-amber {
+  box-shadow: 0 0 0 1px var(--glow-amber), 0 0 10px var(--glow-amber);
+}
+.glow-border-red {
+  box-shadow: 0 0 0 1px var(--glow-red), 0 0 10px var(--glow-red);
+}
+
+/* Subtle glow — for hover/focus states */
+.glow-subtle-cyan {
+  box-shadow: 0 0 8px var(--glow-cyan);
+}
+.glow-subtle-blue {
+  box-shadow: 0 0 8px var(--glow-blue);
+}
+
+/* ── Focus glow for inputs ── */
+.glow-focus-ring:focus-within {
+  box-shadow: 0 0 0 2px var(--glow-cyan), 0 0 16px var(--glow-cyan), 0 0 32px rgba(0, 210, 255, 0.08);
+}
+
+/* ── Text glow ── */
+.text-glow-cyan {
+  text-shadow: 0 0 8px var(--glow-cyan), 0 0 16px rgba(0, 210, 255, 0.15);
+}
+.text-glow-blue {
+  text-shadow: 0 0 6px var(--glow-blue);
+}
+.text-glow-green {
+  text-shadow: 0 0 6px var(--glow-green);
+}
+
+/* ── Breathing glow animation ── */
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.animate-glow-breathe {
+  animation: glow-breathe 2.5s ease-in-out infinite;
+}
+
+/* ── Glow pulse (for status indicators) ── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 4px var(--glow-cyan); }
+  50% { box-shadow: 0 0 12px var(--glow-cyan), 0 0 24px rgba(0, 210, 255, 0.15); }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-green {
+  0%, 100% { box-shadow: 0 0 4px var(--glow-green); }
+  50% { box-shadow: 0 0 12px var(--glow-green), 0 0 20px rgba(34, 197, 94, 0.12); }
+}
+.animate-glow-pulse-green {
+  animation: glow-pulse-green 2s ease-in-out infinite;
+}
+
+/* ── Neon underline sweep ── */
+@keyframes neon-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.neon-underline {
+  background: linear-gradient(90deg, transparent 0%, var(--color-neon-cyan) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: neon-sweep 3s linear infinite;
+}
+
+/* ── Scan line overlay (ultra-subtle, CSS-only) ── */
+.scan-lines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 210, 255, 0.015) 2px,
+    rgba(0, 210, 255, 0.015) 4px
+  );
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+
+/* ── Sci-tech card (reusable) ── */
+.sci-card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.sci-card:hover {
+  border-color: rgba(0, 123, 255, 0.15);
+  box-shadow: 0 0 8px var(--glow-blue);
+}
+.theme-panel {
+  background: color-mix(in srgb, var(--color-surface-raised) 88%, transparent);
+  border: 1px solid var(--color-border-subtle);
+}
+.dark .theme-panel {
+  background: color-mix(in srgb, var(--color-surface-raised) 100%, transparent);
+}
+.theme-field {
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-surface-sunken) 8%);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+.dark .theme-field {
+  background: color-mix(in srgb, var(--color-surface-sunken) 100%, transparent);
+}
+.theme-divider {
+  background: var(--color-border);
+}
+.theme-text-secondary {
+  color: var(--color-text-secondary);
+}
+.theme-text-muted {
+  color: var(--color-text-muted);
+}
+.dark .sci-card {
+  background: linear-gradient(135deg, rgba(30, 32, 40, 0.85), rgba(21, 23, 28, 0.85));
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.dark .sci-card:hover {
+  border-color: rgba(0, 210, 255, 0.2);
+  box-shadow: 0 0 12px var(--glow-cyan), 0 0 24px rgba(0, 210, 255, 0.06);
+}
+
+/* ── Sci-tech input ── */
+.sci-input {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.sci-input:focus, .sci-input:focus-within {
+  border-color: rgba(0, 123, 255, 0.3);
+  box-shadow: 0 0 8px var(--glow-blue);
+}
+.dark .sci-input:focus, .dark .sci-input:focus-within {
+  border-color: rgba(0, 210, 255, 0.25);
+  box-shadow: 0 0 12px var(--glow-cyan), 0 0 24px rgba(0, 210, 255, 0.06);
+}
+
+/* ── Neon scrollbar (dark mode) ── */
+.dark .neon-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 210, 255, 0.15);
+  border-radius: 10px;
+}
+.dark .neon-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 210, 255, 0.3);
+}
+
+/* ── Sci-tech badge glow ── */
+.sci-badge {
+  transition: box-shadow 0.2s ease;
+}
+.dark .sci-badge:hover {
+  box-shadow: 0 0 8px var(--glow-cyan);
+}
+
+/* ── Assistant message glow accent (left edge) ── */
+.msg-glow-accent {
+  position: relative;
+}
+.msg-glow-accent::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--color-neon-cyan);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.dark .msg-glow-accent::before {
+  opacity: 0.6;
+  box-shadow: 0 0 6px var(--glow-cyan);
+}
+
+/* ── Send button glow ── */
+@keyframes send-glow {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); }
+  50% { box-shadow: 0 4px 20px rgba(0, 123, 255, 0.5), 0 0 30px rgba(0, 123, 255, 0.15); }
+}
+.dark .send-btn-glow {
+  animation: send-glow 2s ease-in-out infinite;
+}
+
+/* ── Streaming dot glow ── */
+@keyframes stream-dot-glow {
+  0%, 100% { box-shadow: 0 0 4px var(--glow-cyan); opacity: 0.6; }
+  50% { box-shadow: 0 0 10px var(--glow-cyan); opacity: 1; }
+}
+.dark .stream-dot {
+  animation: stream-dot-glow 1.2s ease-in-out infinite;
+}
+
+/* ── Header divider neon line ── */
+.neon-divider {
+  position: relative;
+}
+.neon-divider::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-neon-cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.dark .neon-divider::after {
+  opacity: 0.3;
+}

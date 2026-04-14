@@ -1,0 +1,15 @@
+{
+  "name": "Setup Tugas Terjadwal",
+  "description": "Gunakan tugas heartbeat agar AI secara otomatis melakukan pengecekan, mengirim ringkasan, dan melakukan pemeliharaan",
+  "content": {
+    "body": "## Apa itu Heartbeat?\n\nHeartbeat adalah sistem tugas terjadwal HermesAgent:\n- Kirim ringkasan berita harian\n- Periksa email setiap jam\n- Buat laporan mingguan\n\n## Konfigurasi di HermesDeckX\n\n«Pusat Pengaturan → Penjadwalan»:\n\n- **enabled** — Aktifkan heartbeat\n- **intervalMinutes** — Interval eksekusi\n- **model** — Model ekonomis direkomendasikan\n\n### Jam aktif\n- **activeHoursStart/End** — misal 8:00-22:00\n- **timezone** — Zona waktu",
+    "steps": [
+      "Pusat Pengaturan → Penjadwalan",
+      "Aktifkan heartbeat",
+      "Atur interval dan waktu",
+      "Pilih model",
+      "Tulis instruksi",
+      "Simpan"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Routing Multi-Saluran",
+  "description": "Layani beberapa platform chat dengan satu AI, dengan aturan perilaku berbeda per saluran",
+  "content": {
+    "body": "## Apa itu Routing Multi-Saluran?\n\nRouting multi-saluran menghubungkan asisten AI secara bersamaan ke Telegram, Discord, WhatsApp, Signal, dll., dengan **aturan independen per saluran**.\n\n## Mengapa?\n\n- **Manajemen terpadu** — Satu AI untuk semua platform\n- **Perilaku berbeda** — Saluran kerja formal, pribadi santai\n- **Kontrol akses** — allowFrom dan dmPolicy berbeda per saluran\n\n## Konfigurasi\n\n### 1. Tambah beberapa saluran\nTambah platform dan masukkan token.\n\n### 2. Konfigurasi aturan routing\nSetiap saluran dikonfigurasi secara independen:\n- **dmPolicy** — Siapa yang bisa memulai DM (`open` / `allowlist` / `closed`)\n- **allowFrom** — Daftar putih\n- **groupPolicy** — Strategi respons grup\n\n### 3. Override SOUL per saluran\nSetiap saluran bisa memiliki SOUL.md sendiri.\n\n## Field Konfigurasi\n\nPath: `channels[].dmPolicy`, `channels[].allowFrom`, `channels[].groupPolicy`"
+  }
+}

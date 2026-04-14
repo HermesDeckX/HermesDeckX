@@ -1,0 +1,8 @@
+{
+  "name": "Kanal getrennt",
+  "description": "Fehlerbehebung bei getrennten Nachrichtenkanälen (Telegram, Discord, WhatsApp usw.) oder wenn Nachrichten nicht gesendet/empfangen werden können",
+  "content": {
+    "question": "Was tun, wenn ein Nachrichtenkanal getrennt ist oder keine Nachrichten senden/empfangen kann?",
+    "answer": "## Fehlerbehebungsschritte\n\n### 1. Kanalstatus im Dashboard prüfen\nÖffnen Sie das HermesDeckX-Dashboard und überprüfen Sie die Statusanzeigen:\n- 🟢 Verbunden — Normal\n- 🔴 Getrennt — Fehlerbehebung erforderlich\n- 🟡 Verbindung wird hergestellt — Warten oder erneuter Versuch\n\n### 2. Token-Gültigkeit prüfen\nGehen Sie zu « Einstellungszentrum → Kanäle »:\n- **Telegram** — Token könnte von BotFather zurückgesetzt worden sein\n- **Discord** — Token könnte im Developer Portal zurückgesetzt worden sein\n- **WhatsApp** — QR-Code-Sitzung könnte abgelaufen sein\n\n### 3. Netzwerkverbindung prüfen\n- Telegram und Discord benötigen Zugang zu API-Servern\n- WhatsApp nutzt WebSocket, stabiles Netzwerk erforderlich\n- Bei Proxy-Umgebung Proxy-Einstellungen überprüfen\n\n### 4. Kanaleinstellungen prüfen\n- Stellen Sie sicher, dass `enabled` nicht auf false steht\n- Prüfen Sie, ob `allowFrom`-Regeln nicht fälschlicherweise blockieren\n\n### 5. Neu verbinden\n- Klicken Sie auf « Neu verbinden » im Dashboard\n- Oder speichern Sie die Einstellungen, um eine Neuverbindung auszulösen\n- Letzter Ausweg: Gateway neu starten\n\n## Schnellfix\n\nDiagnose im « Gesundheitszentrum » ausführen → channel.connected prüfen."
+  }
+}

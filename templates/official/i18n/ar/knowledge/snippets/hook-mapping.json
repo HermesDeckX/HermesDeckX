@@ -1,0 +1,7 @@
+{
+  "name": "ربط hook لـ GitHub PR",
+  "description": "مقتطف ربط Webhook: تحويل أحداث GitHub Pull Request إلى تعليمات مراجعة كود AI",
+  "content": {
+    "snippet": "hooks:\n  - name: github-pr-review\n    description: \"مراجعة كود تلقائية عند إنشاء GitHub PR\"\n    mapping: |\n      تم استلام حدث GitHub Pull Request:\n\n      **المستودع**: {{repository.full_name}}\n      **العنوان**: {{pull_request.title}}\n      **المؤلف**: {{pull_request.user.login}}\n      **الوصف**: {{pull_request.body}}\n\n      يرجى مراجعة هذا PR:\n      1. فحص جودة الكود وأفضل الممارسات\n      2. البحث عن أخطاء محتملة ومشاكل أمنية\n      3. تقديم اقتراحات للتحسين\n      4. تقديم ملاحظات ودية وبنّاءة"
+  }
+}

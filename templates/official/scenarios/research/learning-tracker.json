@@ -1,0 +1,50 @@
+{
+  "id": "learning-tracker",
+  "version": "1.1.0",
+  "type": "scenario",
+  "metadata": {
+    "name": "Learning Tracker",
+    "description": "Track learning progress with spaced repetition and goal setting",
+    "category": "research",
+    "difficulty": "easy",
+    "icon": "school",
+    "color": "from-green-500 to-emerald-500",
+    "tags": ["learning", "education", "progress", "goals"],
+    "author": "HermesDeckX Team",
+    "newbie": true,
+    "costTier": "low"
+  },
+  "requirements": {
+    "skills": [],
+    "channels": []
+  },
+  "content": {
+    "soulSnippet": "## Learning Tracker\n\n_You are a learning coach, helping users learn effectively and retain knowledge._\n\n### Core Traits\n- Help set SMART learning goals and create study plans\n- Track progress, milestones, and streaks\n- Implement spaced repetition (1, 3, 7, 14, 30 day intervals)\n- Quiz users and identify struggling areas",
+    "userSnippet": "## Learner Profile\n\n- **Daily study time**: [e.g., 1 hour]\n- **Learning style**: [Visual / Auditory / Hands-on]",
+    "memorySnippet": "## Learning Memory\n\nTrack goals, spaced repetition queue, and progress log in `memory/learning/`.",
+    "toolsSnippet": "## Tools\n\nUse memory tools to track learning goals, progress, and review schedules.",
+    "bootSnippet": "## Startup\n\n- Load learning goals and check items due for review",
+    "examples": [
+      "I want to learn Python in 3 months",
+      "Quiz me on JavaScript fundamentals",
+      "What should I review today?",
+      "How am I progressing on my learning goals?"
+    ]
+  },
+  "skills": [
+    {
+      "name": "memory",
+      "permissions": ["read", "write"],
+      "config": {}
+    }
+  ],
+  "cronJobs": [
+    {
+      "name": "Daily Review Reminder",
+      "schedule": "0 8 * * *",
+      "task": "Check for spaced repetition items due for review",
+      "enabled": false,
+      "timezone": "local"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Gateway läuft nicht",
+  "description": "Fehlerbehebung wenn das HermesAgent-Gateway nicht startet oder abnormal funktioniert",
+  "content": {
+    "question": "Was tun, wenn das Gateway nicht startet oder abnormal funktioniert?",
+    "answer": "## Fehlerbehebungsschritte\n\n### 1. Gateway-Status prüfen\nStatusanzeige oben im HermesDeckX-Dashboard:\n- 🟢 Läuft — Normal\n- 🔴 Gestoppt — Muss gestartet werden\n- 🟡 Startet — Wartet\n\n### 2. Port-Nutzung prüfen\nDas Gateway nutzt standardmäßig Port 18789.\n- **Windows**: `netstat -ano | findstr 18789`\n- **macOS/Linux**: `lsof -i :18789`\n\n### 3. Konfigurationsdatei prüfen\n- `~/.hermesdeckx/config.yaml` muss existieren und korrekt formatiert sein\n- Häufige Fehler: YAML-Einrückungsfehler, ungültige JSON-Werte\n\n### 4. Node.js-Version prüfen\n- HermesAgent erfordert Node.js 18+\n- `node --version` zur Überprüfung\n- Node.js 22 LTS empfohlen\n\n### 5. Logs prüfen\n- Speicherort: `~/.hermesdeckx/logs/`\n\n### 6. Neuinstallation\n- `npm install -g hermesagent@latest`\n- Gateway neu starten\n\n## Schnellfix\n\n« Gateway starten » in HermesDeckX klicken oder `hermesagent gateway run` ausführen."
+  }
+}

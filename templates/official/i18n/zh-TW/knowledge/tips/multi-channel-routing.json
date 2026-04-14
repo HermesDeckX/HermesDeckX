@@ -1,0 +1,7 @@
+{
+  "name": "多頻道路由",
+  "description": "用一個 AI 服務多個聊天平台，每個頻道可有不同的行為規則",
+  "content": {
+    "body": "## 什麼是多頻道路由？\n\n多頻道路由讓你的 AI 助手同時連接 Telegram、Discord、WhatsApp、Signal 等聊天平台，**每個頻道可以有獨立的行為規則**。\n\n## 為什麼需要？\n\n- **統一管理** — 一個 AI 服務所有平台，無需分別部署\n- **差異化行為** — 工作頻道正式，個人頻道輕鬆\n- **存取控制** — 每個頻道不同的 allowFrom 白名單和 dmPolicy\n\n## 設定方法\n\n### 1. 新增多個頻道\n\n在「設定中心」的頻道區域，新增你想要的聊天平台並填入對應的 Token。\n\n### 2. 設定頻道路由規則\n\n每個頻道可以獨立設定：\n- **dmPolicy** — 控制誰可以發起私訊（`open` / `allowlist` / `closed`）\n- **allowFrom** — 白名單：僅允許特定使用者或群組\n- **groupPolicy** — 群組訊息的回應策略\n\n### 3. 頻道級 SOUL 覆寫\n\n每個頻道可以有自己的 SOUL.md，實現不同行為：\n- 工作頻道（Slack）→ 專業、簡潔\n- 個人頻道（Telegram）→ 輕鬆、有趣\n\n## 設定欄位\n\n對應設定路徑：`channels[].dmPolicy`、`channels[].allowFrom`、`channels[].groupPolicy`"
+  }
+}

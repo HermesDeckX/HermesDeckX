@@ -1,0 +1,7 @@
+{
+  "name": "模型備援鏈",
+  "description": "設定備援模型，主模型不可用時自動切換，確保 AI 助手持續運作",
+  "content": {
+    "body": "## 為什麼需要備援模型？\n\nAI 提供商可能因速率限制、服務中斷或帳戶餘額不足而暫時無法使用。設定備援鏈讓 HermesAgent 在主模型失敗時自動嘗試下一個模型，確保 AI 助手持續運作。\n\n## 在 HermesDeckX 中設定\n\n1. 前往「設定中心 → 模型」\n2. 在「備援模型」區域，點擊「新增備援模型」\n3. 從下拉選單選擇已設定的提供商和模型\n4. 可新增多個備援模型，按優先順序排列\n\n## 建議搭配策略\n\n| 主模型 | 備援 1 | 備援 2 |\n|--------|--------|--------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**最佳實踐：**\n- 主模型和備援模型使用**不同提供商**，避免單一提供商故障導致全部失效\n- 備援模型可以是較便宜的等級（如 gpt-4o-mini），在降級時節省成本\n- 建議至少設定 1 個備援模型，推薦 2 個\n\n## 設定欄位\n\n對應設定路徑：`agents.defaults.model.fallbacks`\n\n值為模型名稱陣列，如：\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

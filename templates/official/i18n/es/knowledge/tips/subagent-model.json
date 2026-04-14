@@ -1,0 +1,7 @@
+{
+  "name": "Selección de modelo de subagente",
+  "description": "Usar modelos más baratos para subagentes, reduciendo costos significativamente mientras se mantiene la calidad del agente principal",
+  "content": {
+    "body": "## ¿Qué son los subagentes?\n\nCuando el agente AI principal encuentra tareas complejas, puede generar subagentes para procesar subtareas en paralelo. Cada subagente es una llamada AI independiente que consume tokens individualmente.\n\n## Problema de costos\n\nSi los subagentes usan el mismo modelo caro que el principal:\n- Tareas complejas pueden generar 3-5 subagentes\n- Cada uno consume tokens a precio completo\n- El costo total se multiplica rápidamente\n\n## Solución: Usar modelos más baratos para subagentes\n\n«Centro de configuración → Agente → Subagentes»:\n- **model** — Establecer modelo más barato (gpt-4o-mini, claude-haiku, gemini-flash, etc.)\n- **maxSpawnDepth** — Limitar profundidad de anidamiento (recomendado: 1-2)\n- **maxConcurrent** — Máximo de subagentes simultáneos\n\n## Combinaciones recomendadas\n\n| Modelo principal | Modelo subagente | Ahorro |\n|-----------------|-----------------|--------|\n| claude-opus | claude-haiku | ~90% |\n| gpt-4.5 | gpt-4o-mini | ~95% |\n| gpt-4o | gpt-4o-mini | ~80% |\n| gemini-pro | gemini-flash | ~85% |\n\n## Campos de configuración\n\nRuta correspondiente: `agents.defaults.subagents`"
+  }
+}

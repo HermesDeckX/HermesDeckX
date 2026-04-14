@@ -1,0 +1,8 @@
+{
+  "name": "Gateway no está ejecutándose",
+  "description": "Solucionar problemas cuando el gateway de HermesAgent no puede iniciarse o funciona de manera anormal",
+  "content": {
+    "question": "¿Qué hacer si el gateway no puede iniciarse o funciona de manera anormal?",
+    "answer": "## Pasos de solución\n\n### 1. Verificar el estado del gateway\nVerifique el indicador de estado del gateway en la parte superior del panel de HermesDeckX:\n- 🟢 Ejecutándose — Normal\n- 🔴 Detenido — Necesita iniciarse\n- 🟡 Iniciando — Esperando\n\n### 2. Verificar uso del puerto\nEl gateway usa el puerto 18789 por defecto. Si el puerto está ocupado:\n- **Windows**: `netstat -ano | findstr 18789`\n- **macOS/Linux**: `lsof -i :18789`\n\n### 3. Verificar archivo de configuración\n- Confirme que `~/.hermesdeckx/config.yaml` existe y tiene formato correcto\n- Errores comunes: errores de indentación YAML, valores JSON inválidos\n\n### 4. Verificar versión de Node.js\n- HermesAgent requiere Node.js 18+\n- Ejecute `node --version` para verificar\n- Se recomienda Node.js 22 LTS\n\n### 5. Verificar logs\n- Ubicación de logs: `~/.hermesdeckx/logs/`\n- Revise mensajes de error recientes\n\n### 6. Reinstalar\n- `npm install -g hermesagent@latest`\n- Reiniciar el gateway\n\n## Solución rápida\n\nHaga clic en «Iniciar gateway» en HermesDeckX o ejecute `hermesagent gateway run` en la terminal."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Session Auto-Reset",
+  "description": "Configure daily/weekly session auto-reset to prevent unlimited context growth and cost increase",
+  "content": {
+    "body": "## Why Auto-Reset Sessions?\n\nWithout resetting:\n- Context grows indefinitely, sending more tokens with each request\n- Old irrelevant information dilutes response quality\n- API costs increase over time\n\n## Configure in HermesDeckX\n\nGo to Config Center → Session → Auto Reset:\n\n### Core Parameters\n\n- **enabled** — Enable auto reset\n- **every** — Reset interval\n  - `24h` — Reset daily (recommended for most users)\n  - `12h` — Reset twice daily\n  - `7d` — Reset weekly (for long-running projects)\n- **at** — Specific reset time (e.g., \"04:00\" for 4 AM, during low-usage hours)\n- **timezone** — Timezone for the reset time\n\n### Preserving Important Information\n\n- **keepMemory** — If enabled, MEMORY.md content survives the reset\n- Enable `memoryFlush` in compaction settings so important info is automatically saved to MEMORY.md before reset\n\n## Recommended Configuration\n\n**Daily Use:**\n```json\n\"autoReset\": {\n  \"enabled\": true,\n  \"every\": \"24h\",\n  \"at\": \"04:00\",\n  \"keepMemory\": true\n}\n```\n\n**Programming Projects (Longer Context Needed):**\n```json\n\"autoReset\": {\n  \"enabled\": true,\n  \"every\": \"7d\",\n  \"keepMemory\": true\n}\n```\n\n## Configuration Field\n\nConfig path: `session.autoReset`"
+  }
+}

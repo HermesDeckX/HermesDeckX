@@ -1,0 +1,8 @@
+{
+  "name": "Gateway Tidak Berjalan",
+  "description": "Mengatasi masalah gateway HermesAgent yang tidak bisa dimulai atau bekerja tidak normal",
+  "content": {
+    "question": "Apa yang harus dilakukan jika gateway tidak bisa dimulai atau bekerja tidak normal?",
+    "answer": "## Langkah Penyelesaian\n\n### 1. Periksa status gateway\nIndikator di bagian atas dasbor HermesDeckX:\n- 🟢 Berjalan — Normal\n- 🔴 Berhenti — Perlu dimulai\n- 🟡 Memulai — Menunggu\n\n### 2. Periksa penggunaan port\nGateway menggunakan port 18789 secara default.\n- **Windows**: `netstat -ano | findstr 18789`\n- **macOS/Linux**: `lsof -i :18789`\n\n### 3. Periksa file konfigurasi\n- `~/.hermesdeckx/config.yaml` harus ada dan berformat benar\n\n### 4. Periksa versi Node.js\n- HermesAgent memerlukan Node.js 18+\n- Periksa dengan `node --version`\n- Node.js 22 LTS direkomendasikan\n\n### 5. Periksa log\n- Lokasi: `~/.hermesdeckx/logs/`\n\n### 6. Instal ulang\n- `npm install -g hermesagent@latest`\n\n## Perbaikan Cepat\n\nKlik «Mulai Gateway» di HermesDeckX atau jalankan `hermesagent gateway run`."
+  }
+}

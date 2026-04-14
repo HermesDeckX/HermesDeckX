@@ -1,0 +1,8 @@
+{
+  "name": "Canal desconectado",
+  "description": "Solucionar problemas de canales de mensajería (Telegram, Discord, WhatsApp, etc.) desconectados o que no pueden enviar/recibir mensajes",
+  "content": {
+    "question": "¿Qué hacer si un canal de mensajería se desconecta o no puede enviar/recibir mensajes?",
+    "answer": "## Pasos de solución\n\n### 1. Verificar el estado del canal en el panel\nAbra el panel de HermesDeckX y verifique los indicadores de estado en la lista de canales:\n- 🟢 Conectado — Normal\n- 🔴 Desconectado — Requiere solución\n- 🟡 Conectando — Esperando o reintentando\n\n### 2. Verificar la validez del Token\nVaya a «Centro de configuración → Canales» y verifique el Token del canal correspondiente:\n- **Telegram** — El Token puede haber sido restablecido por BotFather\n- **Discord** — El Token puede haber sido restablecido en el Developer Portal\n- **WhatsApp** — La sesión del código QR puede haber expirado, necesita volver a escanear\n\n### 3. Verificar la conexión de red\n- Telegram y Discord necesitan acceso a sus servidores API\n- WhatsApp usa conexión WebSocket, requiere red estable\n- Si está en un entorno proxy, confirme que la configuración del proxy es correcta\n\n### 4. Verificar la configuración del canal\n- Confirme que `enabled` del canal no está en false\n- Confirme que no está bloqueado por reglas `allowFrom`\n\n### 5. Reconectar\n- Haga clic en el botón «Reconectar» del canal en el panel\n- O guarde la configuración en «Centro de configuración → Canales» para activar la reconexión\n- Último recurso: reiniciar el gateway\n\n## Solución rápida\n\nEjecute diagnóstico en el «Centro de salud» → Verifique el elemento channel.connected → Siga las instrucciones."
+  }
+}

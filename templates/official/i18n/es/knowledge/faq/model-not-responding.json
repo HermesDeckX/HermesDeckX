@@ -1,0 +1,8 @@
+{
+  "name": "Modelo no responde",
+  "description": "Solucionar problemas cuando el modelo AI no responde o agota el tiempo — verificar clave API, cuota y red",
+  "content": {
+    "question": "¿Qué hacer si el modelo AI no responde o agota el tiempo?",
+    "answer": "## Pasos de solución\n\n### 1. Verificar clave API\nVaya a «Centro de configuración → Proveedores de modelos»:\n- Confirme que la clave API está ingresada y es correcta\n- Confirme que la clave no ha expirado ni sido revocada\n- Intente regenerar la clave en la consola del proveedor\n\n### 2. Verificar cuota y saldo\n- **OpenAI** — Verifique la página de uso en platform.openai.com\n- **Anthropic** — Verifique el uso en console.anthropic.com\n- **Google** — Verifique la cuota API en Cloud Console\n\n### 3. Verificar disponibilidad del modelo\n- Confirme que el nombre del modelo seleccionado es correcto\n- Algunos modelos pueden requerir permisos especiales de acceso\n- Intente cambiar a otro modelo para probar\n\n### 4. Verificar conexión de red\n- Confirme que puede acceder al endpoint API del proveedor\n- Si usa proxy, confirme que la configuración es correcta\n\n### 5. Usar modelo de fallback\n- Configure una cadena de modelos de fallback para alta disponibilidad\n- El modelo principal falla y cambia automáticamente al modelo de fallback\n\n## Solución rápida\n\nEjecute diagnóstico en el «Centro de salud» → Verifique el elemento model.reachable."
+  }
+}

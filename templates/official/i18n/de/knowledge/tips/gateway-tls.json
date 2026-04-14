@@ -1,0 +1,7 @@
+{
+  "name": "Gateway-TLS-Verschlüsselung",
+  "description": "HTTPS/TLS-Verschlüsselung für das Gateway aktivieren — Fernzugriff und API-Kommunikation schützen",
+  "content": {
+    "body": "## Wann wird TLS benötigt?\n\n- Gateway-Zugriff außerhalb von localhost (LAN, öffentliches Netzwerk)\n- Zugriff über Tailscale / VPN (empfohlen)\n- Webhook-Endpunkte bereitstellen\n\n## In HermesDeckX konfigurieren\n\n« Einstellungszentrum → Gateway → TLS »:\n\n### Methode 1: Auto-generiertes Zertifikat (einfachste)\n- « Automatisches TLS » aktivieren\n- Selbst-signiertes Zertifikat wird generiert\n- Für persönliche Nutzung und interne Netzwerke\n\n### Methode 2: Eigenes Zertifikat\n- **cert** — Zertifikatsdatei (.pem)\n- **key** — Privater Schlüssel (.pem)\n- Für Produktion und öffentlichen Zugriff\n\n### Methode 3: Reverse Proxy\n- Nginx / Caddy übernimmt TLS\n- Gateway nutzt intern HTTP\n\n## Konfigurationsfelder\n\nPfad: `gateway.tls`"
+  }
+}

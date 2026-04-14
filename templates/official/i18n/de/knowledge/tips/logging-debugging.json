@@ -1,0 +1,7 @@
+{
+  "name": "Protokollierung und Debugging",
+  "description": "Log-Level, Ausgabeformat und Diagnosetools konfigurieren, um HermesAgent-Probleme effizient zu lösen",
+  "content": {
+    "body": "## Protokollierungskonfiguration\n\n« Einstellungszentrum → Protokollierung »:\n\n### Log-Level\n\n| Level | Beschreibung | Szenario |\n|-------|-------------|----------|\n| **silent** | Keine Ausgabe | Nicht empfohlen |\n| **error** | Nur Fehler | Produktion |\n| **warn** | Fehler + Warnungen | Produktion (empfohlen) |\n| **info** | Laufzeitinfos | Alltagsnutzung (Standard) |\n| **debug** | Debug-Infos | Temporär bei Problemen |\n| **trace** | Am detailliertesten | Tiefgehende Fehlerbehebung |\n\n### Konsolen-Ausgabeformat\n\n- **pretty** — Farbige Formatierung (Entwicklung)\n- **compact** — Kompakte Ausgabe (Produktion)\n- **json** — JSON-Format (Log-Sammelsysteme)\n\n## Konfigurationsfelder\n\nPfade: `logging` und `diagnostics`"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Profils de permissions d'outils",
+  "description": "Contrôler les outils disponibles pour l'AI via des profils — équilibrer capacité et sécurité",
+  "content": {
+    "body": "## Profils d'outils\n\nHermesAgent propose 4 profils d'outils préétablis :\n\n| Profil | Description | Scénario |\n|--------|-------------|----------|\n| **full** | Tous les outils (défaut) | Usage personnel, environnement de confiance |\n| **coding** | Édition de code, exécution, fichiers | Assistant programmation |\n| **messaging** | Envoi de messages, conversation | Chat uniquement |\n| **minimal** | Permissions minimales | Haute sécurité |\n\n## Configurer dans HermesDeckX\n\n1. « Centre de configuration → Outils »\n2. Sélectionner le profil dans le menu déroulant\n3. Pour un contrôle plus fin, utiliser les listes allow/deny\n\n## Contrôle fin des permissions\n\n- **deny** — Outils explicitement interdits\n- **allow** — Seuls outils autorisés (surcharge le profil)\n- **alsoAllow** — Outils supplémentaires autorisés\n- **byProvider** — Permissions différentes par fournisseur\n\n## Champs de configuration\n\nChemin : `tools.profile`\n\nValeurs : `minimal` | `coding` | `messaging` | `full`"
+  }
+}

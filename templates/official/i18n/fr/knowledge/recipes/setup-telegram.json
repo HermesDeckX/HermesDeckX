@@ -1,0 +1,14 @@
+{
+  "name": "Configurer un Bot Telegram",
+  "description": "Créer un Bot Telegram et le connecter à la passerelle HermesAgent",
+  "content": {
+    "body": "## Créer un Bot Telegram\n\n### 1. Créer le Bot via BotFather\n1. Cherchez @BotFather sur Telegram\n2. Envoyez `/newbot`\n3. Entrez le nom du Bot\n4. Entrez le nom d'utilisateur (doit finir par `bot`)\n5. BotFather retourne un Token, copiez-le\n\n### 2. Configurer dans HermesDeckX\n1. Allez dans « Centre de configuration → Canaux »\n2. « Ajouter canal » → Sélectionnez Telegram\n3. Collez le Token\n4. Sauvegardez\n\n### 3. Vérifier la connexion\n- Le canal Telegram devrait afficher 🟢\n- Envoyez un message au Bot\n- Le Bot devrait répondre\n\n## Champs de configuration\n\nChemin : `channels[].type: \"telegram\"`",
+    "steps": [
+      "Chercher @BotFather sur Telegram",
+      "Envoyer /newbot pour créer un Bot",
+      "Copier le Token",
+      "Ajouter canal Telegram dans HermesDeckX",
+      "Coller le Token et sauvegarder"
+    ]
+  }
+}

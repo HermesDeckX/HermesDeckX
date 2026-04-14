@@ -1,0 +1,73 @@
+{
+  "version": "1.1.0",
+  "name": "HermesDeckX Official Templates",
+  "description": "Official template collection for HermesDeckX",
+  "author": "HermesDeckX Team",
+  "homepage": "https://github.com/HermesDeckX/HermesDeckX",
+  "lastUpdated": "2026-03-05T00:00:00Z",
+  "categories": [
+    {
+      "id": "scenarios",
+      "name": "Scenarios",
+      "description": "Pre-configured scenario templates",
+      "path": "official/scenarios",
+      "version": "1.1.0",
+      "templateCount": 26,
+      "subcategories": [
+        { "id": "productivity", "name": "Productivity", "icon": "work" },
+        { "id": "social", "name": "Social Media", "icon": "share" },
+        { "id": "creative", "name": "Content Creation", "icon": "edit" },
+        { "id": "devops", "name": "DevOps", "icon": "terminal" },
+        { "id": "research", "name": "Research & Learning", "icon": "school" },
+        { "id": "finance", "name": "Finance", "icon": "payments" },
+        { "id": "family", "name": "Family & Home", "icon": "home" }
+      ]
+    },
+    {
+      "id": "multi-agent",
+      "name": "Multi-Agent Collaboration",
+      "description": "Multi-agent workflow templates",
+      "path": "official/multi-agent",
+      "version": "1.1.0",
+      "templateCount": 10,
+      "subcategories": [
+        { "id": "engineering", "name": "Engineering", "icon": "code" },
+        { "id": "content", "name": "Content Production", "icon": "article" },
+        { "id": "research", "name": "Research Teams", "icon": "biotech" },
+        { "id": "devops", "name": "DevOps Teams", "icon": "cloud" },
+        { "id": "support", "name": "Customer Support", "icon": "support_agent" },
+        { "id": "data", "name": "Data Pipeline", "icon": "analytics" },
+        { "id": "operations", "name": "Operations", "icon": "storefront" },
+        { "id": "education", "name": "Education", "icon": "school" },
+        { "id": "finance", "name": "Finance", "icon": "account_balance" }
+      ]
+    },
+    {
+      "id": "agents",
+      "name": "Agent Presets",
+      "description": "Agent personality and configuration presets",
+      "path": "official/agents",
+      "version": "1.0.1",
+      "templateCount": 6,
+      "subcategories": [
+        { "id": "personas", "name": "Personas", "icon": "person" }
+      ]
+    },
+    {
+      "id": "knowledge",
+      "name": "Knowledge Hub",
+      "description": "Recipes, tips, snippets, and FAQs for mastering HermesAgent",
+      "path": "official/knowledge",
+      "version": "1.0.0",
+      "templateCount": 0,
+      "subcategories": [
+        { "id": "recipes", "name": "Recipes", "icon": "menu_book" },
+        { "id": "tips", "name": "Tips & Tricks", "icon": "lightbulb" },
+        { "id": "snippets", "name": "Config Snippets", "icon": "code" },
+        { "id": "faq", "name": "FAQ", "icon": "help" }
+      ]
+    }
+  ],
+  "languages": ["en", "zh", "zh-TW", "ja", "ko", "es", "pt-BR", "de", "fr", "ru", "ar", "hi", "id"],
+  "defaultLanguage": "en"
+}

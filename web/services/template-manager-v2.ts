@@ -1,0 +1,612 @@
+import { Language } from '../types';
+import { templateI18n } from './template-i18n';
+import { templateSourceManager, TemplateSource } from './template-sources';
+import { cdnLoader, githubLoader, localLoader, templateCache, TemplateManifest } from './template-loaders';
+
+// Template types
+export interface TemplateMetadata {
+  name: string;
+  description: string;
+  category: string;
+  subcategory?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  icon?: string;
+  color?: string;
+  tags?: string[];
+  author?: string;
+  license?: string;
+  homepage?: string;
+  newbie?: boolean;
+  costTier?: 'low' | 'medium' | 'high';
+  source?: string; // Source ID
+  relatedTemplates?: string[];
+  updateFrequency?: 'static' | 'occasional' | 'frequent';
+  featured?: boolean;
+  lastUpdated?: string; // ISO 8601
+  /** 'single-agent': has per-file prompts suitable for single-agent workspace file writing.
+   *  'multi-agent': team-builder only, not suitable for single-agent file writing.
+   *  Omitted = legacy / no restriction. */
+  scope?: 'single-agent' | 'multi-agent';
+}
+
+export interface TemplateRequirements {
+  skills?: string[];
+  channels?: string[];
+  minVersion?: string;
+  maxVersion?: string;
+}
+
+// Advanced template features
+export interface SkillConfig {
+  name: string;
+  version?: string;
+  permissions?: string[];
+  config?: Record<string, any>;
+}
+
+export interface CronJobConfig {
+  name: string;
+  schedule: string; // Cron expression
+  task: string;
+  enabled?: boolean;
+  timezone?: string;
+  model?: string;
+}
+
+export interface IntegrationConfig {
+  service: string;
+  permissions: string[];
+  config?: Record<string, any>;
+}
+
+export interface TemplateAgent {
+  id: string;
+  name: string;
+  role: string;
+  icon?: string;
+  color?: string;
+  soulSnippet?: string;
+  description?: string;
+  soul?: string;
+  agentsMd?: string;
+  userMd?: string;
+  identityMd?: string;
+  heartbeat?: string;
+}
+
+export interface TemplateWorkflow {
+  type: 'sequential' | 'parallel' | 'collaborative' | 'event-driven' | 'routing';
+  description: string;
+  steps: Array<{
+    agent?: string;
+    agents?: string[];
+    action: string;
+    parallel?: boolean;
+    condition?: string;
+    trigger?: string;
+  }>;
+}
+
+export interface ScenarioTemplate {
+  id: string;
+  type: 'scenario';
+  version: string;
+  metadata: TemplateMetadata;
+  requirements?: TemplateRequirements;
+  content: {
+    soulSnippet?: string;
+    userSnippet?: string;
+    memorySnippet?: string;
+    heartbeatSnippet?: string;
+    toolsSnippet?: string;      // TOOLS.md content
+    bootSnippet?: string;       // BOOTSTRAP.md content
+    examples?: string[];
+  };
+  // Advanced features
+  skills?: SkillConfig[];
+  cronJobs?: CronJobConfig[];
+  integrations?: IntegrationConfig[];
+}
+
+export interface MultiAgentTemplatePrompts {
+  /** Prompt for wizard step1 (team structure). Keys: 'en', 'zh'. Supports {{scenarioName}}, {{description}}, {{agentCount}}, {{workflowType}}. */
+  step1?: Record<string, string>;
+  /** Prompt for per-agent file generation (all files combined as JSON). Keys: 'en', 'zh'. Supports {{agentName}}, {{agentRole}}, {{agentDesc}}, {{scenarioName}}. */
+  agentFile?: Record<string, string>;
+  /** Per-file prompts for AI writing individual agent workspace files. Keys: soul, agents, user, identity, heartbeat. Each value is keyed by language (en, zh). */
+  files?: {
+    soul?: Record<string, string>;
+    agents?: Record<string, string>;
+    user?: Record<string, string>;
+    identity?: Record<string, string>;
+    heartbeat?: Record<string, string>;
+  };
+}
+
+export interface MultiAgentTemplate {
+  id: string;
+  type: 'multi-agent';
+  version: string;
+  metadata: TemplateMetadata;
+  requirements?: TemplateRequirements;
+  content: {
+    agents: TemplateAgent[];
+    workflow: TemplateWorkflow;
+    examples?: string[];
+    prompts?: MultiAgentTemplatePrompts;
+  };
+}
+
+export interface AgentTemplate {
+  id: string;
+  type: 'agent';
+  version: string;
+  metadata: TemplateMetadata;
+  wizardPreset?: boolean;
+  content: {
+    identityContent?: string;
+    userContent?: string;
+    soulSnippet: string;
+    traits?: string[];
+    tone?: string;
+    examples?: Array<{
+      input: string;
+      output: string;
+    }>;
+  };
+}
+
+export interface RecipeStep {
+  title: string;
+  description?: string;
+  code?: string;
+  file?: string;
+  language?: string;
+  action?: 'copy' | 'append' | 'replace' | 'command';
+  target?: string;
+  confirm?: boolean;
+}
+
+export type KnowledgeItemType = 'recipe' | 'tip' | 'snippet' | 'faq';
+
+export interface KnowledgeItem {
+  id: string;
+  type: KnowledgeItemType;
+  version: string;
+  metadata: TemplateMetadata;
+  requirements?: TemplateRequirements;
+  content: {
+    body?: string;
+    steps?: RecipeStep[];
+    snippet?: string;
+    snippetLanguage?: string;
+    targetFile?: string;
+    question?: string;
+    answer?: string;
+    examples?: string[];
+    relatedDoctorChecks?: string[];
+    editorSection?: string;
+    statusCheck?: KnowledgeStatusCheck;
+  };
+}
+
+export interface KnowledgeStatusCheck {
+  type: 'channels_count' | 'agent_count' | 'config_field' | 'security_configured';
+  /** Dot-path into gateway config, e.g. "agents.defaults.compaction.threshold" */
+  field?: string;
+  /** Comparison rule: "truthy", "gt:0", "eq:true" */
+  okWhen?: string;
+  /** Minimum count for channels_count / agent_count checks */
+  threshold?: number;
+  /** Template string shown when check passes. Placeholders: {value}, {n} */
+  okTemplate?: string;
+  /** Template string shown when check fails. Placeholders: {value}, {n} */
+  failTemplate?: string;
+}
+
+export type Template = ScenarioTemplate | MultiAgentTemplate | AgentTemplate | KnowledgeItem;
+
+interface TemplateLoadResult<T> {
+  data: T | null;
+  source: string;
+  error?: Error;
+}
+
+class TemplateManagerV2 {
+  private scenarioCache = new Map<string, ScenarioTemplate[]>();
+  private multiAgentCache = new Map<string, MultiAgentTemplate[]>();
+  private agentCache = new Map<string, AgentTemplate[]>();
+  private knowledgeCache = new Map<string, KnowledgeItem[]>();
+  private manifestCache: TemplateManifest | null = null;
+
+  clearMultiAgentCache(): void {
+    this.multiAgentCache.clear();
+  }
+
+  /**
+   * Pre-fetch manifest for GitHub sources (shared across category loads).
+   * This ensures only 1 manifest request per sync cycle.
+   */
+  private async prefetchManifest(source: TemplateSource): Promise<TemplateManifest | null> {
+    if (source.type !== 'github') return null;
+    if (this.manifestCache) return this.manifestCache;
+    try {
+      this.manifestCache = await githubLoader.loadManifest(source);
+      return this.manifestCache;
+    } catch {
+      return null;
+    }
+  }
+
+  // Load templates from multiple sources with fallback
+  private async loadFromSources<T>(
+    type: 'scenarios' | 'multi-agent' | 'agents' | 'knowledge',
+    loader: (source: TemplateSource) => Promise<T>
+  ): Promise<TemplateLoadResult<T>> {
+    const sources = templateSourceManager.getEnabledSources();
+
+    for (const source of sources) {
+      try {
+        const data = await loader(source);
+        return { data, source: source.id };
+      } catch (err: any) {
+        // Try fallback source
+        if (source.fallback) {
+          const fallbackSource = templateSourceManager.getSource(source.fallback);
+          if (fallbackSource && fallbackSource.enabled) {
+            try {
+              const data = await loader(fallbackSource);
+              return { data, source: fallbackSource.id };
+            } catch (fallbackErr: any) {
+            }
+          }
+        }
+      }
+    }
+
+    return { data: null, source: 'none', error: new Error('All sources failed') };
+  }
+
+  // Load scenario templates
+  async loadScenarioTemplates(language: Language): Promise<ScenarioTemplate[]> {
+    const cacheKey = language;
+    if (this.scenarioCache.has(cacheKey)) {
+      return this.scenarioCache.get(cacheKey)!;
+    }
+
+    const result = await this.loadFromSources<ScenarioTemplate[]>(
+      'scenarios',
+      async (source) => {
+        let templates: ScenarioTemplate[] = [];
+
+        if (source.type === 'local') {
+          // Load from local files
+          templates = await this.loadLocalScenarios();
+        } else if (source.type === 'cdn') {
+          // Load from CDN
+          const index = await cdnLoader.loadIndex(source, 'scenarios');
+          templates = await Promise.all(
+            index.templates.map((path: string) =>
+              cdnLoader.load(source, `scenarios/${path}`)
+            )
+          );
+        } else if (source.type === 'github') {
+          // Load from GitHub with incremental sync
+          const manifest = await this.prefetchManifest(source);
+          templates = await githubLoader.loadCategoryTemplates(source, 'scenarios', manifest || undefined);
+        }
+
+        // Add source info to metadata
+        templates.forEach(t => {
+          t.metadata.source = source.id;
+        });
+
+        return templates;
+      }
+    );
+
+    if (!result.data) {
+      throw result.error || new Error('Failed to load scenarios');
+    }
+
+    // Apply i18n — per-item translation files
+    const localized = await templateI18n.localizeItems(result.data, 'scenarios', language);
+
+    this.scenarioCache.set(cacheKey, localized);
+    return localized;
+  }
+
+  // Load multi-agent templates
+  async loadMultiAgentTemplates(language: Language): Promise<MultiAgentTemplate[]> {
+    const cacheKey = language;
+    if (this.multiAgentCache.has(cacheKey)) {
+      return this.multiAgentCache.get(cacheKey)!;
+    }
+
+    const result = await this.loadFromSources<MultiAgentTemplate[]>(
+      'multi-agent',
+      async (source) => {
+        let templates: MultiAgentTemplate[] = [];
+
+        if (source.type === 'local') {
+          templates = await this.loadLocalMultiAgent();
+          if (templates.length === 0) throw new Error('Local multi-agent templates returned empty');
+        } else if (source.type === 'cdn') {
+          const index = await cdnLoader.loadIndex(source, 'multi-agent');
+          templates = await Promise.all(
+            index.templates.map((path: string) =>
+              cdnLoader.load(source, `multi-agent/${path}`)
+            )
+          );
+        } else if (source.type === 'github') {
+          // Load from GitHub with incremental sync
+          const manifest = await this.prefetchManifest(source);
+          templates = await githubLoader.loadCategoryTemplates(source, 'multi-agent', manifest || undefined);
+        }
+
+        templates = templates.filter(t => t && t.metadata);
+        templates.forEach(t => {
+          t.metadata.source = source.id;
+        });
+
+        return templates;
+      }
+    );
+
+    if (!result.data || result.data.length === 0) {
+      throw result.error || new Error('Failed to load multi-agent templates');
+    }
+
+    // Apply i18n — per-item translation files
+    const localized = await templateI18n.localizeItems(result.data.filter(t => t && t.metadata), 'multi-agent', language);
+
+    this.multiAgentCache.set(cacheKey, localized);
+    return localized;
+  }
+
+  // Load agent templates
+  async loadAgentTemplates(language: Language): Promise<AgentTemplate[]> {
+    const cacheKey = language;
+    if (this.agentCache.has(cacheKey)) {
+      return this.agentCache.get(cacheKey)!;
+    }
+
+    const result = await this.loadFromSources<AgentTemplate[]>(
+      'agents',
+      async (source) => {
+        let templates: AgentTemplate[] = [];
+
+        if (source.type === 'local') {
+          templates = await this.loadLocalAgents();
+        } else if (source.type === 'cdn') {
+          const index = await cdnLoader.loadIndex(source, 'agents');
+          templates = await Promise.all(
+            index.templates.map((path: string) =>
+              cdnLoader.load(source, `agents/${path}`)
+            )
+          );
+        } else if (source.type === 'github') {
+          // Load from GitHub with incremental sync
+          const manifest = await this.prefetchManifest(source);
+          templates = await githubLoader.loadCategoryTemplates(source, 'agents', manifest || undefined);
+        }
+
+        templates.forEach(t => {
+          t.metadata.source = source.id;
+        });
+
+        return templates;
+      }
+    );
+
+    if (!result.data) {
+      throw result.error || new Error('Failed to load agent templates');
+    }
+
+    // Apply i18n — per-item translation files
+    const localized = await templateI18n.localizeItems(result.data, 'agents', language);
+
+    this.agentCache.set(cacheKey, localized);
+    return localized;
+  }
+
+  // Load knowledge items
+  async loadKnowledgeItems(language: Language): Promise<KnowledgeItem[]> {
+    const cacheKey = language;
+    if (this.knowledgeCache.has(cacheKey)) {
+      return this.knowledgeCache.get(cacheKey)!;
+    }
+
+    const result = await this.loadFromSources<KnowledgeItem[]>(
+      'knowledge',
+      async (source) => {
+        let items: KnowledgeItem[] = [];
+
+        if (source.type === 'local') {
+          items = await this.loadLocalKnowledge();
+        } else if (source.type === 'cdn') {
+          const index = await cdnLoader.loadIndex(source, 'knowledge');
+          items = await Promise.all(
+            index.templates.map((path: string) =>
+              cdnLoader.load(source, `knowledge/${path}`)
+            )
+          );
+        } else if (source.type === 'github') {
+          const manifest = await this.prefetchManifest(source);
+          items = await githubLoader.loadCategoryTemplates(source, 'knowledge', manifest || undefined);
+        }
+
+        items.forEach(t => {
+          t.metadata.source = source.id;
+        });
+
+        return items;
+      }
+    );
+
+    // Knowledge items may be empty (no content yet), that's OK
+    const data = result.data || [];
+
+    // Apply i18n — knowledge uses per-item translation files
+    const localized = await templateI18n.localizeKnowledgeItems(data, language);
+
+    this.knowledgeCache.set(cacheKey, localized);
+    return localized;
+  }
+
+  // Local loaders (existing implementation)
+  private async loadLocalScenarios(): Promise<ScenarioTemplate[]> {
+    const loaders: Record<string, () => Promise<any>> = {
+      'personal-assistant': () => import('../../templates/official/scenarios/productivity/personal-assistant.json'),
+      'email-manager': () => import('../../templates/official/scenarios/productivity/email-manager.json'),
+      'calendar-manager': () => import('../../templates/official/scenarios/productivity/calendar-manager.json'),
+      'task-tracker': () => import('../../templates/official/scenarios/productivity/task-tracker.json'),
+      'personal-crm': () => import('../../templates/official/scenarios/productivity/personal-crm.json'),
+      'second-brain': () => import('../../templates/official/scenarios/productivity/second-brain.json'),
+      'reddit-digest': () => import('../../templates/official/scenarios/social/reddit-digest.json'),
+      'youtube-analyzer': () => import('../../templates/official/scenarios/social/youtube-analyzer.json'),
+      'twitter-monitor': () => import('../../templates/official/scenarios/social/twitter-monitor.json'),
+      'tech-news': () => import('../../templates/official/scenarios/social/tech-news.json'),
+      'content-pipeline': () => import('../../templates/official/scenarios/creative/content-pipeline.json'),
+      'blog-writer': () => import('../../templates/official/scenarios/creative/blog-writer.json'),
+      'social-scheduler': () => import('../../templates/official/scenarios/creative/social-scheduler.json'),
+      'dev-assistant': () => import('../../templates/official/scenarios/devops/dev-assistant.json'),
+      'self-healing-server': () => import('../../templates/official/scenarios/devops/self-healing-server.json'),
+      'log-analyzer': () => import('../../templates/official/scenarios/devops/log-analyzer.json'),
+      'cicd-monitor': () => import('../../templates/official/scenarios/devops/cicd-monitor.json'),
+      'knowledge-rag': () => import('../../templates/official/scenarios/research/knowledge-rag.json'),
+      'paper-reader': () => import('../../templates/official/scenarios/research/paper-reader.json'),
+      'learning-tracker': () => import('../../templates/official/scenarios/research/learning-tracker.json'),
+      'market-research': () => import('../../templates/official/scenarios/research/market-research.json'),
+      'expense-tracker': () => import('../../templates/official/scenarios/finance/expense-tracker.json'),
+      'investment-monitor': () => import('../../templates/official/scenarios/finance/investment-monitor.json'),
+      'home-assistant': () => import('../../templates/official/scenarios/family/home-assistant.json'),
+      'meal-planner': () => import('../../templates/official/scenarios/family/meal-planner.json'),
+      'kids-learning': () => import('../../templates/official/scenarios/family/kids-learning.json'),
+    };
+
+    const templates = await Promise.all(
+      Object.entries(loaders).map(async ([id, loader]) => {
+        const module = await loader();
+        return module.default || module;
+      })
+    );
+
+    return templates;
+  }
+
+  private async loadLocalMultiAgent(): Promise<MultiAgentTemplate[]> {
+    const loaders: Array<[string, () => Promise<any>]> = [
+      ['default', () => import('../../templates/official/multi-agent/default.json')],
+      ['content-factory', () => import('../../templates/official/multi-agent/content-factory.json')],
+      ['research-team', () => import('../../templates/official/multi-agent/research-team.json')],
+      ['devops-team', () => import('../../templates/official/multi-agent/devops-team.json')],
+      ['customer-support', () => import('../../templates/official/multi-agent/customer-support.json')],
+      ['data-pipeline', () => import('../../templates/official/multi-agent/data-pipeline.json')],
+      ['software-dev', () => import('../../templates/official/multi-agent/software-dev.json')],
+      ['ecommerce', () => import('../../templates/official/multi-agent/ecommerce.json')],
+      ['education', () => import('../../templates/official/multi-agent/education.json')],
+      ['finance', () => import('../../templates/official/multi-agent/finance.json')],
+    ];
+
+    const results = await Promise.allSettled(
+      loaders.map(async ([id, loader]) => {
+        try {
+          const module = await loader();
+          const tpl = module.default || module;
+          if (!tpl || !tpl.id) throw new Error(`Template ${id} missing id field`);
+          return tpl as MultiAgentTemplate;
+        } catch (err) {
+          throw err;
+        }
+      })
+    );
+
+    const loaded = results
+      .filter((r): r is PromiseFulfilledResult<MultiAgentTemplate> => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    return loaded;
+  }
+
+  private async loadLocalAgents(): Promise<AgentTemplate[]> {
+    const loaders: Record<string, () => Promise<any>> = {
+      'professional': () => import('../../templates/official/agents/personas/professional.json'),
+      'friendly': () => import('../../templates/official/agents/personas/friendly.json'),
+      'butler': () => import('../../templates/official/agents/personas/butler.json'),
+      'scholar': () => import('../../templates/official/agents/personas/scholar.json'),
+      'concise': () => import('../../templates/official/agents/personas/concise.json'),
+      'creative': () => import('../../templates/official/agents/personas/creative.json'),
+    };
+
+    const templates = await Promise.all(
+      Object.entries(loaders).map(async ([id, loader]) => {
+        const module = await loader();
+        return module.default || module;
+      })
+    );
+
+    return templates;
+  }
+
+  private async loadLocalKnowledge(): Promise<KnowledgeItem[]> {
+    try {
+      const modules = import.meta.glob('../../templates/official/knowledge/**/*.json', { eager: true }) as Record<string, { default?: KnowledgeItem } & KnowledgeItem>;
+      const items: KnowledgeItem[] = [];
+      for (const [path, mod] of Object.entries(modules)) {
+        if (path.endsWith('index.json')) continue;
+        const item = (mod as any).default || mod;
+        if (item && item.id && item.type) {
+          items.push(item as KnowledgeItem);
+        }
+      }
+      return items;
+    } catch {
+      return [];
+    }
+  }
+
+  // Search across all templates
+  async searchTemplates(query: string, language: Language): Promise<Template[]> {
+    const [scenarios, multiAgent, agents, knowledge] = await Promise.all([
+      this.loadScenarioTemplates(language),
+      this.loadMultiAgentTemplates(language),
+      this.loadAgentTemplates(language),
+      this.loadKnowledgeItems(language),
+    ]);
+
+    const allTemplates: Template[] = [...scenarios, ...multiAgent, ...agents, ...knowledge];
+    const lowerQuery = query.toLowerCase();
+
+    return allTemplates.filter(
+      (t) =>
+        t.metadata.name.toLowerCase().includes(lowerQuery) ||
+        t.metadata.description.toLowerCase().includes(lowerQuery) ||
+        t.metadata.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    );
+  }
+
+  // Clear all caches
+  clearCache(): void {
+    this.scenarioCache.clear();
+    this.multiAgentCache.clear();
+    this.agentCache.clear();
+    this.knowledgeCache.clear();
+    this.manifestCache = null;
+    templateCache.clear();
+    githubLoader.clearVersionCache();
+  }
+
+  // Refresh templates (clear cache and reload)
+  async refresh(language: Language): Promise<void> {
+    this.clearCache();
+    await Promise.all([
+      this.loadScenarioTemplates(language),
+      this.loadMultiAgentTemplates(language),
+      this.loadAgentTemplates(language),
+      this.loadKnowledgeItems(language),
+    ]);
+  }
+}
+
+export const templateManagerV2 = new TemplateManagerV2();

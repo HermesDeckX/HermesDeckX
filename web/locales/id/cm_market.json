@@ -1,0 +1,19 @@
+{
+  "skillsMarket": {
+    "title": "Pasar Skill",
+    "subtitle": "Perluas kemampuan agen Anda",
+    "loading": "Memuat...",
+    "active": "aktif",
+    "searchPlaceholder": "Cari skill...",
+    "noSkills": "Tidak ada skill ditemukan",
+    "ready": "Siap",
+    "needsSetup": "Perlu pengaturan",
+    "configure": "Konfigurasi",
+    "select": "Pilih...",
+    "cancel": "Batal",
+    "saving": "Menyimpan...",
+    "configured": "Skill terkonfigurasi",
+    "enabled": "Skill diaktifkan",
+    "disabled": "Skill dinonaktifkan"
+  }
+}

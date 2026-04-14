@@ -1,0 +1,13 @@
+{
+  "name": "Sicherung und Wiederherstellung",
+  "description": "HermesAgent-Konfiguration, Gedächtnis und Gesprächsverlauf sichern, mit Unterstützung für Migration auf neue Geräte",
+  "content": {
+    "body": "## Was sichern?\n\n| Element | Pfad | Wichtigkeit |\n|---------|------|------------|\n| Konfiguration | `~/.hermesdeckx/config.yaml` | Essentiell |\n| Agenten-Konfig | `~/.hermesdeckx/agents/` | Essentiell |\n| Gedächtnisdateien | `~/.hermesdeckx/memory/` | Wichtig |\n| Sitzungsverlauf | `~/.hermesdeckx/sessions/` | Optional |\n| Zugangsdaten | `~/.hermesdeckx/credentials/` | Wichtig |\n\n## Sicherungsmethoden\n\n### Methode 1: Manuell\n```bash\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### Methode 2: CLI\n```bash\nhermesagent config export > meine-sicherung.yaml\n```\n\n### Methode 3: HermesDeckX UI\n« Konfiguration exportieren » am unteren Rand des Einstellungszentrums.\n\n## Wiederherstellen\n\n1. HermesAgent installieren\n2. Dateien nach `~/.hermesdeckx/` kopieren\n3. Gateway starten\n\n## Konfigurationsfelder\n\nPfad: `~/.hermesdeckx/`",
+    "steps": [
+      "Sicherungsumfang bestimmen",
+      "Sicherung durchführen",
+      "Sicher aufbewahren",
+      "Zur Wiederherstellung nach ~/.hermesdeckx/ kopieren"
+    ]
+  }
+}

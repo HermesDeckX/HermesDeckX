@@ -1,0 +1,8 @@
+{
+  "name": "Biaya Token Tinggi",
+  "description": "Analisis dan optimasi konsumsi token model AI untuk mengurangi biaya API",
+  "content": {
+    "question": "Apa yang harus dilakukan jika biaya token terlalu tinggi? Bagaimana mengurangi biaya API?",
+    "answer": "## Analisis Biaya\n\n### 1. Lihat statistik penggunaan\nBuka halaman «Penggunaan» HermesDeckX:\n- Lihat konsumsi harian/mingguan/bulanan\n- Urutkan berdasarkan model, saluran, pengguna\n\n### 2. Penyebab umum konsumsi tinggi\n\n| Penyebab | Dampak | Solusi |\n|----------|--------|--------|\n| Riwayat terlalu panjang | Pengiriman riwayat besar | Aktifkan kompresi atau auto-reset |\n| Model mahal | GPT-4.5, Claude Opus | Beralih ke GPT-4o-mini |\n| Panggilan tool sering | Token tambahan per panggilan | Sesuaikan kebijakan tool |\n| Banyak sub-agen | Konsumsi independen | Batasi kedalaman dan jumlah |\n\n### 3. Strategi optimasi\n\n**Pengaturan kompresi** (paling efektif):\n- «Pusat Pengaturan → Agen → Kompresi»\n- Atur `threshold` ke 30000-50000\n- Aktifkan `memoryFlush`\n\n## Field Konfigurasi\n\nPath: `agents.defaults.model`, `agents.defaults.compaction`, `heartbeat`"
+  }
+}

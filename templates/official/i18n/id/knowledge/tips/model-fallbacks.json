@@ -1,0 +1,7 @@
+{
+  "name": "Rantai Model Fallback",
+  "description": "Konfigurasi model fallback untuk beralih otomatis saat model utama tidak tersedia, memastikan operasi berkelanjutan",
+  "content": {
+    "body": "## Mengapa Model Fallback?\n\nPenyedia AI bisa tidak tersedia sementara (rate limit, gangguan, saldo kurang). Rantai fallback memungkinkan HermesAgent otomatis beralih ke model berikutnya.\n\n## Konfigurasi di HermesDeckX\n\n1. «Pusat Pengaturan → Model»\n2. «Model Fallback» → «Tambah Model Fallback»\n3. Pilih penyedia dan model\n4. Tambahkan beberapa model berdasarkan prioritas\n\n## Kombinasi Rekomendasi\n\n| Model Utama | Fallback 1 | Fallback 2 |\n|-------------|-----------|------------|\n| claude-sonnet | gpt-4o | gemini-pro |\n| gpt-4o | claude-sonnet | deepseek-chat |\n| gemini-pro | gpt-4o-mini | claude-haiku |\n\n**Best Practice:**\n- **Penyedia berbeda** untuk utama dan fallback\n- Fallback bisa level lebih murah\n- Minimal 1 fallback, idealnya 2+\n\n## Field Konfigurasi\n\nPath: `agents.defaults.model.fallbacks`\n\n```json\n\"fallbacks\": [\"gpt-4o\", \"gemini-pro\"]\n```"
+  }
+}

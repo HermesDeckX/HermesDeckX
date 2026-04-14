@@ -1,0 +1,7 @@
+{
+  "name": "멀티 채널 라우팅",
+  "description": "하나의 AI로 여러 채팅 플랫폼에 서비스 제공, 각 채널에 다른 동작 규칙 설정 가능",
+  "content": {
+    "body": "## 멀티 채널 라우팅이란?\n\n멀티 채널 라우팅을 통해 AI 어시스턴트를 Telegram, Discord, WhatsApp, Signal 등 여러 채팅 플랫폼에 동시 연결하고, **각 채널에 독립적인 동작 규칙**을 설정할 수 있습니다.\n\n## 왜 필요한가?\n\n- **통합 관리** — 하나의 AI로 모든 플랫폼에 서비스, 개별 배포 불필요\n- **차별화된 동작** — 업무 채널은 공식적, 개인 채널은 캐주얼\n- **접근 제어** — 채널별로 다른 allowFrom 화이트리스트와 dmPolicy\n\n## 설정 방법\n\n### 1. 여러 채널 추가\n「설정 센터」의 채널 영역에서 사용할 채팅 플랫폼을 추가하고 해당 토큰을 입력.\n\n### 2. 채널 라우팅 규칙 설정\n각 채널을 독립적으로 설정 가능:\n- **dmPolicy** — DM 시작 가능한 사람 제어 (`open` / `allowlist` / `closed`)\n- **allowFrom** — 화이트리스트: 특정 사용자나 그룹만 허용\n- **groupPolicy** — 그룹 메시지 응답 전략\n\n### 3. 채널 수준 SOUL 오버라이드\n각 채널에 고유한 SOUL.md를 설정하여 다른 동작 구현:\n- 업무 채널 (Slack) → 전문적, 간결\n- 개인 채널 (Telegram) → 캐주얼, 재미있게\n\n## 설정 필드\n\n해당 설정 경로: `channels[].dmPolicy`, `channels[].allowFrom`, `channels[].groupPolicy`"
+  }
+}

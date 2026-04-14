@@ -1,0 +1,8 @@
+{
+  "name": "Gedächtnisfunktion fehlerhaft",
+  "description": "Fehlerbehebung wenn der AI-Assistent sich nicht an frühere Gesprächsinhalte oder Benutzerpräferenzen erinnern kann",
+  "content": {
+    "question": "Was tun, wenn der AI-Assistent sich nicht an frühere Gespräche erinnert?",
+    "answer": "## Gedächtnismechanismus verstehen\n\nHermesAgents Gedächtnissystem hat zwei Ebenen:\n1. **Sitzungsgedächtnis** — Kontext des aktuellen Gesprächs (automatisch verwaltet)\n2. **Dauerhaftes Gedächtnis** — Zwischen Sitzungen gespeicherte Informationen (MEMORY.md-Datei)\n\n## Fehlerbehebungsschritte\n\n### 1. Sitzungsstatus prüfen\n- Bei kürzlichem Sitzungsreset wurde der Verlauf gelöscht\n- Prüfen Sie, ob Auto-Reset aktiv ist\n- Komprimierungseinstellungen prüfen\n\n### 2. Dauerhafte Gedächtniseinstellungen prüfen\n- `memory`-Tool aktiviert?\n- MEMORY.md existiert und hat Inhalt?\n- `memoryFlush` aktiviert?\n\n### 3. Häufige Probleme\n\n**AI vergisst Präferenzen**: Sagen Sie explizit « Merke dir: Ich mag X »\n\n**Gespräch fühlt sich unterbrochen an**: `compaction.threshold` erhöhen\n\n## Konfigurationsfelder\n\nPfade: `agents.defaults.compaction`, `tools.memory`"
+  }
+}

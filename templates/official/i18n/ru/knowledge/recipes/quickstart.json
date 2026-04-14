@@ -1,0 +1,15 @@
+{
+  "name": "Быстрый старт",
+  "description": "Установите, настройте и начните первый разговор со шлюзом HermesAgent за 5 минут",
+  "content": {
+    "body": "## Предварительные требования\n\n- Node.js 22+ (рекомендуется LTS)\n- API-ключ AI-провайдера (OpenAI / Anthropic / Google и т.д.)\n\n## Шаги\n\n### 1. Установить HermesAgent\n\n```bash\nnpm install -g hermesagent@latest\n```\n\n### 2. Инициализировать конфигурацию\n\n```bash\nhermesagent init\n```\n\n### 3. Запустить шлюз\n\n```bash\nhermesagent gateway run\n```\n\n### 4. Подключить HermesDeckX\n\nОткройте HermesDeckX и введите адрес шлюза.\n\n### 5. Подключить чат-канал (опционально)\n\n1. «Центр настроек → Каналы»\n2. Выбрать тип канала\n3. Ввести токен бота\n4. Сохранить",
+    "steps": [
+      "Установить Node.js 22+",
+      "npm install -g hermesagent@latest",
+      "hermesagent init",
+      "Ввести API-ключ",
+      "hermesagent gateway run",
+      "Подключить HermesDeckX"
+    ]
+  }
+}

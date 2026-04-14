@@ -1,0 +1,7 @@
+{
+  "name": "Sicherheitshärtung",
+  "description": "Umfassende Sicherheitskonfiguration — Zugriffskontrolle, Werkzeugbeschränkungen, Netzwerkrichtlinien und Verschlüsselung",
+  "content": {
+    "body": "## Sicherheitskonfigurations-Checkliste\n\n### 1. Authentifizierung aktivieren\n- Modus `token` (empfohlen) oder `password`\n- **Pflicht für Zugriff außerhalb von localhost**\n\n### 2. TLS-Verschlüsselung konfigurieren\n- TLS für externen Zugriff aktivieren\n\n### 3. Kanalzugriff einschränken\nPro Kanal:\n- **allowFrom** — Nur bestimmte Benutzer-IDs\n- **dmPolicy** — DM-Zugriff einschränken\n- **groupPolicy** — Gruppenantworten steuern\n\n### 4. Werkzeugberechtigungen einschränken\n- Passendes Profil wählen\n- deny-Liste für gefährliche Werkzeuge\n- exec allowlist für Befehle\n\n### 5. Sandbox aktivieren\n- Docker-Sandbox für Codeausführung\n- Workspace auf `ro` setzen\n\n## Empfohlene Sicherheitsstufen\n\n| Stufe | Szenario | Konfiguration |\n|-------|----------|---------------|\n| **Basis** | Persönlich, lokal | Standard |\n| **Standard** | LAN / Tailscale | Auth + allowFrom |\n| **Hoch** | Öffentliches Netzwerk | Auth + TLS + allowFrom + Sandbox + Werkzeugbeschränkungen |\n\n## Konfigurationsfelder\n\nPfade: `gateway.auth`, `gateway.tls`, `channels[].allowFrom`, `tools.profile`, `agents.defaults.sandbox`"
+  }
+}

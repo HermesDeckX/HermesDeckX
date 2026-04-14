@@ -1,0 +1,14 @@
+{
+  "name": "AI プロバイダーの追加",
+  "description": "OpenAI、Anthropic、Google などの AI モデルプロバイダーの API キーとオプションを設定する",
+  "content": {
+    "body": "## サポートされているプロバイダー\n\n| プロバイダー | モデル例 | 特徴 |\n|------------|---------|------|\n| **OpenAI** | GPT-4o, GPT-4o-mini | 最も成熟したエコシステム |\n| **Anthropic** | Claude Sonnet, Claude Haiku | 安全性が高く、長いコンテキスト |\n| **Google** | Gemini Pro, Gemini Flash | マルチモーダル、低コスト |\n| **DeepSeek** | DeepSeek Chat, DeepSeek Coder | 高コストパフォーマンス |\n| **xAI** | Grok | X プラットフォーム統合 |\n| **Ollama** | Llama, Mistral など | ローカルデプロイ、無料 |\n\n## HermesDeckX での設定\n\n1. 「設定センター → モデルプロバイダー」へ\n2. 「プロバイダーを追加」をクリック\n3. プロバイダータイプを選択\n4. API キーを入力\n5. 有効にするモデルを選択\n6. 設定を保存\n\n## API キーの取得方法\n\n- **OpenAI**: platform.openai.com → API Keys\n- **Anthropic**: console.anthropic.com → API Keys\n- **Google**: aistudio.google.com → API キーを取得\n- **DeepSeek**: platform.deepseek.com → API Keys\n\n## カスタムエンドポイント\n\nOpenAI API 互換プロバイダー（ローカル LLM サーバーなど）の場合、カスタムエンドポイントを設定できます：\n- 「OpenAI Compatible」タイプを選択\n- カスタム API エンドポイント URL を入力\n- API キーを入力（必要な場合）\n\n## 設定フィールド\n\n対応する設定パス：`providers`",
+    "steps": [
+      "「設定センター → モデルプロバイダー」へ",
+      "「プロバイダーを追加」をクリック",
+      "プロバイダータイプを選択し API キーを入力",
+      "有効にするモデルを選択",
+      "設定を保存"
+    ]
+  }
+}

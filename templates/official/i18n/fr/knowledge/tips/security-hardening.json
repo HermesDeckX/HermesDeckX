@@ -1,0 +1,7 @@
+{
+  "name": "Renforcement de la sécurité",
+  "description": "Configuration de sécurité complète — contrôle d'accès, restriction des outils, politiques réseau et chiffrement",
+  "content": {
+    "body": "## Liste de configuration de sécurité\n\n### 1. Activer l'authentification\n« Centre de configuration → Passerelle → Authentification » :\n- Mode `token` (recommandé) ou `password`\n- **Obligatoire pour accès hors localhost**\n\n### 2. Configurer le chiffrement TLS\n- Activer TLS pour accès hors localhost\n- Certificat auto-généré ou personnalisé\n\n### 3. Restreindre l'accès aux canaux\nPar canal :\n- **allowFrom** — Seuls certains IDs peuvent utiliser le Bot\n- **dmPolicy** — Restreindre les DM\n- **groupPolicy** — Contrôler les réponses de groupe\n\n### 4. Restreindre les permissions d'outils\n- Profil adapté (`full` / `coding` / `messaging` / `minimal`)\n- Liste deny pour bloquer les outils dangereux\n- Liste allowlist pour exec\n\n### 5. Activer le sandbox\n- Docker sandbox pour l'exécution de code\n- Accès workspace en `ro` sauf besoin\n\n## Niveaux de sécurité recommandés\n\n| Niveau | Scénario | Configuration |\n|--------|----------|---------------|\n| **Basique** | Personnel, local | Par défaut |\n| **Standard** | LAN / Tailscale | Auth + allowFrom |\n| **Élevé** | Réseau public | Auth + TLS + allowFrom + sandbox + restrictions |\n\n## Champs de configuration\n\nChemins : `gateway.auth`, `gateway.tls`, `channels[].allowFrom`, `tools.profile`, `agents.defaults.sandbox`"
+  }
+}

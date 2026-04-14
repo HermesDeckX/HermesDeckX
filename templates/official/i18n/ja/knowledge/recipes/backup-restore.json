@@ -1,0 +1,13 @@
+{
+  "name": "バックアップと復元",
+  "description": "HermesAgent の設定、メモリ、会話履歴をバックアップし、新しいデバイスへの移行をサポート",
+  "content": {
+    "body": "## バックアップすべき内容\n\n| 項目 | パス | 重要度 |\n|------|------|--------|\n| 設定ファイル | `~/.hermesdeckx/config.yaml` | 必須 |\n| エージェント設定 | `~/.hermesdeckx/agents/` | 必須 |\n| メモリファイル | `~/.hermesdeckx/memory/` | 重要 |\n| セッション履歴 | `~/.hermesdeckx/sessions/` | オプション |\n| 認証情報 | `~/.hermesdeckx/credentials/` | 重要 |\n\n## バックアップ方法\n\n### 方法 1：手動バックアップ\n```bash\n# 設定ディレクトリ全体をバックアップ\ncp -r ~/.hermesdeckx ~/hermesdeckx-backup-$(date +%Y%m%d)\n```\n\n### 方法 2：CLI を使用\n```bash\n# 設定をエクスポート\nhermesagent config export > my-config-backup.yaml\n```\n\n### 方法 3：HermesDeckX UI\n「設定センター」の下部にある「設定をエクスポート」ボタンをクリック。\n\n## 復元方法\n\n### 新しいデバイスへの復元\n1. HermesAgent をインストール：`npm install -g hermesagent@latest`\n2. バックアップファイルを `~/.hermesdeckx/` にコピー\n3. ゲートウェイを起動：`hermesagent gateway run`\n\n### 設定ファイルの復元\n```bash\nhermesagent config import < my-config-backup.yaml\n```\n\n## 注意事項\n\n- API キーなどの機密情報もバックアップされるため、安全に保管してください\n- 異なるバージョン間で設定フォーマットが異なる場合があります。復元後に警告がないか確認してください\n- WhatsApp セッションデータはデバイス間で移行できないため、再スキャンが必要です\n\n## 設定フィールド\n\n関連パス：`~/.hermesdeckx/`",
+    "steps": [
+      "バックアップ範囲を確認（設定、メモリ、履歴）",
+      "cp、CLI、または UI でバックアップを実行",
+      "バックアップファイルを安全な場所に保存",
+      "復元時はファイルを ~/.hermesdeckx/ にコピーしてゲートウェイを再起動"
+    ]
+  }
+}

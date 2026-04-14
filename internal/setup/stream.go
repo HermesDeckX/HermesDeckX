@@ -1,0 +1,327 @@
+﻿package setup
+
+import (
+	"HermesDeckX/internal/executil"
+	"HermesDeckX/internal/i18n"
+	"bufio"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
+)
+
+// ansiRe strips ANSI escape sequences (colors, cursor movement, etc.)
+var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+
+func setupInstallLogPath() string {
+	if path := strings.TrimSpace(os.Getenv("OHD_SETUP_INSTALL_LOG")); path != "" {
+		return path
+	}
+	stateDir := ResolveStateDir()
+	if stateDir == "" {
+		return ""
+	}
+	return filepath.Join(stateDir, "logs", "install.log")
+}
+
+func appendSetupLogLine(message string) {
+	path := setupInstallLogPath()
+	if path == "" {
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return
+	}
+	line := strings.TrimRight(message, "\r\n")
+	if line == "" {
+		return
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	_, _ = fmt.Fprintf(f, "%s %s\n", time.Now().Format(time.RFC3339), line)
+}
+
+type SetupEvent struct {
+	Type     string      `json:"type"`               // "phase" | "step" | "progress" | "log" | "success" | "error" | "complete"
+	Phase    string      `json:"phase,omitempty"`    // current phase
+	Step     string      `json:"step,omitempty"`     // current step
+	Message  string      `json:"message"`            // message content
+	Progress int         `json:"progress,omitempty"` // progress percentage 0-100
+	Data     interface{} `json:"data,omitempty"`     // additional data
+}
+
+type EventEmitter struct {
+	w       http.ResponseWriter
+	flusher http.Flusher
+	mu      sync.Mutex
+}
+
+func NewEventEmitter(w http.ResponseWriter) (*EventEmitter, error) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return nil, fmt.Errorf("streaming not supported")
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no") // disable nginx buffering
+
+	return &EventEmitter{
+		w:       w,
+		flusher: flusher,
+	}, nil
+}
+
+func (e *EventEmitter) Emit(event SetupEvent) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	data, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+
+	_, err = fmt.Fprintf(e.w, "data: %s\n\n", data)
+	if err != nil {
+		return err
+	}
+	e.flusher.Flush()
+	return nil
+}
+
+func (e *EventEmitter) EmitPhase(phase, message string, progress int) error {
+	return e.Emit(SetupEvent{
+		Type:     "phase",
+		Phase:    phase,
+		Message:  message,
+		Progress: progress,
+	})
+}
+
+func (e *EventEmitter) EmitStep(phase, step, message string, progress int) error {
+	return e.Emit(SetupEvent{
+		Type:     "step",
+		Phase:    phase,
+		Step:     step,
+		Message:  message,
+		Progress: progress,
+	})
+}
+
+func (e *EventEmitter) EmitLog(message string) error {
+	appendSetupLogLine(message)
+	return e.Emit(SetupEvent{
+		Type:    "log",
+		Message: message,
+	})
+}
+
+func (e *EventEmitter) EmitProgress(progress int, message string) error {
+	return e.Emit(SetupEvent{
+		Type:     "progress",
+		Progress: progress,
+		Message:  message,
+	})
+}
+
+func (e *EventEmitter) EmitSuccess(message string, data interface{}) error {
+	return e.Emit(SetupEvent{
+		Type:    "success",
+		Message: message,
+		Data:    data,
+	})
+}
+
+func (e *EventEmitter) EmitError(message string, data interface{}) error {
+	return e.Emit(SetupEvent{
+		Type:    "error",
+		Message: message,
+		Data:    data,
+	})
+}
+
+func (e *EventEmitter) EmitComplete(message string, data interface{}) error {
+	return e.Emit(SetupEvent{
+		Type:    "complete",
+		Message: message,
+		Data:    data,
+	})
+}
+
+type StreamCommand struct {
+	emitter      *EventEmitter
+	phase        string
+	step         string
+	sudoPassword string // sudo password (optional)
+}
+
+func NewStreamCommand(emitter *EventEmitter, phase, step string) *StreamCommand {
+	return &StreamCommand{
+		emitter: emitter,
+		phase:   phase,
+		step:    step,
+	}
+}
+
+func NewStreamCommandWithSudo(emitter *EventEmitter, phase, step, sudoPassword string) *StreamCommand {
+	return &StreamCommand{
+		emitter:      emitter,
+		phase:        phase,
+		step:         step,
+		sudoPassword: sudoPassword,
+	}
+}
+
+func (sc *StreamCommand) Run(ctx context.Context, name string, args ...string) error {
+	cmd := exec.CommandContext(ctx, name, args...)
+	executil.HideWindow(cmd)
+
+	if isWindows() {
+		cmd.Env = append(os.Environ(), "LANG=en_US.UTF-8", "PYTHONIOENCODING=utf-8")
+	}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrCreateStdoutPipeFailed), err)
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrCreateStderrPipeFailed), err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrStartCommandFailed), err)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		sc.streamOutput(stdout, "stdout")
+	}()
+
+	go func() {
+		defer wg.Done()
+		sc.streamOutput(stderr, "stderr")
+	}()
+
+	wg.Wait()
+
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrCommandExecFailed), err)
+	}
+
+	return nil
+}
+
+func (sc *StreamCommand) streamOutput(r io.Reader, source string) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		line := ansiRe.ReplaceAllString(scanner.Text(), "")
+		appendSetupLogLine(line)
+		sc.emitter.Emit(SetupEvent{
+			Type:    "log",
+			Phase:   sc.phase,
+			Step:    sc.step,
+			Message: line,
+			Data:    map[string]string{"source": source},
+		})
+	}
+}
+
+func (sc *StreamCommand) RunShell(ctx context.Context, command string) error {
+	if !isWindows() && sc.sudoPassword != "" && os.Getuid() != 0 && strings.Contains(command, "sudo") {
+		escaped := strings.ReplaceAll(sc.sudoPassword, "'", "'\\''")
+		askpass := fmt.Sprintf(
+			"_ASKPASS=$(mktemp); echo '#!/bin/sh\necho '\"'\"'%s'\"'\"'' > $_ASKPASS; chmod +x $_ASKPASS; export SUDO_ASKPASS=$_ASKPASS; ",
+			escaped,
+		)
+		command = strings.ReplaceAll(command, "sudo ", "sudo -A ")
+		command = askpass + command + "; rm -f $_ASKPASS"
+	}
+
+	var cmd *exec.Cmd
+	if isWindows() {
+		utf8Prefix := "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $OutputEncoding = [System.Text.Encoding]::UTF8; "
+		cmd = exec.CommandContext(ctx, "powershell", "-NoProfile", "-Command", utf8Prefix+command)
+		cmd.Env = append(os.Environ(),
+			"LANG=en_US.UTF-8",
+			"PYTHONIOENCODING=utf-8",
+			// Prevent npm lifecycle scripts from failing when PowerShell is the
+			// default shell — cmd.exe is universally compatible with npm scripts.
+			"NPM_CONFIG_SCRIPT_SHELL=cmd.exe",
+		)
+	} else {
+		cmd = exec.CommandContext(ctx, "sh", "-c", command)
+	}
+	executil.HideWindow(cmd)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrCreateStdoutPipeFailed), err)
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrCreateStderrPipeFailed), err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrStartCommandFailed), err)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		sc.streamOutput(stdout, "stdout")
+	}()
+
+	go func() {
+		defer wg.Done()
+		sc.streamOutput(stderr, "stderr")
+	}()
+
+	wg.Wait()
+
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf(i18n.T(i18n.MsgErrCommandExecFailed), err)
+	}
+
+	return nil
+}
+
+func isWindows() bool {
+	return runtime.GOOS == "windows"
+}
+
+func (e *EventEmitter) KeepAlive(ctx context.Context, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			e.mu.Lock()
+			fmt.Fprintf(e.w, ": heartbeat\n\n")
+			e.flusher.Flush()
+			e.mu.Unlock()
+		}
+	}
+}

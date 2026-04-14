@@ -1,0 +1,8 @@
+{
+  "name": "Token 费用过高",
+  "description": "分析和优化 AI 使用费用的常见方法和配置技巧",
+  "content": {
+    "question": "Token 消耗太高，怎么降低费用？",
+    "answer": "## 费用优化策略（按效果排序）\n\n### 1. 心跳使用低成本模型（节省 50-80%）\n心跳是最大的隐性费用来源。前往「配置中心 → 代理 → 心跳」：\n- 将心跳模型设为低成本模型（如 gpt-4o-mini、claude-haiku、gemini-flash）\n- 增大心跳间隔（every: \"1h\" 代替默认 \"30m\"）\n- 设置活跃时段（activeHours），非工作时间停止心跳\n- 启用 lightContext 减少心跳的上下文大小\n\n### 2. 子代理使用低成本模型（节省 60-90%）\n前往「配置中心 → 代理 → 子代理」：\n- 设置 subagents.model 为低成本模型\n- 限制 maxSpawnDepth 为 1，避免子代理嵌套产生指数级费用\n\n### 3. 启用上下文裁剪（节省 20-40%）\n前往「配置中心 → 代理 → 上下文裁剪」：\n- 启用 cache-ttl 模式，自动清理过期的工具调用结果\n- 设置 ttl 为 20-30 分钟\n\n### 4. 优化压缩策略\n前往「配置中心 → 代理 → 压缩」：\n- 减小 keepRecentTokens，减少每次发送给模型的上下文量\n- 启用 memoryFlush，重要信息保存到 MEMORY.md 而非保留在上下文中\n\n### 5. 关闭不需要的思考模式\n前往「配置中心 → 代理」：\n- 将 thinkingDefault 设为 off 或 minimal（思考模式会消耗额外 token）\n- 仅在需要深度推理时用 /think 命令临时启用\n\n### 6. 配置会话自动重置\n前往「配置中心 → 会话 → 自动重置」：\n- 启用每日重置（daily），防止上下文无限累积\n\n### 7. 限制媒体处理\n前往「配置中心 → 代理」：\n- 减小 mediaMaxMb 限制媒体文件大小\n- 减小 imageMaxDimensionPx 降低图片分辨率\n\n## 费用监控\n\n大部分 AI 提供商控制台都提供用量仪表盘。建议定期查看：\n- OpenAI: platform.openai.com/usage\n- Anthropic: console.anthropic.com\n- Google: console.cloud.google.com"
+  }
+}

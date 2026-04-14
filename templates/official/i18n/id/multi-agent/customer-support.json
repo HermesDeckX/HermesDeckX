@@ -1,0 +1,28 @@
+{
+  "name": "Tim Dukungan Pelanggan",
+  "description": "Dukungan pelanggan berjenjang dengan routing dan eskalasi",
+  "agents": {
+    "greeter": {
+      "name": "Resepsionis",
+      "role": "Kontak pertama dan routing"
+    },
+    "specialist": {
+      "name": "Spesialis Dukungan",
+      "role": "Menangani masalah umum"
+    },
+    "supervisor": {
+      "name": "Supervisor",
+      "role": "Menangani masalah yang dieskalasi"
+    }
+  },
+  "workflow": {
+    "description": "Dukungan berjenjang dengan eskalasi"
+  },
+  "content": {
+    "examples": [
+      "Bantu pelanggan dengan masalah billing",
+      "Troubleshoot masalah produk",
+      "Tangani keluhan layanan"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "研究团队",
+  "description": "由首席研究员、分析师和评审员组成的协作研究团队",
+  "agents": {
+    "lead-researcher": {
+      "name": "首席研究员",
+      "role": "指导研究并综合发现"
+    },
+    "data-analyst": {
+      "name": "数据分析师",
+      "role": "分析数据并发现模式"
+    },
+    "domain-expert": {
+      "name": "领域专家",
+      "role": "提供专业知识"
+    },
+    "critic": {
+      "name": "批评审查员",
+      "role": "质疑假设并验证"
+    }
+  },
+  "workflow": {
+    "description": "并行研究与批判性审查"
+  },
+  "content": {
+    "examples": [
+      "研究AI对医疗保健的影响",
+      "分析电动汽车的市场趋势",
+      "调查远程工作的最佳实践"
+    ]
+  }
+}
