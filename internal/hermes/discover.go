@@ -74,19 +74,21 @@ func verifyBinary(path string) bool {
 // probePipBin checks common pip/pipx install locations for a binary.
 func probePipBin(name string) string {
 	home, _ := os.UserHomeDir()
-	if home == "" {
-		return ""
-	}
 	var candidates []string
 	if runtime.GOOS == "windows" {
-		candidates = []string{
-			filepath.Join(home, "AppData", "Roaming", "Python", "Scripts", name+".exe"),
-			filepath.Join(home, ".local", "bin", name+".exe"),
+		if home != "" {
+			candidates = []string{
+				filepath.Join(home, "AppData", "Roaming", "Python", "Scripts", name+".exe"),
+				filepath.Join(home, ".local", "bin", name+".exe"),
+			}
 		}
 	} else {
+		// System-wide paths first (always checked, regardless of home)
 		candidates = []string{
-			filepath.Join(home, ".local", "bin", name),
 			"/usr/local/bin/" + name,
+		}
+		if home != "" {
+			candidates = append(candidates, filepath.Join(home, ".local", "bin", name))
 		}
 	}
 	for _, c := range candidates {
