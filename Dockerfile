@@ -30,7 +30,7 @@ ARG HERMES_AGENT_BRANCH=main
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates curl git software-properties-common build-essential libffi-dev; \
+        ca-certificates curl git software-properties-common gnupg dirmngr build-essential libffi-dev; \
     if ! command -v python3.11 >/dev/null 2>&1; then \
         add-apt-repository -y ppa:deadsnakes/ppa; \
         apt-get update; \
@@ -53,7 +53,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates curl git software-properties-common make tzdata tini wget jq ripgrep \
+        ca-certificates curl git software-properties-common gnupg dirmngr make tzdata tini wget jq ripgrep \
         procps lsof ffmpeg golang; \
     if ! command -v python3.11 >/dev/null 2>&1; then \
         add-apt-repository -y ppa:deadsnakes/ppa; \
