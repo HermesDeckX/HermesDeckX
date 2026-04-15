@@ -227,6 +227,12 @@
     "send": "發送",
     "noCommands": "暫無指令歷史",
     "unfavorite": "取消收藏",
+    "editor": "編輯器",
+    "binaryCannotEdit": "此檔案類型無法作為文字編輯",
+    "fileTooLarge": "檔案過大無法編輯（最大 1 MB）",
+    "unsavedChanges": "有未儲存的變更，確定捨棄嗎？",
+    "fileSaved": "檔案已儲存",
+    "fileConflict": "檔案已在伺服器上被修改，請重新載入後再試。",
     "run": "執行"
   }
 }

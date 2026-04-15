@@ -227,6 +227,12 @@
     "send": "送信",
     "noCommands": "コマンド履歴なし",
     "unfavorite": "お気に入り解除",
+    "editor": "エディタ",
+    "binaryCannotEdit": "このファイルタイプはテキストとして編集できません",
+    "fileTooLarge": "ファイルが大きすぎて編集できません（最大1MB）",
+    "unsavedChanges": "未保存の変更があります。破棄しますか？",
+    "fileSaved": "ファイルを保存しました",
+    "fileConflict": "ファイルはサーバー上で変更されています。再読み込みしてください。",
     "run": "実行"
   }
 }

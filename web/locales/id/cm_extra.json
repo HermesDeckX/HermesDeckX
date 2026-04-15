@@ -227,6 +227,12 @@
     "send": "Kirim",
     "noCommands": "Tidak ada riwayat perintah",
     "unfavorite": "Hapus favorit",
+    "editor": "Editor",
+    "binaryCannotEdit": "Tipe file ini tidak dapat diedit sebagai teks",
+    "fileTooLarge": "File terlalu besar untuk diedit (maks 1 MB)",
+    "unsavedChanges": "Ada perubahan yang belum disimpan. Buang?",
+    "fileSaved": "File disimpan",
+    "fileConflict": "File telah diubah di server. Silakan muat ulang.",
     "run": "Jalankan"
   }
 }

@@ -1,5 +1,5 @@
 // SFTP REST API service layer
-import { get, post } from './request';
+import { get, post, put } from './request';
 
 export interface FileEntry {
   name: string;
@@ -13,6 +13,22 @@ export interface FileEntry {
 export interface ListResult {
   path: string;
   entries: FileEntry[];
+}
+
+export interface ReadFileResult {
+  path: string;
+  content: string;
+  size: number;
+  etag: string;
+  mtime: number;
+  line_ending: 'lf' | 'crlf';
+}
+
+export interface WriteFileResult {
+  path: string;
+  size: number;
+  etag: string;
+  saved: boolean;
 }
 
 export const sftpApi = {
@@ -58,4 +74,14 @@ export const sftpApi = {
     const data = await resp.json();
     return data.data ?? data;
   },
+
+  readFile: (sessionId: string, path: string) => {
+    const params = new URLSearchParams({ sessionId, path });
+    return get<ReadFileResult>(`/api/v1/sftp/read?${params}`);
+  },
+
+  writeFile: (sessionId: string, path: string, content: string, expectedEtag?: string) =>
+    put<WriteFileResult>('/api/v1/sftp/write', {
+      sessionId, path, content, expected_etag: expectedEtag || '',
+    }),
 };

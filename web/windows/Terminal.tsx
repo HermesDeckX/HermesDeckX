@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+const SftpEditor = lazy(() => import('../components/SftpEditor'));
 import type { Language } from '../types';
 import { getTranslation } from '../locales';
 import { useToast } from '../components/Toast';
@@ -8,7 +9,7 @@ import type { SSHHost, SSHHostCreateRequest } from '../services/ssh-hosts';
 import { TerminalWSClient } from '../services/terminal-ws';
 import type { TerminalMessage, TerminalCreatedPayload, TerminalOutputPayload, TerminalExitPayload, TerminalErrorPayload } from '../services/terminal-ws';
 import { sftpApi } from '../services/sftp';
-import type { FileEntry } from '../services/sftp';
+import type { FileEntry, ReadFileResult } from '../services/sftp';
 import { sysInfoApi } from '../services/sysinfo';
 import type { SysInfo } from '../services/sysinfo';
 import { snippetsApi } from '../services/snippets';
@@ -46,8 +47,21 @@ interface TabState {
   snippets: SSHSnippet[];
   snippetsLoaded: boolean;
   collapsedSections: Set<string>;
+  editorFile: EditorFile | null;
+  editorDirty: boolean;
+  editorSaving: boolean;
 }
-type BottomTab = 'files' | 'commands';
+
+interface EditorFile {
+  path: string;
+  name: string;
+  content: string;
+  originalContent: string;
+  etag: string;
+  size: number;
+  lineEnding: 'lf' | 'crlf';
+}
+type BottomTab = 'files' | 'commands' | 'editor';
 type SysSection = 'processes' | 'disks' | 'network';
 
 const XTERM_DARK = {
@@ -186,6 +200,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
       sysInfo: null, sysInfoOpen: true, netHistory: [],
       snippets: [], snippetsLoaded: false, collapsedSections: new Set(),
+      editorFile: null, editorDirty: false, editorSaving: false,
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -482,6 +497,116 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (next.has(section)) next.delete(section); else next.add(section);
     updateTab(activeTab.id, { collapsedSections: next });
   }, [activeTab, updateTab]);
+
+  // ── File Editor ──
+  const TEXT_EXTS = new Set([
+    'txt','md','mdx','json','jsonc','yaml','yml','toml','ini','conf','cfg','env','envrc',
+    'xml','svg','html','htm','css','scss','less','js','jsx','mjs','cjs','ts','tsx','mts',
+    'sh','bash','zsh','fish','py','pyw','go','rs','java','c','cpp','cc','h','hpp',
+    'rb','php','sql','lua','r','swift','kt','kts','pl','pm','ex','exs','erl','hrl',
+    'vue','svelte','astro','dockerfile','makefile','vagrantfile','gitignore','dockerignore',
+    'editorconfig','prettierrc','eslintrc','babelrc','log','csv','tsv',
+  ]);
+  const isTextFile = useCallback((name: string) => {
+    const lower = name.toLowerCase();
+    if (TEXT_EXTS.has(lower)) return true;
+    const ext = lower.split('.').pop() || '';
+    return TEXT_EXTS.has(ext);
+  }, []);
+
+  const openFileInEditor = useCallback(async (entry: FileEntry) => {
+    if (!activeTab?.sessionId || entry.is_dir) return;
+    if (!isTextFile(entry.name)) {
+      toast('warning', tt.binaryCannotEdit || 'This file type cannot be edited as text');
+      return;
+    }
+    if (entry.size > 1024 * 1024) {
+      toast('warning', tt.fileTooLarge || 'File is too large to edit (max 1 MB)');
+      return;
+    }
+    // If editor has unsaved changes, confirm
+    if (activeTab.editorFile && activeTab.editorDirty) {
+      const ok = await confirm(tt.unsavedChanges || 'You have unsaved changes. Discard and open a new file?');
+      if (!ok) return;
+    }
+    try {
+      const result = await sftpApi.readFile(activeTab.sessionId, entry.path);
+      updateTab(activeTab.id, {
+        editorFile: {
+          path: result.path,
+          name: entry.name,
+          content: result.content,
+          originalContent: result.content,
+          etag: result.etag,
+          size: result.size,
+          lineEnding: result.line_ending,
+        },
+        editorDirty: false,
+        editorSaving: false,
+      });
+      setBottomTab('editor');
+    } catch (e: any) {
+      const msg = e?.message || '';
+      if (msg.includes('BINARY_FILE')) {
+        toast('warning', tt.binaryCannotEdit || 'This file appears to be binary and cannot be edited');
+      } else if (msg.includes('FILE_TOO_LARGE')) {
+        toast('warning', tt.fileTooLarge || 'File is too large to edit (max 1 MB)');
+      } else {
+        toast('error', msg || 'Failed to read file');
+      }
+    }
+  }, [activeTab, isTextFile, confirm, toast, tt, updateTab]);
+
+  const editorContentChange = useCallback((content: string) => {
+    if (!activeTab?.editorFile) return;
+    const dirty = content !== activeTab.editorFile.originalContent;
+    updateTab(activeTab.id, {
+      editorFile: { ...activeTab.editorFile, content },
+      editorDirty: dirty,
+    });
+  }, [activeTab, updateTab]);
+
+  const editorSave = useCallback(async () => {
+    if (!activeTab?.sessionId || !activeTab.editorFile) return;
+    updateTab(activeTab.id, { editorSaving: true });
+    try {
+      const result = await sftpApi.writeFile(
+        activeTab.sessionId,
+        activeTab.editorFile.path,
+        activeTab.editorFile.content,
+        activeTab.editorFile.etag,
+      );
+      updateTab(activeTab.id, {
+        editorFile: {
+          ...activeTab.editorFile,
+          originalContent: activeTab.editorFile.content,
+          etag: result.etag,
+          size: result.size,
+        },
+        editorDirty: false,
+        editorSaving: false,
+      });
+      toast('success', tt.fileSaved || 'File saved');
+    } catch (e: any) {
+      updateTab(activeTab.id, { editorSaving: false });
+      const msg = e?.message || '';
+      if (msg.includes('CONFLICT')) {
+        toast('error', tt.fileConflict || 'File was modified on the server. Please reload and try again.');
+      } else {
+        toast('error', msg || 'Save failed');
+      }
+    }
+  }, [activeTab, updateTab, toast, tt]);
+
+  const editorClose = useCallback(async () => {
+    if (!activeTab) return;
+    if (activeTab.editorDirty) {
+      const ok = await confirm(tt.unsavedChanges || 'You have unsaved changes. Discard?');
+      if (!ok) return;
+    }
+    updateTab(activeTab.id, { editorFile: null, editorDirty: false, editorSaving: false });
+    setBottomTab('files');
+  }, [activeTab, confirm, tt, updateTab]);
 
   const fmtBytes = (b: number) => {
     if (b < 1024) return `${b} B`;
@@ -885,6 +1010,13 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       <button onClick={() => setBottomTab('commands')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${bottomTab === 'commands' ? (isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-500/10 text-amber-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
                         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>code</span>{tt.commands || 'Commands'}
                       </button>
+                      {activeTab.editorFile && (
+                        <button onClick={() => setBottomTab('editor')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${bottomTab === 'editor' ? (isDark ? 'bg-purple-500/15 text-purple-400' : 'bg-purple-500/10 text-purple-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit_document</span>
+                          <span className="truncate max-w-[100px]">{activeTab.editorFile.name}</span>
+                          {activeTab.editorDirty && <span className="text-amber-400">●</span>}
+                        </button>
+                      )}
                       {/* Breadcrumb (files tab only) */}
                       {bottomTab === 'files' && (
                         <div className="flex items-center gap-0.5 text-[11px] overflow-x-auto no-scrollbar ms-2">
@@ -978,7 +1110,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                             {activeTab.sftpEntries.map((entry) => {
                               const fi = fileIcon(entry.name, entry.is_dir);
                               return (
-                                <div key={entry.path} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
+                                <div key={entry.path} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)} onDoubleClick={() => !entry.is_dir && openFileInEditor(entry)}>
                                   <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
                                   <div className="flex-1 min-w-0"><span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span></div>
                                   <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
@@ -1037,6 +1169,26 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                         )}
                       </div>
                     </div>
+                  )}
+
+                  {/* ── Editor tab content ── */}
+                  {bottomTab === 'editor' && activeTab.editorFile && (
+                    <Suspense fallback={<div className="flex items-center justify-center h-24"><span className="material-symbols-outlined animate-spin text-lg text-text-muted">progress_activity</span></div>}>
+                      <SftpEditor
+                        content={activeTab.editorFile.content}
+                        filename={activeTab.editorFile.name}
+                        filePath={activeTab.editorFile.path}
+                        isDark={isDark}
+                        isDirty={activeTab.editorDirty}
+                        saving={activeTab.editorSaving}
+                        fileSize={activeTab.editorFile.size}
+                        lineEnding={activeTab.editorFile.lineEnding}
+                        onContentChange={editorContentChange}
+                        onSave={editorSave}
+                        onClose={editorClose}
+                        tt={tt}
+                      />
+                    </Suspense>
                   )}
                 </div>
               </>

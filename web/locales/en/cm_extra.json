@@ -227,6 +227,12 @@
     "send": "Send",
     "noCommands": "No command history",
     "unfavorite": "Unfavorite",
+    "editor": "Editor",
+    "binaryCannotEdit": "This file type cannot be edited as text",
+    "fileTooLarge": "File is too large to edit (max 1 MB)",
+    "unsavedChanges": "You have unsaved changes. Discard?",
+    "fileSaved": "File saved",
+    "fileConflict": "File was modified on the server. Please reload and try again.",
     "run": "Run"
   }
 }

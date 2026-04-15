@@ -227,6 +227,12 @@
     "send": "Enviar",
     "noCommands": "Sem histórico de comandos",
     "unfavorite": "Remover favorito",
+    "editor": "Editor",
+    "binaryCannotEdit": "Este tipo de arquivo não pode ser editado como texto",
+    "fileTooLarge": "Arquivo muito grande para editar (máx. 1 MB)",
+    "unsavedChanges": "Alterações não salvas. Descartar?",
+    "fileSaved": "Arquivo salvo",
+    "fileConflict": "O arquivo foi modificado no servidor. Recarregue e tente novamente.",
     "run": "Executar"
   }
 }
