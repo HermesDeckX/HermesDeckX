@@ -219,6 +219,7 @@
     "memory": "Memória",
     "cores": "núcleos",
     "disks": "Discos",
-    "network": "Rede"
+    "network": "Rede",
+    "processes": "Processos"
   }
 }

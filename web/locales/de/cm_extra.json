@@ -219,6 +219,7 @@
     "memory": "Speicher",
     "cores": "Kerne",
     "disks": "Festplatten",
-    "network": "Netzwerk"
+    "network": "Netzwerk",
+    "processes": "Prozesse"
   }
 }

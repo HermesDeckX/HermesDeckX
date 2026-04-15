@@ -219,6 +219,7 @@
     "memory": "Mémoire",
     "cores": "cœurs",
     "disks": "Disques",
-    "network": "Réseau"
+    "network": "Réseau",
+    "processes": "Processus"
   }
 }

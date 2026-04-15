@@ -219,6 +219,7 @@
     "memory": "記憶體",
     "cores": "核心",
     "disks": "磁碟",
-    "network": "網路"
+    "network": "網路",
+    "processes": "處理程序"
   }
 }

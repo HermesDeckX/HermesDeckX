@@ -219,6 +219,7 @@
     "memory": "Память",
     "cores": "ядер",
     "disks": "Диски",
-    "network": "Сеть"
+    "network": "Сеть",
+    "processes": "Процессы"
   }
 }

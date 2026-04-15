@@ -84,9 +84,10 @@ const fileIcon = (name: string, isDir: boolean): { icon: string; color: string }
   return m[ext] || { icon: 'description', color: 'text-text-muted' };
 };
 
-const SFTP_PANEL_MIN = 280;
-const SFTP_PANEL_MAX = 600;
-const SFTP_PANEL_DEFAULT = 380;
+const SFTP_PANEL_MIN = 120;
+const SFTP_PANEL_MAX = 500;
+const SFTP_PANEL_DEFAULT = 220;
+const SYSINFO_WIDTH = 220;
 let tabCounter = 0;
 
 const TerminalPage: React.FC<Props> = ({ language }) => {
@@ -112,7 +113,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const dragCounterRef = useRef(0);
-  const [sftpWidth, setSftpWidth] = useState(SFTP_PANEL_DEFAULT);
+  const [sftpHeight, setSftpHeight] = useState(SFTP_PANEL_DEFAULT);
   const resizingRef = useRef(false);
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
@@ -359,11 +360,11 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault(); resizingRef.current = true;
-    const startX = e.clientX; const startW = sftpWidth;
-    const onMove = (ev: MouseEvent) => { if (!resizingRef.current) return; setSftpWidth(Math.max(SFTP_PANEL_MIN, Math.min(SFTP_PANEL_MAX, startW + (startX - ev.clientX)))); };
+    const startY = e.clientY; const startH = sftpHeight;
+    const onMove = (ev: MouseEvent) => { if (!resizingRef.current) return; setSftpHeight(Math.max(SFTP_PANEL_MIN, Math.min(SFTP_PANEL_MAX, startH + (startY - ev.clientY)))); };
     const onUp = () => { resizingRef.current = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); refitActiveTerminal(); };
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
-  }, [sftpWidth, refitActiveTerminal]);
+  }, [sftpHeight, refitActiveTerminal]);
 
   // Server status
   const fetchSysInfo = useCallback(async () => {
@@ -555,256 +556,282 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
           </div>
         )}
 
-        {/* Main: terminal + SFTP split */}
+        {/* Main: sysinfo left sidebar | (terminal top + SFTP bottom) */}
         <div className="flex-1 min-h-0 relative flex">
-          {/* Terminal — ALWAYS mounted */}
-          <div className="flex-1 min-w-0 min-h-0 relative">
-            {tabs.map((tab) => (
-              <div key={tab.id} className="absolute inset-0" style={{ display: tab.id === activeTabId ? 'block' : 'none' }}>
-                <div ref={(el) => { termContainerRefs.current[tab.id] = el; }} className="w-full h-full p-1" />
-                {!tab.sessionId && !tab.connecting && (
-                  <div className={`absolute inset-0 flex items-center justify-center z-10 ${isDark ? 'bg-black/40' : 'bg-white/60'} backdrop-blur-sm`}>
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      <span className={`material-symbols-outlined text-3xl ${isDark ? 'text-white/30' : 'text-black/20'}`}>link_off</span>
-                      <p className={`text-sm ${isDark ? 'text-white/50' : 'text-black/40'}`}>{tt.sessionEnded || 'Session ended'}</p>
-                      <button onClick={() => { const h = hosts.find((x) => x.id === tab.hostId); if (h) { closeTab(tab.id); connectToHost(h); } }} className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-colors">
-                        <span className="material-symbols-outlined text-sm">refresh</span>{tt.reconnect || 'Reconnect'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {tabs.length === 0 && (
-              <div className="flex items-center justify-center h-full">
-                <div className={`text-center ${isDark ? 'text-white/20' : 'text-black/20'}`}>
-                  <span className="material-symbols-outlined text-5xl mb-3 block">terminal</span>
-                  <p className="text-sm font-medium">{tt.noTabs || 'No active sessions'}</p>
-                  <button onClick={() => setView('hosts')} className="text-xs text-cyan-400 mt-3 hover:underline">{tt.connectHost || 'Connect to a host'}</button>
-                </div>
-              </div>
-            )}
 
-            {/* Server status overlay */}
-            {activeTab?.sysInfoOpen && (
-              <div className={`absolute inset-x-0 bottom-0 z-20 border-t overflow-y-auto neon-scrollbar ${isDark ? 'bg-[#16171f]/95 border-white/10' : 'bg-white/95 border-black/10'} backdrop-blur-md`} style={{ maxHeight: '55%', animation: 'fade-in 0.2s ease-out' }}>
-                <div className="p-3 space-y-3">
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm text-purple-400">monitoring</span>
-                      <span className="text-xs font-semibold">{tt.serverStatus || 'Server Status'}</span>
-                      {activeTab.sysInfo && (<span className={`text-[10px] font-mono ${isDark ? 'text-white/30' : 'text-black/30'}`}>{activeTab.sysInfo.hostname} · {activeTab.sysInfo.kernel}</span>)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={fetchSysInfo} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
-                      <button onClick={toggleSysInfo} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`}><span className="material-symbols-outlined text-sm">close</span></button>
-                    </div>
-                  </div>
-                  {!activeTab.sysInfo ? (
-                    <div className="flex items-center justify-center py-8"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
-                  ) : (
-                    <>
-                      {/* Uptime & Load */}
-                      <div className={`flex items-center gap-3 text-[11px] px-2 py-1.5 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined" style={{ fontSize: '13px' }}>schedule</span>{activeTab.sysInfo.uptime}</span>
-                        <span className={`flex items-center gap-1 ${isDark ? 'text-white/40' : 'text-black/40'}`}>Load: {activeTab.sysInfo.load_avg.load1} / {activeTab.sysInfo.load_avg.load5} / {activeTab.sysInfo.load_avg.load15}</span>
-                      </div>
-                      {/* Gauges row */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {/* CPU */}
-                        <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="flex items-center gap-1 text-[11px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>memory</span>CPU</span>
-                            <span className={`text-xs font-bold ${pctColor(activeTab.sysInfo.cpu.use_pct)}`}>{activeTab.sysInfo.cpu.use_pct}%</span>
-                          </div>
-                          <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.cpu.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.cpu.use_pct)}%` }} /></div>
-                          <div className={`flex justify-between mt-1.5 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-                            <span>{activeTab.sysInfo.cpu.cores} {tt.cores || 'cores'}</span>
-                            <span>usr {activeTab.sysInfo.cpu.user_pct}% · sys {activeTab.sysInfo.cpu.sys_pct}%</span>
-                          </div>
-                        </div>
-                        {/* Memory */}
-                        <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="flex items-center gap-1 text-[11px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>memory_alt</span>{tt.memory || 'Memory'}</span>
-                            <span className={`text-xs font-bold ${pctColor(activeTab.sysInfo.memory.use_pct)}`}>{activeTab.sysInfo.memory.use_pct}%</span>
-                          </div>
-                          <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.memory.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.memory.use_pct)}%` }} /></div>
-                          <div className={`flex justify-between mt-1.5 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-                            <span>{fmtBytes(activeTab.sysInfo.memory.used)}</span>
-                            <span>{fmtBytes(activeTab.sysInfo.memory.total)}</span>
-                          </div>
-                        </div>
-                        {/* Swap */}
-                        <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="flex items-center gap-1 text-[11px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>swap_horiz</span>Swap</span>
-                            <span className={`text-xs font-bold ${activeTab.sysInfo.swap.total > 0 ? pctColor(activeTab.sysInfo.swap.use_pct) : (isDark ? 'text-white/30' : 'text-black/30')}`}>{activeTab.sysInfo.swap.total > 0 ? `${activeTab.sysInfo.swap.use_pct}%` : 'N/A'}</span>
-                          </div>
-                          <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>{activeTab.sysInfo.swap.total > 0 && <div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.swap.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.swap.use_pct)}%` }} />}</div>
-                          <div className={`flex justify-between mt-1.5 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-                            <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.used) : '-'}</span>
-                            <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.total) : '-'}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Disks */}
-                      {activeTab.sysInfo.disks.length > 0 && (
-                        <div>
-                          <div className="flex items-center gap-1 mb-1.5"><span className="material-symbols-outlined text-sm text-purple-400">hard_drive_2</span><span className="text-[11px] font-medium">{tt.disks || 'Disks'}</span></div>
-                          <div className="space-y-1.5">
-                            {activeTab.sysInfo.disks.map((d) => (
-                              <div key={d.mount} className={`flex items-center gap-2 px-2 py-1 rounded-lg text-[11px] ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                                <span className={`font-mono shrink-0 w-24 truncate ${isDark ? 'text-white/50' : 'text-black/50'}`}>{d.mount}</span>
-                                <div className={`flex-1 h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full ${pctBarColor(d.use_pct)}`} style={{ width: `${Math.min(100, d.use_pct)}%` }} /></div>
-                                <span className={`shrink-0 w-10 text-end font-medium ${pctColor(d.use_pct)}`}>{d.use_pct}%</span>
-                                <span className={`shrink-0 text-[10px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>{fmtBytes(d.used)}/{fmtBytes(d.total)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {/* Network */}
-                      {activeTab.sysInfo.network.length > 0 && (
-                        <div>
-                          <div className="flex items-center gap-1 mb-1.5"><span className="material-symbols-outlined text-sm text-purple-400">lan</span><span className="text-[11px] font-medium">{tt.network || 'Network'}</span></div>
-                          <div className="space-y-1">
-                            {activeTab.sysInfo.network.map((n) => (
-                              <div key={n.name} className={`flex items-center gap-3 px-2 py-1 rounded-lg text-[11px] ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                                <span className={`font-mono shrink-0 w-16 truncate ${isDark ? 'text-white/50' : 'text-black/50'}`}>{n.name}</span>
-                                <span className="flex items-center gap-1 text-green-400"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>download</span>{fmtBytes(n.rx_bytes)}</span>
-                                <span className="flex items-center gap-1 text-blue-400"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>upload</span>{fmtBytes(n.tx_bytes)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
+          {/* ── Left: Sysinfo sidebar ── */}
+          {activeTab?.sysInfoOpen && (
+            <div className={`shrink-0 flex flex-col overflow-hidden border-e ${isDark ? 'bg-[#14151d] border-white/5' : 'bg-[#f0f0f0] border-black/5'}`} style={{ width: SYSINFO_WIDTH, animation: 'fade-in 0.2s ease-out' }}>
+              {/* Sidebar header */}
+              <div className={`flex items-center justify-between px-2.5 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold"><span className="material-symbols-outlined text-sm text-purple-400">monitoring</span>{tt.serverStatus || 'Server Status'}</span>
+                <div className="flex items-center gap-0.5">
+                  <button onClick={fetchSysInfo} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>refresh</span></button>
+                  <button onClick={toggleSysInfo} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span></button>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* SFTP right panel — dual pane: tree + file list */}
-          {showSftp && activeTab && (
-            <>
-              <div className={`w-1 cursor-col-resize shrink-0 transition-colors hover:bg-cyan-400/30 active:bg-cyan-400/50 ${isDark ? 'bg-white/5' : 'bg-black/5'}`} onMouseDown={startResize} />
-              <div className={`shrink-0 flex flex-col overflow-hidden border-s relative ${isDark ? 'bg-[#16171f] border-white/5' : 'bg-white border-black/5'}`} style={{ width: sftpWidth, animation: 'slide-in-right 0.2s ease-out' }} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
-                {dragging && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-cyan-500/10 border-2 border-dashed border-cyan-400 rounded-xl backdrop-blur-sm pointer-events-none">
-                    <div className="flex flex-col items-center gap-2 text-cyan-400"><span className="material-symbols-outlined text-3xl">cloud_upload</span><span className="text-xs font-medium">{tt.sftpDropHere || 'Drop files to upload'}</span></div>
-                  </div>
-                )}
-                {/* Header */}
-                <div className={`flex items-center justify-between px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                  <span className="text-xs font-semibold flex items-center gap-1.5"><span className="material-symbols-outlined text-sm text-cyan-400">folder_open</span>{tt.files || 'Files'}</span>
-                  <div className="flex items-center gap-0.5">
-                    <button onClick={() => { const newCache = { ...activeTab.treeCache }; Object.keys(newCache).forEach((k) => { if (k === activeTab.sftpPath) delete newCache[k]; }); updateTab(activeTab.id, { treeCache: newCache }); sftpNavigate(activeTab.sftpPath); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
-                    <button onClick={sftpMkdir} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFolder || 'New Folder'}><span className="material-symbols-outlined text-sm">create_new_folder</span></button>
-                    <button onClick={() => uploadInputRef.current?.click()} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpUpload || 'Upload'}><span className="material-symbols-outlined text-sm">upload_file</span></button>
-                    <button onClick={toggleSFTP} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.close || 'Close'}><span className="material-symbols-outlined text-sm">close</span></button>
-                    <input ref={uploadInputRef} type="file" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length === 1) sftpUpload(files[0]); else if (files.length > 1) sftpUploadMulti(files); e.target.value = ''; }} />
-                  </div>
-                </div>
-                {/* Breadcrumb */}
-                <div className={`flex items-center gap-0.5 px-3 py-1.5 text-[11px] border-b overflow-x-auto no-scrollbar shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                  {breadcrumbs.map((bc, i) => (
-                    <React.Fragment key={bc.path}>
-                      {i > 0 && <span className={isDark ? 'text-white/20' : 'text-black/20'} style={{ fontSize: '10px' }}>/</span>}
-                      <button onClick={() => sftpNavigate(bc.path)} className={`px-1 py-0.5 rounded transition-colors font-mono shrink-0 ${i === breadcrumbs.length - 1 ? 'text-cyan-400 font-semibold' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>{bc.label}</button>
-                    </React.Fragment>
-                  ))}
-                </div>
-                {/* Dual pane: tree + file list */}
-                <div className="flex-1 flex min-h-0 overflow-hidden">
-                  {/* Left: directory tree */}
-                  <div className={`w-[140px] shrink-0 overflow-y-auto neon-scrollbar border-e ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                    <div className="py-1">
-                      {(() => {
-                        const renderTree = (dirPath: string, depth: number): React.ReactNode => {
-                          const entries = activeTab.treeCache[dirPath];
-                          if (!entries) return null;
-                          const dirs = entries.filter((e) => e.is_dir).sort((a, b) => a.name.localeCompare(b.name));
-                          return dirs.map((entry) => {
-                            const isExpanded = activeTab.expandedDirs.has(entry.path);
-                            const isLoading = activeTab.treeLoading.has(entry.path);
-                            const isActive = activeTab.sftpPath === entry.path;
-                            return (
-                              <div key={entry.path}>
-                                <div
-                                  className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${isActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
-                                  style={{ paddingInlineStart: `${depth * 12 + 4}px` }}
-                                  onClick={() => { toggleTreeDir(entry.path); sftpNavigate(entry.path); }}
-                                >
-                                  {isLoading ? (
-                                    <span className="material-symbols-outlined animate-spin shrink-0" style={{ fontSize: '12px' }}>progress_activity</span>
-                                  ) : (
-                                    <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{isExpanded ? 'expand_more' : 'chevron_right'}</span>
-                                  )}
-                                  <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>{isExpanded ? 'folder_open' : 'folder'}</span>
-                                  <span className="truncate">{entry.name}</span>
-                                </div>
-                                {isExpanded && renderTree(entry.path, depth + 1)}
-                              </div>
-                            );
-                          });
-                        };
-                        // Root node
-                        const rootExpanded = activeTab.expandedDirs.has('/');
-                        const rootActive = activeTab.sftpPath === '/';
-                        return (
-                          <>
-                            <div
-                              className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${rootActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
-                              style={{ paddingInlineStart: '4px' }}
-                              onClick={() => sftpNavigate('/')}
-                            >
-                              <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{rootExpanded ? 'expand_more' : 'chevron_right'}</span>
-                              <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>folder_open</span>
-                              <span className="truncate font-medium">/</span>
-                            </div>
-                            {rootExpanded && renderTree('/', 1)}
-                          </>
-                        );
-                      })()}
+              {/* Sidebar content */}
+              <div className="flex-1 overflow-y-auto neon-scrollbar">
+                {!activeTab.sysInfo ? (
+                  <div className="flex items-center justify-center py-12"><span className="material-symbols-outlined animate-spin text-lg text-text-muted">progress_activity</span></div>
+                ) : (
+                  <div className="p-2 space-y-2">
+                    {/* Hostname + Kernel */}
+                    <div className={`text-[10px] font-mono px-1.5 py-1 rounded ${isDark ? 'bg-white/5 text-white/50' : 'bg-black/[.03] text-black/50'}`}>
+                      <div className="truncate">{activeTab.sysInfo.hostname}</div>
+                      <div className="truncate">{activeTab.sysInfo.kernel}</div>
                     </div>
-                  </div>
-                  {/* Right: file list */}
-                  <div className="flex-1 min-w-0 overflow-y-auto neon-scrollbar">
-                    {activeTab.sftpLoading ? (
-                      <div className="flex items-center justify-center h-32"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
-                    ) : activeTab.sftpEntries.length === 0 ? (
-                      <div className={`flex flex-col items-center justify-center h-32 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
-                        <span className="material-symbols-outlined text-2xl">folder_off</span>
-                        <span className="text-xs">{tt.sftpEmpty || 'Directory is empty'}</span>
+                    {/* Uptime */}
+                    <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>schedule</span>
+                      <span className="truncate">{activeTab.sysInfo.uptime}</span>
+                    </div>
+                    {/* Load */}
+                    <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>speed</span>
+                      <span>{activeTab.sysInfo.load_avg.load1} / {activeTab.sysInfo.load_avg.load5} / {activeTab.sysInfo.load_avg.load15}</span>
+                    </div>
+                    {/* CPU gauge */}
+                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>memory</span>CPU</span>
+                        <span className={`text-[10px] font-bold ${pctColor(activeTab.sysInfo.cpu.use_pct)}`}>{activeTab.sysInfo.cpu.use_pct}%</span>
                       </div>
-                    ) : (
-                      <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
-                        {activeTab.sftpEntries.map((entry) => {
-                          const fi = fileIcon(entry.name, entry.is_dir);
-                          return (
-                            <div key={entry.path} className={`flex items-center gap-2 px-3 py-1.5 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
-                              <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
-                              <div className="flex-1 min-w-0">
-                                <span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span>
-                              </div>
-                              <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
-                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
-                                <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
-                              </div>
+                      <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.cpu.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.cpu.use_pct)}%` }} /></div>
+                      <div className={`flex justify-between mt-1 text-[9px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>
+                        <span>{activeTab.sysInfo.cpu.cores} {tt.cores || 'cores'}</span>
+                        <span>u{activeTab.sysInfo.cpu.user_pct}% s{activeTab.sysInfo.cpu.sys_pct}%</span>
+                      </div>
+                    </div>
+                    {/* Memory gauge */}
+                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>memory_alt</span>{tt.memory || 'Mem'}</span>
+                        <span className={`text-[10px] font-bold ${pctColor(activeTab.sysInfo.memory.use_pct)}`}>{activeTab.sysInfo.memory.use_pct}%</span>
+                      </div>
+                      <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.memory.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.memory.use_pct)}%` }} /></div>
+                      <div className={`flex justify-between mt-1 text-[9px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>
+                        <span>{fmtBytes(activeTab.sysInfo.memory.used)}</span>
+                        <span>{fmtBytes(activeTab.sysInfo.memory.total)}</span>
+                      </div>
+                    </div>
+                    {/* Swap gauge */}
+                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>swap_horiz</span>Swap</span>
+                        <span className={`text-[10px] font-bold ${activeTab.sysInfo.swap.total > 0 ? pctColor(activeTab.sysInfo.swap.use_pct) : (isDark ? 'text-white/25' : 'text-black/25')}`}>{activeTab.sysInfo.swap.total > 0 ? `${activeTab.sysInfo.swap.use_pct}%` : 'N/A'}</span>
+                      </div>
+                      <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>{activeTab.sysInfo.swap.total > 0 && <div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.swap.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.swap.use_pct)}%` }} />}</div>
+                      <div className={`flex justify-between mt-1 text-[9px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>
+                        <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.used) : '-'}</span>
+                        <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.total) : '-'}</span>
+                      </div>
+                    </div>
+                    {/* Process list */}
+                    {activeTab.sysInfo.processes?.length > 0 && (
+                      <div>
+                        <div className={`flex items-center justify-between px-1 mb-1`}>
+                          <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>list</span>{tt.processes || 'Processes'}</span>
+                          <span className={`text-[9px] ${isDark ? 'text-white/20' : 'text-black/20'}`}>MEM CPU</span>
+                        </div>
+                        <div className={`rounded-lg overflow-hidden ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                          {activeTab.sysInfo.processes.map((p, i) => (
+                            <div key={`${p.pid}-${i}`} className={`flex items-center gap-1 px-1.5 py-[3px] text-[9px] font-mono ${i % 2 === 0 ? '' : isDark ? 'bg-white/[.02]' : 'bg-black/[.015]'}`}>
+                              <span className={`w-3 text-end shrink-0 ${isDark ? 'text-white/20' : 'text-black/20'}`}>{i + 1}</span>
+                              <span className={`flex-1 min-w-0 truncate ${isDark ? 'text-white/60' : 'text-black/60'}`}>{p.name}</span>
+                              <span className={`shrink-0 w-8 text-end ${pctColor(p.mem_pct)}`}>{p.mem_pct}%</span>
+                              <span className={`shrink-0 w-8 text-end ${pctColor(p.cpu_pct)}`}>{p.cpu_pct}%</span>
                             </div>
-                          );
-                        })}
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Disks */}
+                    {activeTab.sysInfo.disks.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1 px-1 mb-1"><span className="material-symbols-outlined" style={{ fontSize: '12px', color: 'var(--glow-purple, #a855f7)' }}>hard_drive_2</span><span className="text-[10px] font-medium">{tt.disks || 'Disks'}</span></div>
+                        {activeTab.sysInfo.disks.map((d) => (
+                          <div key={d.mount} className={`px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className={`font-mono truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{d.mount}</span>
+                              <span className={`font-medium ${pctColor(d.use_pct)}`}>{d.use_pct}%</span>
+                            </div>
+                            <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full ${pctBarColor(d.use_pct)}`} style={{ width: `${Math.min(100, d.use_pct)}%` }} /></div>
+                            <div className={`text-[8px] mt-0.5 ${isDark ? 'text-white/20' : 'text-black/20'}`}>{fmtBytes(d.used)} / {fmtBytes(d.total)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Network */}
+                    {activeTab.sysInfo.network.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1 px-1 mb-1"><span className="material-symbols-outlined" style={{ fontSize: '12px', color: 'var(--glow-purple, #a855f7)' }}>lan</span><span className="text-[10px] font-medium">{tt.network || 'Network'}</span></div>
+                        {activeTab.sysInfo.network.map((n) => (
+                          <div key={n.name} className={`px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                            <div className={`font-mono mb-0.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{n.name}</div>
+                            <div className="flex items-center gap-2">
+                              <span className="flex items-center gap-0.5 text-green-400"><span className="material-symbols-outlined" style={{ fontSize: '10px' }}>download</span>{fmtBytes(n.rx_bytes)}</span>
+                              <span className="flex items-center gap-0.5 text-blue-400"><span className="material-symbols-outlined" style={{ fontSize: '10px' }}>upload</span>{fmtBytes(n.tx_bytes)}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
-                </div>
+                )}
               </div>
-            </>
+            </div>
           )}
+
+          {/* ── Right: terminal (top) + SFTP (bottom) ── */}
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+            {/* Terminal area */}
+            <div className="flex-1 min-h-0 relative">
+              {tabs.map((tab) => (
+                <div key={tab.id} className="absolute inset-0" style={{ display: tab.id === activeTabId ? 'block' : 'none' }}>
+                  <div ref={(el) => { termContainerRefs.current[tab.id] = el; }} className="w-full h-full p-1" />
+                  {!tab.sessionId && !tab.connecting && (
+                    <div className={`absolute inset-0 flex items-center justify-center z-10 ${isDark ? 'bg-black/40' : 'bg-white/60'} backdrop-blur-sm`}>
+                      <div className="flex flex-col items-center gap-3 text-center">
+                        <span className={`material-symbols-outlined text-3xl ${isDark ? 'text-white/30' : 'text-black/20'}`}>link_off</span>
+                        <p className={`text-sm ${isDark ? 'text-white/50' : 'text-black/40'}`}>{tt.sessionEnded || 'Session ended'}</p>
+                        <button onClick={() => { const h = hosts.find((x) => x.id === tab.hostId); if (h) { closeTab(tab.id); connectToHost(h); } }} className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-colors">
+                          <span className="material-symbols-outlined text-sm">refresh</span>{tt.reconnect || 'Reconnect'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {tabs.length === 0 && (
+                <div className="flex items-center justify-center h-full">
+                  <div className={`text-center ${isDark ? 'text-white/20' : 'text-black/20'}`}>
+                    <span className="material-symbols-outlined text-5xl mb-3 block">terminal</span>
+                    <p className="text-sm font-medium">{tt.noTabs || 'No active sessions'}</p>
+                    <button onClick={() => setView('hosts')} className="text-xs text-cyan-400 mt-3 hover:underline">{tt.connectHost || 'Connect to a host'}</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── SFTP bottom panel ── */}
+            {showSftp && activeTab && (
+              <>
+                <div className={`h-1 cursor-row-resize shrink-0 transition-colors hover:bg-cyan-400/30 active:bg-cyan-400/50 ${isDark ? 'bg-white/5' : 'bg-black/5'}`} onMouseDown={startResize} />
+                <div className={`shrink-0 flex flex-col overflow-hidden border-t relative ${isDark ? 'bg-[#16171f] border-white/5' : 'bg-white border-black/5'}`} style={{ height: sftpHeight, animation: 'fade-in 0.15s ease-out' }} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
+                  {dragging && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-cyan-500/10 border-2 border-dashed border-cyan-400 rounded-xl backdrop-blur-sm pointer-events-none">
+                      <div className="flex flex-col items-center gap-2 text-cyan-400"><span className="material-symbols-outlined text-3xl">cloud_upload</span><span className="text-xs font-medium">{tt.sftpDropHere || 'Drop files to upload'}</span></div>
+                    </div>
+                  )}
+                  {/* Header */}
+                  <div className={`flex items-center justify-between px-3 py-1.5 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold flex items-center gap-1.5"><span className="material-symbols-outlined text-sm text-cyan-400">folder_open</span>{tt.files || 'Files'}</span>
+                      {/* Breadcrumb inline */}
+                      <div className="flex items-center gap-0.5 text-[11px] overflow-x-auto no-scrollbar">
+                        {breadcrumbs.map((bc, i) => (
+                          <React.Fragment key={bc.path}>
+                            {i > 0 && <span className={isDark ? 'text-white/20' : 'text-black/20'} style={{ fontSize: '10px' }}>/</span>}
+                            <button onClick={() => sftpNavigate(bc.path)} className={`px-1 py-0.5 rounded transition-colors font-mono shrink-0 ${i === breadcrumbs.length - 1 ? 'text-cyan-400 font-semibold' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>{bc.label}</button>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <button onClick={() => { const newCache = { ...activeTab.treeCache }; Object.keys(newCache).forEach((k) => { if (k === activeTab.sftpPath) delete newCache[k]; }); updateTab(activeTab.id, { treeCache: newCache }); sftpNavigate(activeTab.sftpPath); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
+                      <button onClick={sftpMkdir} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFolder || 'New Folder'}><span className="material-symbols-outlined text-sm">create_new_folder</span></button>
+                      <button onClick={() => uploadInputRef.current?.click()} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpUpload || 'Upload'}><span className="material-symbols-outlined text-sm">upload_file</span></button>
+                      <button onClick={toggleSFTP} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.close || 'Close'}><span className="material-symbols-outlined text-sm">close</span></button>
+                      <input ref={uploadInputRef} type="file" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length === 1) sftpUpload(files[0]); else if (files.length > 1) sftpUploadMulti(files); e.target.value = ''; }} />
+                    </div>
+                  </div>
+                  {/* Dual pane: tree left + file list right */}
+                  <div className="flex-1 flex min-h-0 overflow-hidden">
+                    {/* Tree */}
+                    <div className={`w-[160px] shrink-0 overflow-y-auto neon-scrollbar border-e ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                      <div className="py-1">
+                        {(() => {
+                          const renderTree = (dirPath: string, depth: number): React.ReactNode => {
+                            const entries = activeTab.treeCache[dirPath];
+                            if (!entries) return null;
+                            const dirs = entries.filter((e) => e.is_dir).sort((a, b) => a.name.localeCompare(b.name));
+                            return dirs.map((entry) => {
+                              const isExpanded = activeTab.expandedDirs.has(entry.path);
+                              const isLoading = activeTab.treeLoading.has(entry.path);
+                              const isActive = activeTab.sftpPath === entry.path;
+                              return (
+                                <div key={entry.path}>
+                                  <div
+                                    className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${isActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
+                                    style={{ paddingInlineStart: `${depth * 12 + 4}px` }}
+                                    onClick={() => { toggleTreeDir(entry.path); sftpNavigate(entry.path); }}
+                                  >
+                                    {isLoading ? (
+                                      <span className="material-symbols-outlined animate-spin shrink-0" style={{ fontSize: '12px' }}>progress_activity</span>
+                                    ) : (
+                                      <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{isExpanded ? 'expand_more' : 'chevron_right'}</span>
+                                    )}
+                                    <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>{isExpanded ? 'folder_open' : 'folder'}</span>
+                                    <span className="truncate">{entry.name}</span>
+                                  </div>
+                                  {isExpanded && renderTree(entry.path, depth + 1)}
+                                </div>
+                              );
+                            });
+                          };
+                          const rootExpanded = activeTab.expandedDirs.has('/');
+                          const rootActive = activeTab.sftpPath === '/';
+                          return (
+                            <>
+                              <div
+                                className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${rootActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
+                                style={{ paddingInlineStart: '4px' }}
+                                onClick={() => sftpNavigate('/')}
+                              >
+                                <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{rootExpanded ? 'expand_more' : 'chevron_right'}</span>
+                                <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>folder_open</span>
+                                <span className="truncate font-medium">/</span>
+                              </div>
+                              {rootExpanded && renderTree('/', 1)}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    {/* File list */}
+                    <div className="flex-1 min-w-0 overflow-y-auto neon-scrollbar">
+                      {activeTab.sftpLoading ? (
+                        <div className="flex items-center justify-center h-24"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
+                      ) : activeTab.sftpEntries.length === 0 ? (
+                        <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
+                          <span className="material-symbols-outlined text-2xl">folder_off</span>
+                          <span className="text-xs">{tt.sftpEmpty || 'Directory is empty'}</span>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
+                          {activeTab.sftpEntries.map((entry) => {
+                            const fi = fileIcon(entry.name, entry.is_dir);
+                            return (
+                              <div key={entry.path} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
+                                <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
+                                <div className="flex-1 min-w-0"><span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span></div>
+                                <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
+                                  <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );

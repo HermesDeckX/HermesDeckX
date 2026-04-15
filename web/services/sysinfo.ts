@@ -37,6 +37,14 @@ export interface NetIF {
   tx_bytes: number;
 }
 
+export interface ProcessInfo {
+  pid: number;
+  name: string;
+  cpu_pct: number;
+  mem_pct: number;
+  mem_kb: number;
+}
+
 export interface SysInfo {
   hostname: string;
   kernel: string;
@@ -47,6 +55,7 @@ export interface SysInfo {
   swap: MemInfo;
   disks: DiskInfo[];
   network: NetIF[];
+  processes: ProcessInfo[];
 }
 
 export const sysInfoApi = {

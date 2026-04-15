@@ -11,15 +11,25 @@ import (
 
 // SysInfo holds parsed server system information.
 type SysInfo struct {
-	Hostname string  `json:"hostname"`
-	Kernel   string  `json:"kernel"`
-	Uptime   string  `json:"uptime"`
-	LoadAvg  LoadAvg `json:"load_avg"`
-	CPU      CPUInfo `json:"cpu"`
-	Memory   MemInfo `json:"memory"`
-	Swap     MemInfo `json:"swap"`
-	Disks    []Disk  `json:"disks"`
-	Network  []NetIF `json:"network"`
+	Hostname  string    `json:"hostname"`
+	Kernel    string    `json:"kernel"`
+	Uptime    string    `json:"uptime"`
+	LoadAvg   LoadAvg   `json:"load_avg"`
+	CPU       CPUInfo   `json:"cpu"`
+	Memory    MemInfo   `json:"memory"`
+	Swap      MemInfo   `json:"swap"`
+	Disks     []Disk    `json:"disks"`
+	Network   []NetIF   `json:"network"`
+	Processes []Process `json:"processes"`
+}
+
+// Process holds a single process info.
+type Process struct {
+	PID    int     `json:"pid"`
+	Name   string  `json:"name"`
+	CPUPct float64 `json:"cpu_pct"`
+	MemPct float64 `json:"mem_pct"`
+	MemKB  uint64  `json:"mem_kb"`
 }
 
 // LoadAvg holds system load averages.
@@ -40,10 +50,10 @@ type CPUInfo struct {
 
 // MemInfo holds memory usage information.
 type MemInfo struct {
-	Total   uint64  `json:"total"`
-	Used    uint64  `json:"used"`
-	Free    uint64  `json:"free"`
-	UsePct  float64 `json:"use_pct"`
+	Total  uint64  `json:"total"`
+	Used   uint64  `json:"used"`
+	Free   uint64  `json:"free"`
+	UsePct float64 `json:"use_pct"`
 }
 
 // Disk holds disk usage information.
@@ -77,6 +87,7 @@ echo "===CPUSTAT==="; head -1 /proc/stat 2>/dev/null
 echo "===MEMINFO==="; free -b 2>/dev/null
 echo "===DISK==="; df -B1 -x tmpfs -x devtmpfs -x squashfs 2>/dev/null
 echo "===NETDEV==="; cat /proc/net/dev 2>/dev/null
+echo "===PROCS==="; ps aux --sort=-%mem 2>/dev/null | head -11
 echo "===END==="`
 
 	output, err := runCommand(client, script)
@@ -129,6 +140,11 @@ echo "===END==="`
 	// Network
 	if v, ok := sections["NETDEV"]; ok {
 		info.Network = parseNetDev(v)
+	}
+
+	// Processes
+	if v, ok := sections["PROCS"]; ok {
+		info.Processes = parseProcesses(v)
 	}
 
 	return info, nil
@@ -307,6 +323,38 @@ func parseNetDev(s string) []NetIF {
 		nets = append(nets, NetIF{Name: name, RxBytes: rx, TxBytes: tx})
 	}
 	return nets
+}
+
+func parseProcesses(s string) []Process {
+	var procs []Process
+	for _, line := range strings.Split(s, "\n") {
+		fields := strings.Fields(line)
+		// ps aux: USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+		if len(fields) < 11 || fields[0] == "USER" {
+			continue
+		}
+		pid, _ := strconv.Atoi(fields[1])
+		cpuPct, _ := strconv.ParseFloat(fields[2], 64)
+		memPct, _ := strconv.ParseFloat(fields[3], 64)
+		rssKB, _ := strconv.ParseUint(fields[5], 10, 64)
+		name := fields[10]
+		// Strip path prefix for display
+		if idx := strings.LastIndex(name, "/"); idx >= 0 && idx < len(name)-1 {
+			name = name[idx+1:]
+		}
+		// Strip leading brackets [kworker/...] etc
+		if strings.HasPrefix(name, "[") {
+			name = strings.TrimSuffix(strings.TrimPrefix(name, "["), "]")
+		}
+		procs = append(procs, Process{
+			PID:    pid,
+			Name:   name,
+			CPUPct: cpuPct,
+			MemPct: memPct,
+			MemKB:  rssKB,
+		})
+	}
+	return procs
 }
 
 func round2(f float64) float64 {

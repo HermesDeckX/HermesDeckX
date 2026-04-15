@@ -219,6 +219,7 @@
     "memory": "メモリ",
     "cores": "コア",
     "disks": "ディスク",
-    "network": "ネットワーク"
+    "network": "ネットワーク",
+    "processes": "プロセス"
   }
 }

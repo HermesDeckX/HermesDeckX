@@ -219,6 +219,7 @@
     "memory": "内存",
     "cores": "核心",
     "disks": "磁盘",
-    "network": "网络"
+    "network": "网络",
+    "processes": "进程"
   }
 }

@@ -219,6 +219,7 @@
     "memory": "Memori",
     "cores": "inti",
     "disks": "Disk",
-    "network": "Jaringan"
+    "network": "Jaringan",
+    "processes": "Proses"
   }
 }
