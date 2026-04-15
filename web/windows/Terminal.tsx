@@ -40,6 +40,7 @@ interface TabState {
   treeLoading: Set<string>;
   sysInfo: SysInfo | null;
   sysInfoOpen: boolean;
+  netHistory: { rx: number; tx: number }[];
 }
 
 const XTERM_DARK = {
@@ -174,7 +175,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       xterm: null, fitAddon: null, wsClient: null, resizeObserver: null,
       sftpPath: '/', sftpEntries: [], sftpLoading: false,
       treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
-      sysInfo: null, sysInfoOpen: false,
+      sysInfo: null, sysInfoOpen: false, netHistory: [],
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -367,11 +368,17 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [sftpHeight, refitActiveTerminal]);
 
   // Server status
+  const NET_HISTORY_MAX = 30;
   const fetchSysInfo = useCallback(async () => {
     if (!activeTab?.sessionId) return;
     try {
       const info = await sysInfoApi.get(activeTab.sessionId);
-      updateTab(activeTab.id, { sysInfo: info });
+      // Accumulate total RX/TX for sparkline
+      const totalRx = info.network.reduce((s, n) => s + n.rx_bytes, 0);
+      const totalTx = info.network.reduce((s, n) => s + n.tx_bytes, 0);
+      const prev = activeTab.netHistory;
+      const next = [...prev, { rx: totalRx, tx: totalTx }].slice(-NET_HISTORY_MAX);
+      updateTab(activeTab.id, { sysInfo: info, netHistory: next });
     } catch { /* silent */ }
   }, [activeTab, updateTab]);
 
@@ -379,7 +386,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!activeTab) return;
     if (activeTab.sysInfoOpen) { updateTab(activeTab.id, { sysInfoOpen: false }); return; }
     if (!activeTab.sessionId) { toast('error', tt.sysInfoNeedSession || 'Requires an active session'); return; }
-    updateTab(activeTab.id, { sysInfoOpen: true });
+    updateTab(activeTab.id, { sysInfoOpen: true, netHistory: [] });
     fetchSysInfo();
   }, [activeTab, updateTab, toast, tt, fetchSysInfo]);
 
@@ -396,8 +403,28 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
     return `${(b / 1024 ** 3).toFixed(1)} GB`;
   };
+  const fmtRate = (bps: number) => fmtBytes(bps) + '/s';
   const pctColor = (pct: number) => pct > 90 ? 'text-red-400' : pct > 70 ? 'text-amber-400' : 'text-green-400';
   const pctBarColor = (pct: number) => pct > 90 ? 'bg-red-400' : pct > 70 ? 'bg-amber-400' : 'bg-green-400';
+
+  // Build rate series from cumulative netHistory (diff between consecutive samples)
+  const netRates = useMemo(() => {
+    if (!activeTab?.netHistory || activeTab.netHistory.length < 2) return [];
+    const h = activeTab.netHistory;
+    const rates: { rx: number; tx: number }[] = [];
+    for (let i = 1; i < h.length; i++) {
+      rates.push({ rx: Math.max(0, (h[i].rx - h[i - 1].rx) / 5), tx: Math.max(0, (h[i].tx - h[i - 1].tx) / 5) });
+    }
+    return rates;
+  }, [activeTab?.netHistory]);
+
+  // SVG sparkline renderer
+  const renderSparkline = (data: number[], color: string, w: number, h: number) => {
+    if (data.length < 2) return null;
+    const max = Math.max(...data, 1);
+    const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 2) - 1}`).join(' ');
+    return (<polyline points={points} fill="none" stroke={color} strokeWidth="1.2" strokeLinejoin="round" />);
+  };
 
   const handleSave = useCallback(async () => {
     if (!form.name.trim() || !form.host.trim() || !form.username.trim()) { toast('error', tt.fieldsRequired || 'Name, host, and username are required'); return; }
@@ -666,6 +693,19 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                     {activeTab.sysInfo.network.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1 px-1 mb-1"><span className="material-symbols-outlined" style={{ fontSize: '12px', color: 'var(--glow-purple, #a855f7)' }}>lan</span><span className="text-[10px] font-medium">{tt.network || 'Network'}</span></div>
+                        {/* Sparkline chart */}
+                        {netRates.length >= 2 && (
+                          <div className={`rounded-lg p-1.5 mb-1.5 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                            <div className="flex items-center justify-between mb-1 text-[8px]">
+                              <span className="text-green-400 flex items-center gap-0.5"><span className="material-symbols-outlined" style={{ fontSize: '9px' }}>download</span>{fmtRate(netRates[netRates.length - 1].rx)}</span>
+                              <span className="text-blue-400 flex items-center gap-0.5"><span className="material-symbols-outlined" style={{ fontSize: '9px' }}>upload</span>{fmtRate(netRates[netRates.length - 1].tx)}</span>
+                            </div>
+                            <svg width="100%" height="32" viewBox={`0 0 ${SYSINFO_WIDTH - 24} 32`} preserveAspectRatio="none">
+                              {renderSparkline(netRates.map((r) => r.rx), '#4ade80', SYSINFO_WIDTH - 24, 32)}
+                              {renderSparkline(netRates.map((r) => r.tx), '#60a5fa', SYSINFO_WIDTH - 24, 32)}
+                            </svg>
+                          </div>
+                        )}
                         {activeTab.sysInfo.network.map((n) => (
                           <div key={n.name} className={`px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
                             <div className={`font-mono mb-0.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{n.name}</div>
