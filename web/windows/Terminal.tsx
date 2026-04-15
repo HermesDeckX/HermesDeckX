@@ -11,6 +11,8 @@ import { sftpApi } from '../services/sftp';
 import type { FileEntry } from '../services/sftp';
 import { sysInfoApi } from '../services/sysinfo';
 import type { SysInfo } from '../services/sysinfo';
+import { snippetsApi } from '../services/snippets';
+import type { SSHSnippet } from '../services/snippets';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
@@ -41,7 +43,10 @@ interface TabState {
   sysInfo: SysInfo | null;
   sysInfoOpen: boolean;
   netHistory: { rx: number; tx: number }[];
+  snippets: SSHSnippet[];
+  snippetsLoaded: boolean;
 }
+type BottomTab = 'files' | 'commands';
 
 const XTERM_DARK = {
   background: '#1a1b26', foreground: '#c0caf5', cursor: '#c0caf5', selectionBackground: '#33467c',
@@ -116,6 +121,9 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const dragCounterRef = useRef(0);
   const [sftpHeight, setSftpHeight] = useState(SFTP_PANEL_DEFAULT);
   const resizingRef = useRef(false);
+  const [bottomTab, setBottomTab] = useState<BottomTab>('files');
+  const [snippetForm, setSnippetForm] = useState({ name: '', command: '' });
+  const [snippetAdding, setSnippetAdding] = useState(false);
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -176,6 +184,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       sftpPath: '/', sftpEntries: [], sftpLoading: false,
       treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
       sysInfo: null, sysInfoOpen: false, netHistory: [],
+      snippets: [], snippetsLoaded: false,
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -396,6 +405,42 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     const iv = setInterval(fetchSysInfo, 5000);
     return () => clearInterval(iv);
   }, [activeTab?.sysInfoOpen, activeTab?.sessionId, fetchSysInfo]);
+
+  // Snippets
+  const loadSnippets = useCallback(async () => {
+    if (!activeTab) return;
+    try {
+      const list = await snippetsApi.list(activeTab.hostId);
+      updateTab(activeTab.id, { snippets: list || [], snippetsLoaded: true });
+    } catch { /* silent */ }
+  }, [activeTab, updateTab]);
+
+  const addSnippet = useCallback(async () => {
+    if (!activeTab || !snippetForm.name.trim() || !snippetForm.command.trim()) return;
+    setSnippetAdding(true);
+    try {
+      await snippetsApi.create({ host_id: activeTab.hostId, name: snippetForm.name, command: snippetForm.command });
+      setSnippetForm({ name: '', command: '' });
+      loadSnippets();
+    } catch (e: any) { toast('error', e?.message || 'Failed to save snippet'); }
+    finally { setSnippetAdding(false); }
+  }, [activeTab, snippetForm, toast, loadSnippets]);
+
+  const deleteSnippet = useCallback(async (id: number) => {
+    if (!await confirm(tt.deleteSnippetConfirm || 'Delete this command snippet?')) return;
+    try { await snippetsApi.delete(id); loadSnippets(); }
+    catch (e: any) { toast('error', e?.message || 'Delete failed'); }
+  }, [confirm, toast, tt, loadSnippets]);
+
+  const execSnippet = useCallback((command: string) => {
+    if (!activeTab?.xterm || !activeTab?.wsClient) return;
+    activeTab.wsClient.send('terminal.input', command + '\n');
+  }, [activeTab]);
+
+  // Load snippets when switching to commands tab
+  useEffect(() => {
+    if (bottomTab === 'commands' && activeTab && !activeTab.snippetsLoaded) { loadSnippets(); }
+  }, [bottomTab, activeTab, loadSnippets]);
 
   const fmtBytes = (b: number) => {
     if (b < 1024) return `${b} B`;
@@ -754,7 +799,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
               )}
             </div>
 
-            {/* ── SFTP bottom panel ── */}
+            {/* ── Bottom panel (Files / Commands) ── */}
             {showSftp && activeTab && (
               <>
                 <div className={`h-1 cursor-row-resize shrink-0 transition-colors hover:bg-cyan-400/30 active:bg-cyan-400/50 ${isDark ? 'bg-white/5' : 'bg-black/5'}`} onMouseDown={startResize} />
@@ -764,110 +809,168 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       <div className="flex flex-col items-center gap-2 text-cyan-400"><span className="material-symbols-outlined text-3xl">cloud_upload</span><span className="text-xs font-medium">{tt.sftpDropHere || 'Drop files to upload'}</span></div>
                     </div>
                   )}
-                  {/* Header */}
-                  <div className={`flex items-center justify-between px-3 py-1.5 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold flex items-center gap-1.5"><span className="material-symbols-outlined text-sm text-cyan-400">folder_open</span>{tt.files || 'Files'}</span>
-                      {/* Breadcrumb inline */}
-                      <div className="flex items-center gap-0.5 text-[11px] overflow-x-auto no-scrollbar">
-                        {breadcrumbs.map((bc, i) => (
-                          <React.Fragment key={bc.path}>
-                            {i > 0 && <span className={isDark ? 'text-white/20' : 'text-black/20'} style={{ fontSize: '10px' }}>/</span>}
-                            <button onClick={() => sftpNavigate(bc.path)} className={`px-1 py-0.5 rounded transition-colors font-mono shrink-0 ${i === breadcrumbs.length - 1 ? 'text-cyan-400 font-semibold' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>{bc.label}</button>
-                          </React.Fragment>
-                        ))}
-                      </div>
-                    </div>
+                  {/* Header with tabs */}
+                  <div className={`flex items-center justify-between px-2 py-1 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
                     <div className="flex items-center gap-0.5">
-                      <button onClick={() => { const newCache = { ...activeTab.treeCache }; Object.keys(newCache).forEach((k) => { if (k === activeTab.sftpPath) delete newCache[k]; }); updateTab(activeTab.id, { treeCache: newCache }); sftpNavigate(activeTab.sftpPath); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
-                      <button onClick={sftpMkdir} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFolder || 'New Folder'}><span className="material-symbols-outlined text-sm">create_new_folder</span></button>
-                      <button onClick={() => uploadInputRef.current?.click()} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpUpload || 'Upload'}><span className="material-symbols-outlined text-sm">upload_file</span></button>
-                      <button onClick={toggleSFTP} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.close || 'Close'}><span className="material-symbols-outlined text-sm">close</span></button>
-                      <input ref={uploadInputRef} type="file" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length === 1) sftpUpload(files[0]); else if (files.length > 1) sftpUploadMulti(files); e.target.value = ''; }} />
-                    </div>
-                  </div>
-                  {/* Dual pane: tree left + file list right */}
-                  <div className="flex-1 flex min-h-0 overflow-hidden">
-                    {/* Tree */}
-                    <div className={`w-[160px] shrink-0 overflow-y-auto neon-scrollbar border-e ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                      <div className="py-1">
-                        {(() => {
-                          const renderTree = (dirPath: string, depth: number): React.ReactNode => {
-                            const entries = activeTab.treeCache[dirPath];
-                            if (!entries) return null;
-                            const dirs = entries.filter((e) => e.is_dir).sort((a, b) => a.name.localeCompare(b.name));
-                            return dirs.map((entry) => {
-                              const isExpanded = activeTab.expandedDirs.has(entry.path);
-                              const isLoading = activeTab.treeLoading.has(entry.path);
-                              const isActive = activeTab.sftpPath === entry.path;
-                              return (
-                                <div key={entry.path}>
-                                  <div
-                                    className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${isActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
-                                    style={{ paddingInlineStart: `${depth * 12 + 4}px` }}
-                                    onClick={() => { toggleTreeDir(entry.path); sftpNavigate(entry.path); }}
-                                  >
-                                    {isLoading ? (
-                                      <span className="material-symbols-outlined animate-spin shrink-0" style={{ fontSize: '12px' }}>progress_activity</span>
-                                    ) : (
-                                      <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{isExpanded ? 'expand_more' : 'chevron_right'}</span>
-                                    )}
-                                    <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>{isExpanded ? 'folder_open' : 'folder'}</span>
-                                    <span className="truncate">{entry.name}</span>
-                                  </div>
-                                  {isExpanded && renderTree(entry.path, depth + 1)}
-                                </div>
-                              );
-                            });
-                          };
-                          const rootExpanded = activeTab.expandedDirs.has('/');
-                          const rootActive = activeTab.sftpPath === '/';
-                          return (
-                            <>
-                              <div
-                                className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${rootActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
-                                style={{ paddingInlineStart: '4px' }}
-                                onClick={() => sftpNavigate('/')}
-                              >
-                                <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{rootExpanded ? 'expand_more' : 'chevron_right'}</span>
-                                <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>folder_open</span>
-                                <span className="truncate font-medium">/</span>
-                              </div>
-                              {rootExpanded && renderTree('/', 1)}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                    {/* File list */}
-                    <div className="flex-1 min-w-0 overflow-y-auto neon-scrollbar">
-                      {activeTab.sftpLoading ? (
-                        <div className="flex items-center justify-center h-24"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
-                      ) : activeTab.sftpEntries.length === 0 ? (
-                        <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
-                          <span className="material-symbols-outlined text-2xl">folder_off</span>
-                          <span className="text-xs">{tt.sftpEmpty || 'Directory is empty'}</span>
-                        </div>
-                      ) : (
-                        <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
-                          {activeTab.sftpEntries.map((entry) => {
-                            const fi = fileIcon(entry.name, entry.is_dir);
-                            return (
-                              <div key={entry.path} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
-                                <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
-                                <div className="flex-1 min-w-0"><span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span></div>
-                                <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
-                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
-                                  <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
-                                </div>
-                              </div>
-                            );
-                          })}
+                      {/* Tab: Files */}
+                      <button onClick={() => setBottomTab('files')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${bottomTab === 'files' ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>folder_open</span>{tt.files || 'Files'}
+                      </button>
+                      {/* Tab: Commands */}
+                      <button onClick={() => setBottomTab('commands')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${bottomTab === 'commands' ? (isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-500/10 text-amber-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>code</span>{tt.commands || 'Commands'}
+                      </button>
+                      {/* Breadcrumb (files tab only) */}
+                      {bottomTab === 'files' && (
+                        <div className="flex items-center gap-0.5 text-[11px] overflow-x-auto no-scrollbar ms-2">
+                          {breadcrumbs.map((bc, i) => (
+                            <React.Fragment key={bc.path}>
+                              {i > 0 && <span className={isDark ? 'text-white/20' : 'text-black/20'} style={{ fontSize: '10px' }}>/</span>}
+                              <button onClick={() => sftpNavigate(bc.path)} className={`px-1 py-0.5 rounded transition-colors font-mono shrink-0 ${i === breadcrumbs.length - 1 ? 'text-cyan-400 font-semibold' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>{bc.label}</button>
+                            </React.Fragment>
+                          ))}
                         </div>
                       )}
                     </div>
+                    <div className="flex items-center gap-0.5">
+                      {bottomTab === 'files' && (
+                        <>
+                          <button onClick={() => { const newCache = { ...activeTab.treeCache }; Object.keys(newCache).forEach((k) => { if (k === activeTab.sftpPath) delete newCache[k]; }); updateTab(activeTab.id, { treeCache: newCache }); sftpNavigate(activeTab.sftpPath); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
+                          <button onClick={sftpMkdir} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFolder || 'New Folder'}><span className="material-symbols-outlined text-sm">create_new_folder</span></button>
+                          <button onClick={() => uploadInputRef.current?.click()} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpUpload || 'Upload'}><span className="material-symbols-outlined text-sm">upload_file</span></button>
+                          <input ref={uploadInputRef} type="file" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length === 1) sftpUpload(files[0]); else if (files.length > 1) sftpUploadMulti(files); e.target.value = ''; }} />
+                        </>
+                      )}
+                      <button onClick={toggleSFTP} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.close || 'Close'}><span className="material-symbols-outlined text-sm">close</span></button>
+                    </div>
                   </div>
+
+                  {/* ── Files tab content ── */}
+                  {bottomTab === 'files' && (
+                    <div className="flex-1 flex min-h-0 overflow-hidden">
+                      {/* Tree */}
+                      <div className={`w-[160px] shrink-0 overflow-y-auto neon-scrollbar border-e ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                        <div className="py-1">
+                          {(() => {
+                            const renderTree = (dirPath: string, depth: number): React.ReactNode => {
+                              const entries = activeTab.treeCache[dirPath];
+                              if (!entries) return null;
+                              const dirs = entries.filter((e) => e.is_dir).sort((a, b) => a.name.localeCompare(b.name));
+                              return dirs.map((entry) => {
+                                const isExpanded = activeTab.expandedDirs.has(entry.path);
+                                const isLoading = activeTab.treeLoading.has(entry.path);
+                                const isActive = activeTab.sftpPath === entry.path;
+                                return (
+                                  <div key={entry.path}>
+                                    <div
+                                      className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${isActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
+                                      style={{ paddingInlineStart: `${depth * 12 + 4}px` }}
+                                      onClick={() => { toggleTreeDir(entry.path); sftpNavigate(entry.path); }}
+                                    >
+                                      {isLoading ? (
+                                        <span className="material-symbols-outlined animate-spin shrink-0" style={{ fontSize: '12px' }}>progress_activity</span>
+                                      ) : (
+                                        <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{isExpanded ? 'expand_more' : 'chevron_right'}</span>
+                                      )}
+                                      <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>{isExpanded ? 'folder_open' : 'folder'}</span>
+                                      <span className="truncate">{entry.name}</span>
+                                    </div>
+                                    {isExpanded && renderTree(entry.path, depth + 1)}
+                                  </div>
+                                );
+                              });
+                            };
+                            const rootExpanded = activeTab.expandedDirs.has('/');
+                            const rootActive = activeTab.sftpPath === '/';
+                            return (
+                              <>
+                                <div
+                                  className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${rootActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
+                                  style={{ paddingInlineStart: '4px' }}
+                                  onClick={() => sftpNavigate('/')}
+                                >
+                                  <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{rootExpanded ? 'expand_more' : 'chevron_right'}</span>
+                                  <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>folder_open</span>
+                                  <span className="truncate font-medium">/</span>
+                                </div>
+                                {rootExpanded && renderTree('/', 1)}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                      {/* File list */}
+                      <div className="flex-1 min-w-0 overflow-y-auto neon-scrollbar">
+                        {activeTab.sftpLoading ? (
+                          <div className="flex items-center justify-center h-24"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
+                        ) : activeTab.sftpEntries.length === 0 ? (
+                          <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
+                            <span className="material-symbols-outlined text-2xl">folder_off</span>
+                            <span className="text-xs">{tt.sftpEmpty || 'Directory is empty'}</span>
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
+                            {activeTab.sftpEntries.map((entry) => {
+                              const fi = fileIcon(entry.name, entry.is_dir);
+                              return (
+                                <div key={entry.path} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
+                                  <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
+                                  <div className="flex-1 min-w-0"><span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span></div>
+                                  <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
+                                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
+                                    <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Commands tab content ── */}
+                  {bottomTab === 'commands' && (
+                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                      {/* Add snippet form */}
+                      <div className={`flex items-center gap-2 px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                        <input className={`sci-input flex-[2] min-w-0 px-2 py-1 rounded-md text-xs ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`} placeholder={tt.snippetName || 'Name'} value={snippetForm.name} onChange={(e) => setSnippetForm({ ...snippetForm, name: e.target.value })} />
+                        <input className={`sci-input flex-[3] min-w-0 px-2 py-1 rounded-md text-xs font-mono ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`} placeholder={tt.snippetCommand || 'Command (e.g. systemctl restart nginx)'} value={snippetForm.command} onChange={(e) => setSnippetForm({ ...snippetForm, command: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') addSnippet(); }} />
+                        <button onClick={addSnippet} disabled={snippetAdding || !snippetForm.name.trim() || !snippetForm.command.trim()} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 disabled:opacity-40 transition-colors shrink-0">
+                          {snippetAdding ? <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> : <span className="material-symbols-outlined text-sm">add</span>}
+                          {tt.add || 'Add'}
+                        </button>
+                      </div>
+                      {/* Snippet list */}
+                      <div className="flex-1 overflow-y-auto neon-scrollbar">
+                        {activeTab.snippets.length === 0 ? (
+                          <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
+                            <span className="material-symbols-outlined text-2xl">code_off</span>
+                            <span className="text-xs">{tt.noSnippets || 'No saved commands'}</span>
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
+                            {activeTab.snippets.map((s) => (
+                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1.5 group transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
+                                <span className="material-symbols-outlined text-sm text-amber-400" style={{ fontSize: '14px' }}>code</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-medium truncate">{s.name}</div>
+                                  <div className={`text-[10px] font-mono truncate ${isDark ? 'text-white/30' : 'text-black/30'}`}>{s.command}</div>
+                                </div>
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button onClick={() => execSnippet(s.command)} className={`flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${isDark ? 'bg-green-500/15 text-green-400 hover:bg-green-500/25' : 'bg-green-500/10 text-green-600 hover:bg-green-500/20'}`} title={tt.run || 'Run'}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>play_arrow</span>{tt.run || 'Run'}
+                                  </button>
+                                  <button onClick={() => deleteSnippet(s.id)} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}

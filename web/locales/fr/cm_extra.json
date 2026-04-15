@@ -220,6 +220,12 @@
     "cores": "cœurs",
     "disks": "Disques",
     "network": "Réseau",
-    "processes": "Processus"
+    "processes": "Processus",
+    "commands": "Commandes",
+    "snippetName": "Nom",
+    "snippetCommand": "Commande (ex. systemctl restart nginx)",
+    "noSnippets": "Aucune commande enregistrée",
+    "deleteSnippetConfirm": "Supprimer cette commande ?",
+    "run": "Exécuter"
   }
 }

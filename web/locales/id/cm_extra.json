@@ -220,6 +220,12 @@
     "cores": "inti",
     "disks": "Disk",
     "network": "Jaringan",
-    "processes": "Proses"
+    "processes": "Proses",
+    "commands": "Perintah",
+    "snippetName": "Nama",
+    "snippetCommand": "Perintah (mis. systemctl restart nginx)",
+    "noSnippets": "Tidak ada perintah tersimpan",
+    "deleteSnippetConfirm": "Hapus cuplikan perintah ini?",
+    "run": "Jalankan"
   }
 }

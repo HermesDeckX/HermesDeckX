@@ -220,6 +220,12 @@
     "cores": "核心",
     "disks": "磁盘",
     "network": "网络",
-    "processes": "进程"
+    "processes": "进程",
+    "commands": "命令",
+    "snippetName": "名称",
+    "snippetCommand": "命令 (例如 systemctl restart nginx)",
+    "noSnippets": "暂无保存的命令",
+    "deleteSnippetConfirm": "删除这个命令片段？",
+    "run": "执行"
   }
 }

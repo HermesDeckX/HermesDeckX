@@ -220,6 +220,12 @@
     "cores": "コア",
     "disks": "ディスク",
     "network": "ネットワーク",
-    "processes": "プロセス"
+    "processes": "プロセス",
+    "commands": "コマンド",
+    "snippetName": "名前",
+    "snippetCommand": "コマンド (例: systemctl restart nginx)",
+    "noSnippets": "保存されたコマンドはありません",
+    "deleteSnippetConfirm": "このコマンドスニペットを削除しますか？",
+    "run": "実行"
   }
 }

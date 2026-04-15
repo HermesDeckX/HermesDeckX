@@ -220,6 +220,12 @@
     "cores": "núcleos",
     "disks": "Discos",
     "network": "Red",
-    "processes": "Procesos"
+    "processes": "Procesos",
+    "commands": "Comandos",
+    "snippetName": "Nombre",
+    "snippetCommand": "Comando (ej. systemctl restart nginx)",
+    "noSnippets": "Sin comandos guardados",
+    "deleteSnippetConfirm": "¿Eliminar este comando?",
+    "run": "Ejecutar"
   }
 }

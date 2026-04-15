@@ -220,6 +220,12 @@
     "cores": "核心",
     "disks": "磁碟",
     "network": "網路",
-    "processes": "處理程序"
+    "processes": "處理程序",
+    "commands": "指令",
+    "snippetName": "名稱",
+    "snippetCommand": "指令 (例如 systemctl restart nginx)",
+    "noSnippets": "尚無儲存的指令",
+    "deleteSnippetConfirm": "刪除此指令片段？",
+    "run": "執行"
   }
 }

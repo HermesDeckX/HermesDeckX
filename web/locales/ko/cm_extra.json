@@ -220,6 +220,12 @@
     "cores": "코어",
     "disks": "디스크",
     "network": "네트워크",
-    "processes": "프로세스"
+    "processes": "프로세스",
+    "commands": "명령어",
+    "snippetName": "이름",
+    "snippetCommand": "명령어 (예: systemctl restart nginx)",
+    "noSnippets": "저장된 명령어 없음",
+    "deleteSnippetConfirm": "이 명령 스니펫을 삭제하시겠습니까?",
+    "run": "실행"
   }
 }

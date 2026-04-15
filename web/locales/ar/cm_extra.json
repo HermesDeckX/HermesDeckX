@@ -220,6 +220,12 @@
     "cores": "أنوية",
     "disks": "الأقراص",
     "network": "الشبكة",
-    "processes": "العمليات"
+    "processes": "العمليات",
+    "commands": "الأوامر",
+    "snippetName": "الاسم",
+    "snippetCommand": "الأمر (مثال: systemctl restart nginx)",
+    "noSnippets": "لا توجد أوامر محفوظة",
+    "deleteSnippetConfirm": "حذف مقتطف الأمر هذا؟",
+    "run": "تشغيل"
   }
 }

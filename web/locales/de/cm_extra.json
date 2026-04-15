@@ -220,6 +220,12 @@
     "cores": "Kerne",
     "disks": "Festplatten",
     "network": "Netzwerk",
-    "processes": "Prozesse"
+    "processes": "Prozesse",
+    "commands": "Befehle",
+    "snippetName": "Name",
+    "snippetCommand": "Befehl (z.B. systemctl restart nginx)",
+    "noSnippets": "Keine gespeicherten Befehle",
+    "deleteSnippetConfirm": "Diesen Befehl löschen?",
+    "run": "Ausführen"
   }
 }

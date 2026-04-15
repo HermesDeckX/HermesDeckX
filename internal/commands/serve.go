@@ -493,8 +493,8 @@ func RunServe(args []string) int {
 	runtimeHandler := handlers.NewRuntimeHandler(runtimeMgr)
 
 	// SSH Terminal
-	if err := database.DB.AutoMigrate(&sshterm.SSHHost{}); err != nil {
-		logger.Log.Error().Err(err).Msg("failed to migrate SSHHost table")
+	if err := database.DB.AutoMigrate(&sshterm.SSHHost{}, &sshterm.SSHSnippet{}); err != nil {
+		logger.Log.Error().Err(err).Msg("failed to migrate SSH tables")
 	}
 	termManager := sshterm.NewManager()
 	defer termManager.CloseAll()
@@ -502,6 +502,7 @@ func RunServe(args []string) int {
 	sshHostsHandler := handlers.NewSSHHostsHandler()
 	sftpHandler := handlers.NewSFTPHandler(termManager)
 	sysInfoHandler := handlers.NewSysInfoHandler(termManager)
+	snippetHandler := handlers.NewSnippetHandler()
 
 	router := web.NewRouter()
 
@@ -858,6 +859,12 @@ func RunServe(args []string) int {
 
 	// Server System Info
 	router.GET("/api/v1/ssh/sysinfo", sysInfoHandler.Get)
+
+	// Command Snippets
+	router.GET("/api/v1/ssh/snippets", snippetHandler.List)
+	router.POST("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Create))
+	router.PUT("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Update))
+	router.DELETE("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Delete))
 
 	// WebSocket
 	router.GET("/api/v1/ws", wsHub.HandleWS(cfg.Auth.JWTSecret))

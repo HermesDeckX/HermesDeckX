@@ -220,6 +220,12 @@
     "cores": "कोर",
     "disks": "डिस्क",
     "network": "नेटवर्क",
-    "processes": "प्रक्रियाएँ"
+    "processes": "प्रक्रियाएँ",
+    "commands": "कमांड",
+    "snippetName": "नाम",
+    "snippetCommand": "कमांड (जैसे systemctl restart nginx)",
+    "noSnippets": "कोई सहेजा गया कमांड नहीं",
+    "deleteSnippetConfirm": "इस कमांड स्निपेट को हटाएँ?",
+    "run": "चलाएँ"
   }
 }
