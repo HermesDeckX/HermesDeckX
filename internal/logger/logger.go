@@ -27,6 +27,7 @@ var (
 	Audit    zerolog.Logger
 	WS       zerolog.Logger
 	DB       zerolog.Logger
+	Terminal zerolog.Logger
 )
 
 func Init(cfg webconfig.LogConfig) {
@@ -65,6 +66,7 @@ func Init(cfg webconfig.LogConfig) {
 	Audit = Log.With().Str("module", "audit").Logger()
 	WS = Log.With().Str("module", "websocket").Logger()
 	DB = Log.With().Str("module", "database").Logger()
+	Terminal = Log.With().Str("module", "terminal").Logger()
 }
 
 func parseLevel(s string) zerolog.Level {

@@ -31,6 +31,7 @@ import (
 	"HermesDeckX/internal/proclock"
 	"HermesDeckX/internal/runtime"
 	"HermesDeckX/internal/sentinel"
+	"HermesDeckX/internal/sshterm"
 	"HermesDeckX/internal/tray"
 	"HermesDeckX/internal/version"
 	"HermesDeckX/internal/web"
@@ -491,6 +492,15 @@ func RunServe(args []string) int {
 	}
 	runtimeHandler := handlers.NewRuntimeHandler(runtimeMgr)
 
+	// SSH Terminal
+	if err := database.DB.AutoMigrate(&sshterm.SSHHost{}); err != nil {
+		logger.Log.Error().Err(err).Msg("failed to migrate SSHHost table")
+	}
+	termManager := sshterm.NewManager()
+	defer termManager.CloseAll()
+	terminalWSHandler := handlers.NewTerminalWSHandler(termManager)
+	sshHostsHandler := handlers.NewSSHHostsHandler()
+
 	router := web.NewRouter()
 
 	router.GET("/api/v1/auth/needs-setup", authHandler.NeedsSetup)
@@ -828,6 +838,14 @@ func RunServe(args []string) int {
 
 	router.GET("/api/v1/badges", badgeHandler.Counts)
 
+	// SSH Terminal
+	router.GET("/api/v1/terminal/ws", terminalWSHandler.HandleWS(cfg.Auth.JWTSecret))
+	router.GET("/api/v1/ssh-hosts", sshHostsHandler.List)
+	router.POST("/api/v1/ssh-hosts", web.RequireAdmin(sshHostsHandler.Create))
+	router.PUT("/api/v1/ssh-hosts", web.RequireAdmin(sshHostsHandler.Update))
+	router.DELETE("/api/v1/ssh-hosts", web.RequireAdmin(sshHostsHandler.Delete))
+	router.POST("/api/v1/ssh-hosts/test", web.RequireAdmin(sshHostsHandler.TestConnection))
+
 	// WebSocket
 	router.GET("/api/v1/ws", wsHub.HandleWS(cfg.Auth.JWTSecret))
 
@@ -865,6 +883,7 @@ func RunServe(args []string) int {
 		"/api/v1/auth/needs-setup",
 		"/api/v1/health",
 		"/api/v1/ws",
+		"/api/v1/terminal/ws",
 	}
 
 	rlCtx, rlCancel := context.WithCancel(context.Background())

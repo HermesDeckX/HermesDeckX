@@ -39,13 +39,14 @@ const WINDOW_META: Record<WindowID, { icon: string; gradient: string }> = {
   maintenance:  { icon: 'health_and_safety', gradient: 'from-[#22C55E] to-[#15803D]' },
   setup_wizard: { icon: 'rocket_launch',     gradient: 'from-[#FF6B6B] to-[#FF3D3D]' },
   usage_wizard: { icon: 'auto_fix_high',     gradient: 'from-[#A855F7] to-[#7C3AED]' },
+  terminal:     { icon: 'terminal',          gradient: 'from-[#0EA5E9] to-[#0369A1]' },
   settings:     { icon: 'settings',          gradient: 'from-[#8E8E93] to-[#636366]' },
 };
 
 const ALL_WINDOW_IDS: WindowID[] = [
   'dashboard', 'editor', 'gateway', 'sessions', 'activity', 'skills',
   'knowledge', 'agents', 'scheduler',
-  'maintenance', 'settings',
+  'maintenance', 'terminal', 'settings',
 ];
 
 // ---------------------------------------------------------------------------

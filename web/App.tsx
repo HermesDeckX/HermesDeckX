@@ -36,6 +36,7 @@ const loadSettings = () => import('./windows/Settings');
 const loadSetupWizard = () => import('./windows/SetupWizard');
 const loadUsageWizard = () => import('./windows/UsageWizard');
 const loadKnowledge = () => import('./windows/Knowledge');
+const loadTerminal = () => import('./windows/Terminal');
 
 const WINDOW_LOADERS: Record<WindowID, () => Promise<unknown>> = {
   dashboard: loadDashboard,
@@ -53,6 +54,7 @@ const WINDOW_LOADERS: Record<WindowID, () => Promise<unknown>> = {
   setup_wizard: loadSetupWizard,
   usage_wizard: loadUsageWizard,
   knowledge: loadKnowledge,
+  terminal: loadTerminal,
 };
 
 const PRIORITY_WARMUP_LOADERS: Array<() => Promise<unknown>> = [
@@ -88,6 +90,7 @@ const Settings = React.lazy(loadSettings);
 const SetupWizard = React.lazy(loadSetupWizard);
 const UsageWizard = React.lazy(loadUsageWizard);
 const Knowledge = React.lazy(loadKnowledge);
+const TerminalPage = React.lazy(loadTerminal);
 
 const WINDOW_IDS: { id: WindowID; openByDefault?: boolean }[] = [
   { id: 'dashboard', openByDefault: true },
@@ -101,6 +104,7 @@ const WINDOW_IDS: { id: WindowID; openByDefault?: boolean }[] = [
   { id: 'scheduler' },
   { id: 'settings' },
   { id: 'knowledge' },
+  { id: 'terminal' },
 ];
 
 const CASCADE_OFFSET = 30;
@@ -449,6 +453,7 @@ const App: React.FC = () => {
                     {w.id === 'settings' && <Settings language={language} onLogout={logout} pendingTab={detailFor('settings')?.tab ?? null} onTabConsumed={consumeDetail} onPrefsChange={handlePrefsChange} badges={badges} />}
                     {/* nodes hidden: hermes-agent has no multi-node support */}
                     {w.id === 'knowledge' && <Knowledge language={language} pendingExpandItem={detailFor('knowledge')?.expandItem ?? null} onExpandItemConsumed={consumeDetail} />}
+                    {w.id === 'terminal' && <TerminalPage language={language} />}
                     {w.id === 'setup_wizard' && (
                       <SetupWizard
                         language={language}
