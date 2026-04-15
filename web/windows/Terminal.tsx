@@ -252,8 +252,9 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
         const cmd = buf[tabId].trim();
         if (cmd) {
           snippetsApi.record(host.id, cmd).then(() => {
-            const tab = tabsRef.current.find(t => t.id === tabId);
-            if (tab && tab.snippetsLoaded) loadSnippets();
+            snippetsApi.list(host.id).then(list => {
+              updateTab(tabId, { snippets: list || [], snippetsLoaded: true });
+            }).catch(() => {});
           }).catch(() => {});
         }
         buf[tabId] = '';
@@ -484,9 +485,10 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!activeTab || !command.trim()) return;
     try {
       await snippetsApi.record(activeTab.hostId, command);
-      loadSnippets();
+      const list = await snippetsApi.list(activeTab.hostId);
+      updateTab(activeTab.id, { snippets: list || [], snippetsLoaded: true });
     } catch { /* silent */ }
-  }, [activeTab, loadSnippets]);
+  }, [activeTab, updateTab]);
 
   const toggleFavorite = useCallback(async (id: number) => {
     try { await snippetsApi.toggleFavorite(id); loadSnippets(); }
@@ -1151,12 +1153,9 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                         ) : (
                           <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
                             {activeTab.snippets.map((s) => (
-                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1.5 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => execSnippet(s.command)}>
+                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => execSnippet(s.command)}>
                                 <span className={`material-symbols-outlined shrink-0 ${s.is_favorite ? 'text-amber-400' : isDark ? 'text-white/20' : 'text-black/15'}`} style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'chevron_right'}</span>
-                                <div className="flex-1 min-w-0">
-                                  <div className={`text-xs font-mono truncate ${isDark ? 'text-white/70' : 'text-black/70'}`}>{s.command}</div>
-                                  <div className={`text-[9px] ${isDark ? 'text-white/15' : 'text-black/15'}`}>{new Date(s.created_at).toLocaleString()}</div>
-                                </div>
+                                <div className={`flex-1 min-w-0 text-xs font-mono truncate ${isDark ? 'text-white/70' : 'text-black/70'}`}>{s.command}</div>
                                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                   <button onClick={() => toggleFavorite(s.id)} className={`p-0.5 rounded transition-colors ${s.is_favorite ? 'text-amber-400 hover:text-amber-300' : isDark ? 'hover:bg-white/10 text-white/30 hover:text-amber-400' : 'hover:bg-black/5 text-gray-400 hover:text-amber-500'}`} title={s.is_favorite ? (tt.unfavorite || 'Unfavorite') : (tt.favorite || 'Favorite')}>
                                     <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'star_outline'}</span>
