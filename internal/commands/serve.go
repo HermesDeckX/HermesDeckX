@@ -593,11 +593,12 @@ func RunServe(args []string) int {
 	router.POST("/api/v1/snapshots/", web.RequireAdmin(snapshotHandler.Action))
 	router.DELETE("/api/v1/snapshots/", web.RequireAdmin(snapshotHandler.Delete))
 
-	ocBackupHandler := handlers.NewHermesAgentBackupHandler()
-	router.POST("/api/v1/hermesagent-backup/create", web.RequireAdmin(ocBackupHandler.Create))
-	router.GET("/api/v1/hermesagent-backup/list", ocBackupHandler.List)
-	router.POST("/api/v1/hermesagent-backup/download", ocBackupHandler.Download)
-	router.POST("/api/v1/hermesagent-backup/delete", web.RequireAdmin(ocBackupHandler.Delete))
+	hermesAgentBackupHandler := handlers.NewHermesBackupHandler()
+	router.POST("/api/v1/hermesagent-backup/create", web.RequireAdmin(hermesAgentBackupHandler.Create))
+	router.POST("/api/v1/hermesagent-backup/import", web.RequireAdmin(hermesAgentBackupHandler.Import))
+	router.GET("/api/v1/hermesagent-backup/list", hermesAgentBackupHandler.List)
+	router.POST("/api/v1/hermesagent-backup/download", hermesAgentBackupHandler.Download)
+	router.POST("/api/v1/hermesagent-backup/delete", web.RequireAdmin(hermesAgentBackupHandler.Delete))
 
 	configBackupHandler := handlers.NewConfigBackupHandler()
 	router.GET("/api/v1/config-backups", configBackupHandler.List)

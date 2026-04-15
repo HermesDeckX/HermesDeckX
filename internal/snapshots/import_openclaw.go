@@ -71,12 +71,12 @@ func (s *Service) ImportFromTarGz(data []byte, password, note string) (*HermesAg
 		return nil, fmt.Errorf("snapshot limit reached (%d), please delete old snapshots first", MaxSnapshotCount)
 	}
 
-	ocManifest, files, err := parseTarGz(data)
+	hermesManifest, files, err := parseTarGz(data)
 	if err != nil {
 		return nil, fmt.Errorf("invalid HermesAgent backup: %w", err)
 	}
 
-	resources := convertHermesAgentToResources(ocManifest, files)
+	resources := convertHermesAgentToResources(hermesManifest, files)
 	if len(resources) == 0 {
 		return nil, errors.New("no importable resources found in the backup archive")
 	}
@@ -85,7 +85,7 @@ func (s *Service) ImportFromTarGz(data []byte, password, note string) (*HermesAg
 	if err != nil {
 		return nil, fmt.Errorf("failed to build manifest: %w", err)
 	}
-	if t, parseErr := time.Parse(time.RFC3339, ocManifest.CreatedAt); parseErr == nil {
+	if t, parseErr := time.Parse(time.RFC3339, hermesManifest.CreatedAt); parseErr == nil {
 		manifest.CreatedAt = t
 	}
 
@@ -103,8 +103,8 @@ func (s *Service) ImportFromTarGz(data []byte, password, note string) (*HermesAg
 		"resource_paths":     logicalPathsOfManifest(manifest.Resources),
 		"config_field_count": len(manifest.ConfigFields),
 		"import_source":      "hermesagent-backup",
-		"platform":           ocManifest.Platform,
-		"runtime_version":    ocManifest.RuntimeVersion,
+		"platform":           hermesManifest.Platform,
+		"runtime_version":    hermesManifest.RuntimeVersion,
 	}
 	summaryJSON, _ := json.Marshal(summary)
 	resTypeStats := map[string]int{}
@@ -114,7 +114,7 @@ func (s *Service) ImportFromTarGz(data []byte, password, note string) (*HermesAg
 	resTypeJSON, _ := json.Marshal(resTypeStats)
 
 	if note == "" {
-		note = fmt.Sprintf("Imported from HermesAgent backup (%s)", ocManifest.Platform)
+		note = fmt.Sprintf("Imported from HermesAgent backup (%s)", hermesManifest.Platform)
 	}
 
 	record := &database.SnapshotRecord{
@@ -143,9 +143,9 @@ func (s *Service) ImportFromTarGz(data []byte, password, note string) (*HermesAg
 		SnapshotID:    record.SnapshotID,
 		ResourceCount: record.ResourceCount,
 		SizeBytes:     record.SizeBytes,
-		Platform:      ocManifest.Platform,
-		RuntimeVer:    ocManifest.RuntimeVersion,
-		CreatedAt:     ocManifest.CreatedAt,
+		Platform:      hermesManifest.Platform,
+		RuntimeVer:    hermesManifest.RuntimeVersion,
+		CreatedAt:     hermesManifest.CreatedAt,
 	}, nil
 }
 
@@ -308,7 +308,7 @@ func (s *Service) ExportAsHermesAgentTarGz(snapshotID, password string) ([]byte,
 	now := manifest.CreatedAt
 	archiveRoot := now.Format("2006-01-02T15-04-05.000Z") + "-hermesagent-backup"
 
-	ocManifest := hermesagentManifest{
+	hermesManifest := hermesagentManifest{
 		SchemaVersion:  1,
 		CreatedAt:      now.Format(time.RFC3339),
 		ArchiveRoot:    archiveRoot,
@@ -316,7 +316,7 @@ func (s *Service) ExportAsHermesAgentTarGz(snapshotID, password string) ([]byte,
 		Platform:       "hermesdeckx",
 	}
 	for _, res := range manifest.Resources {
-		ocManifest.Assets = append(ocManifest.Assets, struct {
+		hermesManifest.Assets = append(hermesManifest.Assets, struct {
 			Kind        string `json:"kind"`
 			SourcePath  string `json:"sourcePath"`
 			ArchivePath string `json:"archivePath"`
@@ -331,7 +331,7 @@ func (s *Service) ExportAsHermesAgentTarGz(snapshotID, password string) ([]byte,
 	gw := gzip.NewWriter(&buf)
 	tw := tar.NewWriter(gw)
 
-	manifestJSON, _ := json.MarshalIndent(ocManifest, "", "  ")
+	manifestJSON, _ := json.MarshalIndent(hermesManifest, "", "  ")
 	if err := writeTarEntry(tw, archiveRoot+"/manifest.json", manifestJSON, now); err != nil {
 		return nil, "", err
 	}

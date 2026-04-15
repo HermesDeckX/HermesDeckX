@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { snapshotApi, ocBackupApi, type SnapshotStatsResponse, type OcBackupArchive, type SnapshotScanResult } from '../../services/api';
+import { snapshotApi, hermesAgentBackupApi, type SnapshotStatsResponse, type HermesAgentBackupArchive, type SnapshotScanResult } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { useConfirm } from '../../components/ConfirmDialog';
 import CustomSelect from '../../components/CustomSelect';
@@ -60,12 +60,12 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
   const [scheduledScanLoading, setScheduledScanLoading] = useState(false);
   const [scheduledScanShowMissing, setScheduledScanShowMissing] = useState(false);
   const [snapshotScheduleResourceIds, setSnapshotScheduleResourceIds] = useState<string[]>([]);
-  const [ocBackupCreating, setOcBackupCreating] = useState(false);
-  const [ocBackupScope, setOcBackupScope] = useState<'full' | 'workspace' | 'config'>('full');
-  const [ocVerify, setOcVerify] = useState(false);
-  const [ocArchives, setOcArchives] = useState<OcBackupArchive[]>([]);
-  const [ocInstalled, setOcInstalled] = useState(false);
-  const [ocBackupDir, setOcBackupDir] = useState('');
+  const [hermesAgentBackupCreating, setHermesAgentBackupCreating] = useState(false);
+  const [hermesAgentBackupScope, setHermesAgentBackupScope] = useState<'full' | 'workspace' | 'config'>('full');
+  const [hermesAgentVerify, setHermesAgentVerify] = useState(false);
+  const [hermesAgentArchives, setHermesAgentArchives] = useState<HermesAgentBackupArchive[]>([]);
+  const [hermesAgentInstalled, setHermesAgentInstalled] = useState(false);
+  const [hermesAgentBackupDir, setHermesAgentBackupDir] = useState('');
   const [snapshotScheduleEnabled, setSnapshotScheduleEnabled] = useState(false);
   const [snapshotScheduleTime, setSnapshotScheduleTime] = useState('03:00');
   const [snapshotScheduleRetention, setSnapshotScheduleRetention] = useState(7);
@@ -104,16 +104,16 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
   const [verifyResult, setVerifyResult] = useState<{ ok: boolean; error?: string; verified_count?: number } | null>(null);
   const [showVerifyModal, setShowVerifyModal] = useState<string | null>(null);
   // HermesAgent import
-  const [showOcImportModal, setShowOcImportModal] = useState(false);
-  const [ocImportFile, setOcImportFile] = useState<File | null>(null);
-  const [ocImportPassword, setOcImportPassword] = useState('');
-  const [ocImportNote, setOcImportNote] = useState('');
-  const [ocImporting, setOcImporting] = useState(false);
-  const ocImportRef = useRef<HTMLInputElement>(null);
+  const [showHermesAgentImportModal, setShowHermesAgentImportModal] = useState(false);
+  const [hermesAgentImportFile, setHermesAgentImportFile] = useState<File | null>(null);
+  const [hermesAgentImportPassword, setHermesAgentImportPassword] = useState('');
+  const [hermesAgentImportNote, setHermesAgentImportNote] = useState('');
+  const [hermesAgentImporting, setHermesAgentImporting] = useState(false);
+  const hermesAgentImportRef = useRef<HTMLInputElement>(null);
   // HermesAgent export
-  const [showOcExportModal, setShowOcExportModal] = useState<string | null>(null);
-  const [ocExportPassword, setOcExportPassword] = useState('');
-  const [ocExporting, setOcExporting] = useState(false);
+  const [showHermesAgentExportModal, setShowHermesAgentExportModal] = useState<string | null>(null);
+  const [hermesAgentExportPassword, setHermesAgentExportPassword] = useState('');
+  const [hermesAgentExporting, setHermesAgentExporting] = useState(false);
   const scanCacheRef = useRef<{ scope: string; at: number; result: SnapshotScanResult | null }>({ scope: '', at: 0, result: null });
   const scheduledScanCacheRef = useRef<{ scope: string; at: number; result: SnapshotScanResult | null }>({ scope: '', at: 0, result: null });
 
@@ -145,11 +145,11 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
   const fetchStats = useCallback(() => {
     snapshotApi.stats().then(setStats).catch(() => {});
   }, []);
-  const fetchOcArchives = useCallback(() => {
-    ocBackupApi.list().then((data) => {
-      setOcArchives(data.archives || []);
-      setOcInstalled(data.installed);
-      setOcBackupDir(data.backupDir || '');
+  const fetchHermesAgentArchives = useCallback(() => {
+    hermesAgentBackupApi.list().then((data) => {
+      setHermesAgentArchives(data.archives || []);
+      setHermesAgentInstalled(data.installed);
+      setHermesAgentBackupDir(data.backupDir || '');
     }).catch(() => {});
   }, []);
 
@@ -203,11 +203,11 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
   useEffect(() => { setSelectedScanResourceIds([]); scanCacheRef.current = { scope: '', at: 0, result: null }; }, [manualSnapshotScope]);
   useEffect(() => { scheduledScanCacheRef.current = { scope: '', at: 0, result: null }; }, [snapshotScheduleScope]);
 
-  useEffect(() => { fetchSnapshots(); fetchSnapshotSchedule(); fetchStats(); fetchOcArchives(); }, [fetchSnapshots, fetchSnapshotSchedule, fetchStats, fetchOcArchives]);
+  useEffect(() => { fetchSnapshots(); fetchSnapshotSchedule(); fetchStats(); fetchHermesAgentArchives(); }, [fetchSnapshots, fetchSnapshotSchedule, fetchStats, fetchHermesAgentArchives]);
   useEffect(() => { if (backupMethod === 'hermesdeckx') fetchSnapshotScan(manualSnapshotScope); }, [backupMethod, manualSnapshotScope, fetchSnapshotScan]);
   useEffect(() => { if (snapshotModeTab === 'scheduled') fetchScheduledSnapshotScan(snapshotScheduleScope); }, [snapshotModeTab, snapshotScheduleScope, fetchScheduledSnapshotScan]);
 
-  const refreshAll = useCallback((force = true) => { fetchSnapshots(force); fetchStats(); fetchOcArchives(); }, [fetchSnapshots, fetchStats, fetchOcArchives]);
+  const refreshAll = useCallback((force = true) => { fetchSnapshots(force); fetchStats(); fetchHermesAgentArchives(); }, [fetchSnapshots, fetchStats, fetchHermesAgentArchives]);
 
   // Filtered snapshot list
   const filteredSnapshots = useMemo(() => {
@@ -246,30 +246,6 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
   };
 
   // HermesAgent import handler
-  const handleOcImport = async () => {
-    if (!ocImportFile) return;
-    if (ocImportPassword.length < 6) { toast('error', s.snapshotPasswordTooShort || s.pwdTooShort); return; }
-    setOcImporting(true);
-    try {
-      const result = await snapshotApi.importHermesAgent(ocImportFile, ocImportPassword, ocImportNote.trim() || undefined);
-      toast('success', (s.snapshotOcImportOk || 'Imported Hermes Agent backup: {n} resources').replace('{n}', String(result.resource_count)));
-      setShowOcImportModal(false); setOcImportFile(null); setOcImportPassword(''); setOcImportNote(''); refreshAll();
-    } catch (err: any) { toast('error', err?.message || s.snapshotImportFailed || 'Import failed'); }
-    finally { setOcImporting(false); }
-  };
-
-  // HermesAgent export handler
-  const handleOcExport = async (snapshotID: string) => {
-    if (ocExportPassword.length < 6) { toast('error', s.snapshotPasswordTooShort || s.pwdTooShort); return; }
-    setOcExporting(true);
-    try {
-      await snapshotApi.exportHermesAgent(snapshotID, ocExportPassword);
-      toast('success', s.snapshotOcExportOk || 'Exported as Hermes Agent format');
-      setShowOcExportModal(null); setOcExportPassword('');
-    } catch (err: any) { toast('error', err?.message || s.snapshotExportFailed || 'Export failed'); }
-    finally { setOcExporting(false); }
-  };
-
   const handleCreateSnapshot = async () => {
     if (!snapshotPassword || snapshotPassword.length < 6) { toast('error', s.snapshotPasswordTooShort || s.pwdTooShort); return; }
     const resourceIds = selectedScanResourceIds.filter(Boolean);
@@ -321,20 +297,39 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
   const clearVisibleScheduledScanResources = useCallback(() => {
     setSnapshotScheduleResourceIds(prev => prev.filter(id => !scheduledVisibleSelectableIds.includes(id)));
   }, [scheduledVisibleSelectableIds]);
-  const handleCreateOcBackup = async () => {
-    if (!ocInstalled) { toast('error', s.ocBackupNotInstalled || 'Hermes CLI not installed'); return; }
-    setOcBackupCreating(true);
+  const handleImportHermesAgentBackup = async (file: File) => {
+    if (!file || !file.name.toLowerCase().endsWith('.zip')) { toast('error', 'Please select a .zip backup file'); return; }
+    const ok = await confirm({ title: s.snapshotOcImportTitle || 'Import Hermes Backup', message: s.snapshotOcImportNote || 'Importing a Hermes backup zip will overwrite current Hermes files. Continue?', confirmText: s.snapshotOcImportBtn || 'Import', danger: true });
+    if (!ok) {
+      if (hermesAgentImportRef.current) hermesAgentImportRef.current.value = '';
+      return;
+    }
+    setHermesAgentImporting(true);
     try {
-      await ocBackupApi.create({ includeWorkspace: ocBackupScope === 'workspace', onlyConfig: ocBackupScope === 'config', verify: ocVerify });
-      toast('success', s.ocBackupCreateOk || 'Hermes Agent backup created successfully');
-      fetchOcArchives();
-    } catch (err: any) { toast('error', err?.message || s.ocBackupCreateFail || 'Failed to create Hermes Agent backup'); }
-    finally { setOcBackupCreating(false); }
+      const result = await hermesAgentBackupApi.importFile(file);
+      toast('success', result.output || s.snapshotOcImportOk || 'Hermes backup imported successfully');
+      refreshAll();
+    } catch (err: any) {
+      toast('error', err?.message || s.snapshotImportFailed || 'Import failed');
+    } finally {
+      setHermesAgentImporting(false);
+      if (hermesAgentImportRef.current) hermesAgentImportRef.current.value = '';
+    }
   };
-  const handleDeleteOcArchive = async (path: string) => {
+  const handleCreateHermesAgentBackup = async () => {
+    if (!hermesAgentInstalled) { toast('error', s.ocBackupNotInstalled || 'Hermes CLI not installed'); return; }
+    setHermesAgentBackupCreating(true);
+    try {
+      const result = await hermesAgentBackupApi.create({ includeWorkspace: hermesAgentBackupScope === 'workspace', onlyConfig: hermesAgentBackupScope === 'config', verify: hermesAgentVerify });
+      toast('success', result.warning || s.ocBackupCreateOk || 'Hermes backup zip created successfully');
+      fetchHermesAgentArchives();
+    } catch (err: any) { toast('error', err?.message || s.ocBackupCreateFail || 'Failed to create Hermes Agent backup'); }
+    finally { setHermesAgentBackupCreating(false); }
+  };
+  const handleDeleteHermesAgentArchive = async (path: string) => {
     const ok = await confirm({ title: s.delete || 'Delete', message: s.ocBackupDeleteConfirm || 'Are you sure you want to delete this backup archive?', confirmText: s.delete || 'Delete', danger: true });
     if (!ok) return;
-    try { await ocBackupApi.remove(path); toast('success', s.ocBackupDeleteOk || 'Backup archive deleted'); fetchOcArchives(); }
+    try { await hermesAgentBackupApi.remove(path); toast('success', s.ocBackupDeleteOk || 'Backup archive deleted'); fetchHermesAgentArchives(); }
     catch { toast('error', s.ocBackupDeleteFail || 'Failed to delete backup archive'); }
   };
   const handleImportSnapshot = async (file: File) => {
@@ -558,9 +553,8 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
           <div><h2 className="text-[22px] font-bold text-slate-800 dark:text-white">{s.snapshotTitle || s.backup}</h2><p className="text-[12px] text-slate-400 dark:text-white/40 mt-0.5">{s.snapshotDesc || s.backupDesc}</p></div>
           <div className="shrink-0 flex items-center gap-2">
             <input ref={snapshotImportRef} type="file" accept=".clawbak" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImportSnapshot(f); }} />
-            <input ref={ocImportRef} type="file" accept=".tar.gz,.tgz" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { setOcImportFile(f); setShowOcImportModal(true); } if (ocImportRef.current) ocImportRef.current.value = ''; }} />
+            <input ref={hermesAgentImportRef} type="file" accept=".zip" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImportHermesAgentBackup(f); }} />
             <button onClick={() => snapshotImportRef.current?.click()} disabled={snapshotImporting} className="flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[12px] font-medium border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-40" title={s.snapshotImport || 'Import .clawbak'}><span className={`material-symbols-outlined text-[16px] ${snapshotImporting ? 'animate-spin' : ''}`}>{snapshotImporting ? 'progress_activity' : 'upload'}</span>{s.snapshotImport || 'Import'}</button>
-            <button onClick={() => ocImportRef.current?.click()} className="flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[12px] font-medium border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors" title={s.snapshotOcImport || 'Import Hermes Agent .tar.gz'}><span className="material-symbols-outlined text-[16px]">inventory_2</span>.tar.gz</button>
           </div>
         </div>
 
@@ -694,55 +688,47 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
             <p className="text-[11px] text-amber-700 dark:text-amber-400/80 leading-relaxed">{s.snapshotSecurityNote || s.backupSecurityNote}</p>
           </>)}
           {backupMethod === 'hermesagent' && (<>
-            {!ocInstalled ? (
+            {!hermesAgentInstalled ? (
               <div className="flex flex-col items-center justify-center py-6 gap-2">
                 <span className="material-symbols-outlined text-[28px] text-slate-300 dark:text-white/20">terminal</span>
                 <p className="text-[12px] text-slate-400 dark:text-white/40">{s.ocBackupNotInstalled || 'Hermes CLI not installed'}</p>
               </div>
             ) : (<>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px]">
-                {(['full', 'workspace', 'config'] as const).map(scope => (
-                  <label key={scope} className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="oc-backup-scope" checked={ocBackupScope === scope} onChange={() => setOcBackupScope(scope)} className="accent-primary" />
-                    <span className={`${ocBackupScope === scope ? 'text-slate-800 dark:text-white/80 font-medium' : 'text-slate-500 dark:text-white/50'}`}>
-                      {scope === 'full' ? (s.ocBackupFull || 'Standard backup') : scope === 'workspace' ? (s.ocBackupIncludeWorkspace || 'Include workspace') : (s.ocBackupOnlyConfig || 'Config only')}
-                    </span>
-                  </label>
-                ))}
-                <span className="w-px h-4 bg-slate-200 dark:bg-white/10" />
-                <label className="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" checked={ocVerify} onChange={e => setOcVerify(e.target.checked)} className="rounded border-slate-300 dark:border-white/20 text-primary" />
-                  <span className="text-slate-500 dark:text-white/50">{s.ocBackupVerify || 'Verify after creation'}</span>
-                </label>
+              <div className="rounded-xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/60 dark:bg-blue-500/5 px-3 py-2.5 text-[11px] text-blue-700 dark:text-blue-300">
+                {s.snapshotOcExportDesc || 'Upstream Hermes backup creates a standard .zip archive of the Hermes home directory. Workspace/config-only/verify options are not provided by Hermes CLI.'}
               </div>
-              <div className="flex justify-end">
-                <button onClick={handleCreateOcBackup} disabled={ocBackupCreating} className="flex items-center gap-1.5 px-4 py-[7px] bg-primary text-white rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:opacity-90 shadow-sm">
-                  <span className={`material-symbols-outlined text-[16px] ${ocBackupCreating ? 'animate-spin' : ''}`}>{ocBackupCreating ? 'progress_activity' : 'backup'}</span>
-                  {ocBackupCreating ? (s.ocBackupCreating || 'Creating backup...') : (s.ocBackupCreate || 'Create Hermes Agent Backup')}
+              <div className="flex justify-end gap-2">
+                <button onClick={() => hermesAgentImportRef.current?.click()} disabled={hermesAgentImporting} className="flex items-center gap-1.5 px-4 py-[7px] rounded-lg text-[13px] font-medium border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors disabled:opacity-40">
+                  <span className={`material-symbols-outlined text-[16px] ${hermesAgentImporting ? 'animate-spin' : ''}`}>{hermesAgentImporting ? 'progress_activity' : 'upload_file'}</span>
+                  {hermesAgentImporting ? (s.snapshotOcImportBtn || 'Importing...') : 'Import Hermes Backup (.zip)'}
+                </button>
+                <button onClick={handleCreateHermesAgentBackup} disabled={hermesAgentBackupCreating} className="flex items-center gap-1.5 px-4 py-[7px] bg-primary text-white rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:opacity-90 shadow-sm">
+                  <span className={`material-symbols-outlined text-[16px] ${hermesAgentBackupCreating ? 'animate-spin' : ''}`}>{hermesAgentBackupCreating ? 'progress_activity' : 'backup'}</span>
+                  {hermesAgentBackupCreating ? (s.ocBackupCreating || 'Creating backup...') : (s.ocBackupCreate || 'Create Hermes Backup (.zip)')}
                 </button>
               </div>
-              {ocArchives.length > 0 && (<>
-                <p className="text-[12px] font-semibold text-slate-600 dark:text-white/60 mt-2">{s.ocBackupArchives || 'Hermes Agent Backup Archives'}</p>
-                {ocBackupDir && <p className="text-[10px] font-mono text-slate-300 dark:text-white/20 truncate" title={ocBackupDir}>{ocBackupDir}</p>}
+              {hermesAgentArchives.length > 0 && (<>
+                <p className="text-[12px] font-semibold text-slate-600 dark:text-white/60 mt-2">{s.ocBackupArchives || 'Hermes Backup Archives (.zip)'}</p>
+                {hermesAgentBackupDir && <p className="text-[10px] font-mono text-slate-300 dark:text-white/20 truncate" title={hermesAgentBackupDir}>{hermesAgentBackupDir}</p>}
                 <div className="space-y-1.5">
-                  {ocArchives.map(ar => (
+                  {hermesAgentArchives.map(ar => (
                     <div key={ar.path} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5">
                       <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-white/30">archive</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-mono text-slate-700 dark:text-white/70 truncate">{ar.name}</p>
                         <p className="text-[10px] text-slate-400 dark:text-white/30">{ar.size < 1048576 ? `${(ar.size / 1024).toFixed(1)} KB` : `${(ar.size / 1048576).toFixed(1)} MB`} &middot; {new Date(ar.modTime).toLocaleString()}</p>
                       </div>
-                      <button onClick={() => ocBackupApi.download(ar.path)} title={s.ocBackupDownload || 'Download'} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
+                      <button onClick={() => hermesAgentBackupApi.download(ar.path)} title={s.ocBackupDownload || 'Download'} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
                         <span className="material-symbols-outlined text-[14px]">download</span>
                       </button>
-                      <button onClick={() => handleDeleteOcArchive(ar.path)} title={s.delete || 'Delete'} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-400 transition-colors">
+                      <button onClick={() => handleDeleteHermesAgentArchive(ar.path)} title={s.delete || 'Delete'} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-400 transition-colors">
                         <span className="material-symbols-outlined text-[14px]">delete</span>
                       </button>
                     </div>
                   ))}
                 </div>
               </>)}
-              {ocArchives.length === 0 && (
+              {hermesAgentArchives.length === 0 && (
                 <p className="text-[11px] text-slate-400 dark:text-white/30 text-center py-2">{s.ocBackupEmpty || 'No backup archives found'}</p>
               )}
             </>)}
@@ -892,7 +878,6 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
               <div className="flex items-center gap-0.5 shrink-0">
                 <button onClick={() => { setShowVerifyModal(id); setVerifyPassword(''); setVerifyResult(null); }} className="p-1.5 text-slate-400 hover:text-emerald-500 rounded-lg transition-colors" title={s.snapshotVerify || 'Verify'}><span className="material-symbols-outlined text-[16px]">verified</span></button>
                 <button onClick={async () => { try { const resp = await fetch(snapshotApi.exportUrl(id), { method: 'POST', credentials: 'include' }); if (!resp.ok) { const errText = await resp.text().catch(() => ''); throw new Error(`HTTP ${resp.status}: ${errText || resp.statusText}`); } const disp = resp.headers.get('content-disposition') || ''; const fnMatch = disp.match(/filename="?([^";\s]+)"?/); const filename = fnMatch?.[1] || `backup-${new Date().toISOString().replace(/[T:]/g, '_').slice(0, 19)}.clawbak`; const blob = await resp.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); } catch (err: any) { toast('error', err?.message || s.snapshotExportFailed || 'Export failed'); } }} className="p-1.5 text-slate-400 hover:text-blue-500 rounded-lg transition-colors" title={s.snapshotExport || 'Export .clawbak'}><span className="material-symbols-outlined text-[16px]">download</span></button>
-                <button onClick={() => { setShowOcExportModal(id); setOcExportPassword(''); }} className="p-1.5 text-slate-400 hover:text-cyan-500 rounded-lg transition-colors" title={s.snapshotOcExport || 'Export .tar.gz'}><span className="material-symbols-outlined text-[16px]">inventory_2</span></button>
                 <button onClick={() => openRestoreWizard(b)} className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors" title={s.snapshotRestore || s.restore}><span className="material-symbols-outlined text-[16px]">settings_backup_restore</span></button>
                 <button onClick={() => handleDeleteSnapshot(id)} className="p-1.5 text-slate-400 hover:text-mac-red rounded-lg transition-colors" title={s.snapshotDelete || s.deleteBackup}><span className="material-symbols-outlined text-[16px]">delete</span></button>
               </div>
@@ -903,34 +888,6 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
         </>}
       </div>
       {renderRestoreWizard()}
-
-      {/* HermesAgent Import Modal */}
-      {showOcImportModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowOcImportModal(false); setOcImportFile(null); }} />
-          <div className="relative mac-glass rounded-2xl shadow-2xl overflow-hidden animate-scale-in w-[400px] p-5 space-y-4">
-            <div className="flex items-center justify-between"><p className="text-[14px] font-bold text-slate-800 dark:text-white flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-cyan-500">inventory_2</span>{s.snapshotOcImportTitle || 'Import Hermes Agent Backup'}</p><button onClick={() => { setShowOcImportModal(false); setOcImportFile(null); }} className="w-7 h-7 rounded-full hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center"><span className="material-symbols-outlined text-[16px] text-slate-400">close</span></button></div>
-            <div className="text-[11px] text-slate-500 dark:text-white/40 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06]"><span className="material-symbols-outlined text-[14px]">draft</span>{ocImportFile?.name || '—'}<span className="text-slate-400 dark:text-white/20 ms-auto">{ocImportFile ? `${(ocImportFile.size / 1024).toFixed(1)} KB` : ''}</span></div>
-            <input type="text" value={ocImportNote} onChange={e => setOcImportNote(e.target.value)} placeholder={s.snapshotNotePlaceholder || 'Note (optional)'} className={inputCls} />
-            <input type="password" value={ocImportPassword} onChange={e => setOcImportPassword(e.target.value)} placeholder={s.snapshotOcImportPwdHint || 'Set password for encrypted storage (min 6 chars)'} className={inputCls} />
-            <p className="text-[10px] text-amber-600 dark:text-amber-400/80">{s.snapshotOcImportNote || 'The .tar.gz backup will be re-encrypted with your password and stored securely.'}</p>
-            <div className="flex justify-end"><button onClick={handleOcImport} disabled={ocImporting || !ocImportFile || ocImportPassword.length < 6} className="flex items-center gap-1.5 px-4 py-[7px] bg-primary text-white rounded-lg text-[12px] font-medium transition-all disabled:opacity-40 hover:opacity-90"><span className={`material-symbols-outlined text-[16px] ${ocImporting ? 'animate-spin' : ''}`}>{ocImporting ? 'progress_activity' : 'upload'}</span>{s.snapshotOcImportBtn || 'Import & Encrypt'}</button></div>
-          </div>
-        </div>
-      )}
-
-      {/* HermesAgent Export Modal */}
-      {showOcExportModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowOcExportModal(null)} />
-          <div className="relative mac-glass rounded-2xl shadow-2xl overflow-hidden animate-scale-in w-[380px] p-5 space-y-4">
-            <div className="flex items-center justify-between"><p className="text-[14px] font-bold text-slate-800 dark:text-white flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-cyan-500">inventory_2</span>{s.snapshotOcExportTitle || 'Export as Hermes Agent Format'}</p><button onClick={() => setShowOcExportModal(null)} className="w-7 h-7 rounded-full hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center"><span className="material-symbols-outlined text-[16px] text-slate-400">close</span></button></div>
-            <p className="text-[11px] text-slate-500 dark:text-white/40">{s.snapshotOcExportDesc || 'Decrypt and export as a standard .tar.gz archive with manifest.json, compatible with Hermes CLI.'}</p>
-            <input type="password" value={ocExportPassword} onChange={e => setOcExportPassword(e.target.value)} placeholder={s.snapshotPasswordPlaceholder || 'Enter backup password'} className={inputCls} />
-            <div className="flex justify-end"><button onClick={() => handleOcExport(showOcExportModal)} disabled={ocExporting || ocExportPassword.length < 6} className="flex items-center gap-1.5 px-4 py-[7px] bg-primary text-white rounded-lg text-[12px] font-medium transition-all disabled:opacity-40 hover:opacity-90"><span className={`material-symbols-outlined text-[16px] ${ocExporting ? 'animate-spin' : ''}`}>{ocExporting ? 'progress_activity' : 'download'}</span>{s.snapshotOcExportBtn || 'Export .tar.gz'}</button></div>
-          </div>
-        </div>
-      )}
 
       {/* Verify Integrity Modal */}
       {showVerifyModal && (

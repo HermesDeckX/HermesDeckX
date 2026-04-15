@@ -602,26 +602,36 @@ export const snapshotApi = {
 };
 
 // ==================== HermesAgent 原生备份 ====================
-export interface OcBackupArchive {
+export interface HermesAgentBackupArchive {
   name: string;
   path: string;
   size: number;
   modTime: string;
 }
-export interface OcBackupCreateResult {
+export interface HermesAgentBackupCreateResult {
   createdAt: string;
-  archiveRoot: string;
   archivePath: string;
-  dryRun: boolean;
+  archiveName: string;
+  format: string;
   includeWorkspace: boolean;
   onlyConfig: boolean;
   verified: boolean;
-  assets: { kind: string; sourcePath: string; displayPath: string }[];
+  warning?: string;
 }
-export const ocBackupApi = {
+export const hermesAgentBackupApi = {
   create: (data: { includeWorkspace?: boolean; onlyConfig?: boolean; verify?: boolean }) =>
-    post<OcBackupCreateResult>('/api/v1/hermesagent-backup/create', data),
-  list: () => get<{ backupDir: string; archives: OcBackupArchive[]; installed: boolean }>('/api/v1/hermesagent-backup/list'),
+    post<HermesAgentBackupCreateResult>('/api/v1/hermesagent-backup/create', data),
+  importFile: async (file: File): Promise<{ imported: boolean; output?: string }> => {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/api/v1/hermesagent-backup/import', { method: 'POST', body: form, credentials: 'include' });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) {
+      throw new ApiError(json.error_code || 'IMPORT_FAILED', json.message || 'Import failed', res.status || 500);
+    }
+    return json.data;
+  },
+  list: () => get<{ backupDir: string; archives: HermesAgentBackupArchive[]; installed: boolean }>('/api/v1/hermesagent-backup/list'),
   download: async (path: string): Promise<void> => {
     const res = await fetch('/api/v1/hermesagent-backup/download', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -633,7 +643,7 @@ export const ocBackupApi = {
     }
     const disp = res.headers.get('content-disposition') || '';
     const fnMatch = disp.match(/filename="?([^";\s]+)"?/);
-    const filename = fnMatch?.[1] || 'hermesagent-backup.tar.gz';
+    const filename = fnMatch?.[1] || 'hermes-backup.zip';
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = filename; a.click();

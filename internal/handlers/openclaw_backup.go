@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,14 +14,14 @@ import (
 	"HermesDeckX/internal/web"
 )
 
-type HermesAgentBackupHandler struct{}
+type HermesBackupHandler struct{}
 
-func NewHermesAgentBackupHandler() *HermesAgentBackupHandler {
-	return &HermesAgentBackupHandler{}
+func NewHermesBackupHandler() *HermesBackupHandler {
+	return &HermesBackupHandler{}
 }
 
 // Create triggers `hermesagent backup create` and returns the result.
-func (h *HermesAgentBackupHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *HermesBackupHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if !hermes.IsHermesAgentInstalled() {
 		web.FailErr(w, r, web.ErrInvalidParam, "HermesAgent CLI not installed")
 		return
@@ -56,8 +57,61 @@ func (h *HermesAgentBackupHandler) Create(w http.ResponseWriter, r *http.Request
 	web.OK(w, r, result)
 }
 
-// List returns all .tar.gz backup archives in the default backup directory.
-func (h *HermesAgentBackupHandler) List(w http.ResponseWriter, r *http.Request) {
+// Import uploads a Hermes zip backup and restores it via `hermes import --force`.
+func (h *HermesBackupHandler) Import(w http.ResponseWriter, r *http.Request) {
+	if !hermes.IsHermesAgentInstalled() {
+		web.FailErr(w, r, web.ErrInvalidParam, "HermesAgent CLI not installed")
+		return
+	}
+	if err := r.ParseMultipartForm(500 << 20); err != nil {
+		web.FailErr(w, r, web.ErrInvalidBody, "invalid multipart form")
+		return
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		web.FailErr(w, r, web.ErrInvalidBody, "missing file field")
+		return
+	}
+	defer file.Close()
+
+	name := strings.ToLower(header.Filename)
+	if !strings.HasSuffix(name, ".zip") {
+		web.FailErr(w, r, web.ErrInvalidParam, "backup file must be a .zip archive")
+		return
+	}
+
+	tmpFile, err := os.CreateTemp("", "hermes-backup-*.zip")
+	if err != nil {
+		web.FailErr(w, r, web.ErrInvalidParam, fmt.Sprintf("cannot create temp file: %v", err))
+		return
+	}
+	tmpPath := tmpFile.Name()
+	defer os.Remove(tmpPath)
+	defer tmpFile.Close()
+
+	if _, err := io.Copy(tmpFile, io.LimitReader(file, 500<<20)); err != nil {
+		web.FailErr(w, r, web.ErrInvalidParam, fmt.Sprintf("cannot save uploaded file: %v", err))
+		return
+	}
+	if err := tmpFile.Close(); err != nil {
+		web.FailErr(w, r, web.ErrInvalidParam, fmt.Sprintf("cannot finalize uploaded file: %v", err))
+		return
+	}
+
+	out, err := hermes.BackupImport(tmpPath, true)
+	if err != nil {
+		web.FailErr(w, r, web.ErrInvalidParam, fmt.Sprintf("import failed: %v", err))
+		return
+	}
+
+	web.OK(w, r, map[string]any{
+		"imported": true,
+		"output":   out,
+	})
+}
+
+// List returns all .zip backup archives in the default backup directory.
+func (h *HermesBackupHandler) List(w http.ResponseWriter, r *http.Request) {
 	backupDir := hermes.DefaultBackupDir()
 	if backupDir == "" {
 		web.OK(w, r, map[string]any{"backupDir": "", "archives": []any{}, "installed": hermes.IsHermesAgentInstalled()})
@@ -80,7 +134,7 @@ func (h *HermesAgentBackupHandler) List(w http.ResponseWriter, r *http.Request) 
 }
 
 // Download streams a backup archive file for download.
-func (h *HermesAgentBackupHandler) Download(w http.ResponseWriter, r *http.Request) {
+func (h *HermesBackupHandler) Download(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Path string `json:"path"`
 	}
@@ -101,14 +155,14 @@ func (h *HermesAgentBackupHandler) Download(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/gzip")
+	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filepath.Base(req.Path)))
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
 }
 
 // Delete removes a backup archive file.
-func (h *HermesAgentBackupHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *HermesBackupHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Path string `json:"path"`
 	}
@@ -131,7 +185,7 @@ func (h *HermesAgentBackupHandler) Delete(w http.ResponseWriter, r *http.Request
 	web.OK(w, r, map[string]any{"deleted": true})
 }
 
-func (h *HermesAgentBackupHandler) isValidArchivePath(backupDir, archivePath string) bool {
+func (h *HermesBackupHandler) isValidArchivePath(backupDir, archivePath string) bool {
 	if backupDir == "" {
 		return false
 	}
@@ -139,9 +193,9 @@ func (h *HermesAgentBackupHandler) isValidArchivePath(backupDir, archivePath str
 	if filepath.Dir(archivePath) != backupDir {
 		return false
 	}
-	// Must be a .tar.gz file
+	// Must be a .zip file
 	name := filepath.Base(archivePath)
-	if !strings.HasSuffix(name, ".tar.gz") {
+	if !strings.HasSuffix(strings.ToLower(name), ".zip") {
 		return false
 	}
 	// Must exist

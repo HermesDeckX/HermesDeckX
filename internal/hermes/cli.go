@@ -426,7 +426,7 @@ func PairingList(channel string) (*PairingListResult, error) {
 	return &result, nil
 }
 
-// BackupCreateOptions configures the hermes backup create command.
+// BackupCreateOptions configures the hermes backup command.
 type BackupCreateOptions struct {
 	Output           string `json:"output,omitempty"`
 	IncludeWorkspace bool   `json:"includeWorkspace"`
@@ -434,60 +434,79 @@ type BackupCreateOptions struct {
 	Verify           bool   `json:"verify"`
 }
 
-// BackupCreateResult is the JSON output from hermes backup create --json.
+// BackupCreateResult describes a created Hermes zip backup.
 type BackupCreateResult struct {
-	CreatedAt        string              `json:"createdAt"`
-	ArchiveRoot      string              `json:"archiveRoot"`
-	ArchivePath      string              `json:"archivePath"`
-	DryRun           bool                `json:"dryRun"`
-	IncludeWorkspace bool                `json:"includeWorkspace"`
-	OnlyConfig       bool                `json:"onlyConfig"`
-	Verified         bool                `json:"verified"`
-	Assets           []BackupCreateAsset `json:"assets"`
+	CreatedAt        string `json:"createdAt"`
+	ArchivePath      string `json:"archivePath"`
+	ArchiveName      string `json:"archiveName"`
+	Format           string `json:"format"`
+	IncludeWorkspace bool   `json:"includeWorkspace"`
+	OnlyConfig       bool   `json:"onlyConfig"`
+	Verified         bool   `json:"verified"`
+	Warning          string `json:"warning,omitempty"`
 }
 
-type BackupCreateAsset struct {
-	Kind        string `json:"kind"`
-	SourcePath  string `json:"sourcePath"`
-	DisplayPath string `json:"displayPath"`
-}
-
-// BackupCreate runs `hermes backup create` with the given options and returns the parsed result.
+// BackupCreate runs upstream `hermes backup` and returns metadata about the zip archive.
 func BackupCreate(opts BackupCreateOptions) (*BackupCreateResult, error) {
 	if !IsHermesAgentInstalled() {
 		return nil, fmt.Errorf("hermes CLI is unavailable")
 	}
 
-	args := []string{"backup", "create", "--json"}
-	if opts.Output != "" {
-		args = append(args, "--output", opts.Output)
+	archivePath := opts.Output
+	if archivePath == "" {
+		archivePath = filepath.Join(DefaultBackupDir(), fmt.Sprintf("hermes-backup-%s.zip", time.Now().Format("2006-01-02-150405")))
 	}
-	if opts.OnlyConfig {
-		args = append(args, "--only-config")
+	if !strings.EqualFold(filepath.Ext(archivePath), ".zip") {
+		archivePath += ".zip"
 	}
-	if !opts.IncludeWorkspace {
-		args = append(args, "--no-include-workspace")
-	}
-	if opts.Verify {
-		args = append(args, "--verify")
-	}
+
+	args := []string{"backup", "--output", archivePath}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
-	out, err := RunCLI(ctx, args...)
+	_, err := RunCLI(ctx, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	var result BackupCreateResult
-	if err := json.Unmarshal([]byte(out), &result); err != nil {
-		return nil, fmt.Errorf("parse backup create json: %w\nraw output: %s", err, out)
+	info, err := os.Stat(archivePath)
+	if err != nil {
+		return nil, fmt.Errorf("backup created but archive not found: %w", err)
 	}
-	return &result, nil
+
+	warning := ""
+	if opts.IncludeWorkspace || opts.OnlyConfig || opts.Verify {
+		warning = "Upstream Hermes backup currently creates a zip of the Hermes home directory; workspace/config-only/verify options are not supported and were ignored."
+	}
+
+	return &BackupCreateResult{
+		CreatedAt:        info.ModTime().Format(time.RFC3339),
+		ArchivePath:      archivePath,
+		ArchiveName:      filepath.Base(archivePath),
+		Format:           "zip",
+		IncludeWorkspace: true,
+		OnlyConfig:       false,
+		Verified:         false,
+		Warning:          warning,
+	}, nil
 }
 
-// BackupListArchives lists .tar.gz backup archives in the given directory.
+// BackupImport runs upstream `hermes import` for a zip backup archive.
+func BackupImport(zipPath string, force bool) (string, error) {
+	if !IsHermesAgentInstalled() {
+		return "", fmt.Errorf("hermes CLI is unavailable")
+	}
+	args := []string{"import", zipPath}
+	if force {
+		args = append(args, "--force")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
+	defer cancel()
+	return RunCLI(ctx, args...)
+}
+
+// BackupListArchives lists .zip backup archives in the given directory.
 func BackupListArchives(dir string) ([]BackupArchiveInfo, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
@@ -495,10 +514,10 @@ func BackupListArchives(dir string) ([]BackupArchiveInfo, error) {
 	}
 	var archives []BackupArchiveInfo
 	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".tar.gz") {
+		if e.IsDir() || !strings.HasSuffix(strings.ToLower(e.Name()), ".zip") {
 			continue
 		}
-		if !strings.Contains(e.Name(), "hermes-backup") && !strings.Contains(e.Name(), "hermesagent-backup") {
+		if !strings.Contains(strings.ToLower(e.Name()), "hermes-backup") {
 			continue
 		}
 		info, err := e.Info()
@@ -522,9 +541,7 @@ type BackupArchiveInfo struct {
 	ModTime string `json:"modTime"`
 }
 
-// DefaultBackupDir returns the default directory for storing HermesAgent native backups.
-// The directory MUST be outside the HermesAgent state dir (~/.hermes), because the
-// HermesAgent CLI refuses to write backup archives inside a source path.
+// DefaultBackupDir returns the default directory for storing Hermes backup zip files.
 func DefaultBackupDir() string {
 	home, _ := os.UserHomeDir()
 	if home == "" {
