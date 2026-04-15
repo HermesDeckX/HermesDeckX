@@ -232,6 +232,8 @@
     "fileTooLarge": "Datei zu groß zum Bearbeiten (max. 1 MB)",
     "unsavedChanges": "Ungespeicherte Änderungen vorhanden. Verwerfen?",
     "fileSaved": "Datei gespeichert",
+    "loadingFile": "Datei wird geladen...",
+    "savePassword": "Passwort speichern",
     "fileConflict": "Die Datei wurde auf dem Server geändert. Bitte neu laden.",
     "run": "Ausführen"
   }

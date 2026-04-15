@@ -26,10 +26,12 @@ interface HostFormData {
   name: string; host: string; port: number; username: string;
   auth_type: 'password' | 'key'; password: string;
   private_key: string; passphrase: string; is_favorite: boolean;
+  save_password: boolean;
 }
 const emptyForm: HostFormData = {
   name: '', host: '', port: 22, username: 'root',
   auth_type: 'password', password: '', private_key: '', passphrase: '', is_favorite: false,
+  save_password: true,
 };
 
 interface TabState {
@@ -50,6 +52,7 @@ interface TabState {
   editorFile: EditorFile | null;
   editorDirty: boolean;
   editorSaving: boolean;
+  editorLoading: boolean;
 }
 
 interface EditorFile {
@@ -61,7 +64,7 @@ interface EditorFile {
   size: number;
   lineEnding: 'lf' | 'crlf';
 }
-type BottomTab = 'files' | 'commands' | 'editor';
+type BottomTab = 'files' | 'commands';
 type SysSection = 'processes' | 'disks' | 'network';
 
 const XTERM_DARK = {
@@ -200,7 +203,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
       sysInfo: null, sysInfoOpen: true, netHistory: [],
       snippets: [], snippetsLoaded: false, collapsedSections: new Set(),
-      editorFile: null, editorDirty: false, editorSaving: false,
+      editorFile: null, editorDirty: false, editorSaving: false, editorLoading: false,
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -499,27 +502,8 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [activeTab, updateTab]);
 
   // ── File Editor ──
-  const TEXT_EXTS = new Set([
-    'txt','md','mdx','json','jsonc','yaml','yml','toml','ini','conf','cfg','env','envrc',
-    'xml','svg','html','htm','css','scss','less','js','jsx','mjs','cjs','ts','tsx','mts',
-    'sh','bash','zsh','fish','py','pyw','go','rs','java','c','cpp','cc','h','hpp',
-    'rb','php','sql','lua','r','swift','kt','kts','pl','pm','ex','exs','erl','hrl',
-    'vue','svelte','astro','dockerfile','makefile','vagrantfile','gitignore','dockerignore',
-    'editorconfig','prettierrc','eslintrc','babelrc','log','csv','tsv',
-  ]);
-  const isTextFile = useCallback((name: string) => {
-    const lower = name.toLowerCase();
-    if (TEXT_EXTS.has(lower)) return true;
-    const ext = lower.split('.').pop() || '';
-    return TEXT_EXTS.has(ext);
-  }, []);
-
   const openFileInEditor = useCallback(async (entry: FileEntry) => {
     if (!activeTab?.sessionId || entry.is_dir) return;
-    if (!isTextFile(entry.name)) {
-      toast('warning', tt.binaryCannotEdit || 'This file type cannot be edited as text');
-      return;
-    }
     if (entry.size > 1024 * 1024) {
       toast('warning', tt.fileTooLarge || 'File is too large to edit (max 1 MB)');
       return;
@@ -529,6 +513,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       const ok = await confirm(tt.unsavedChanges || 'You have unsaved changes. Discard and open a new file?');
       if (!ok) return;
     }
+    updateTab(activeTab.id, { editorLoading: true });
     try {
       const result = await sftpApi.readFile(activeTab.sessionId, entry.path);
       updateTab(activeTab.id, {
@@ -543,9 +528,10 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
         },
         editorDirty: false,
         editorSaving: false,
+        editorLoading: false,
       });
-      setBottomTab('editor');
     } catch (e: any) {
+      updateTab(activeTab.id, { editorLoading: false });
       const msg = e?.message || '';
       if (msg.includes('BINARY_FILE')) {
         toast('warning', tt.binaryCannotEdit || 'This file appears to be binary and cannot be edited');
@@ -555,7 +541,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
         toast('error', msg || 'Failed to read file');
       }
     }
-  }, [activeTab, isTextFile, confirm, toast, tt, updateTab]);
+  }, [activeTab, confirm, toast, tt, updateTab]);
 
   const editorContentChange = useCallback((content: string) => {
     if (!activeTab?.editorFile) return;
@@ -605,7 +591,6 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       if (!ok) return;
     }
     updateTab(activeTab.id, { editorFile: null, editorDirty: false, editorSaving: false });
-    setBottomTab('files');
   }, [activeTab, confirm, tt, updateTab]);
 
   const fmtBytes = (b: number) => {
@@ -641,7 +626,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!form.name.trim() || !form.host.trim() || !form.username.trim()) { toast('error', tt.fieldsRequired || 'Name, host, and username are required'); return; }
     setSaving(true);
     try {
-      const req: SSHHostCreateRequest = { name: form.name, host: form.host, port: form.port || 22, username: form.username, auth_type: form.auth_type, password: form.auth_type === 'password' ? form.password : undefined, private_key: form.auth_type === 'key' ? form.private_key : undefined, passphrase: form.auth_type === 'key' ? form.passphrase : undefined, is_favorite: form.is_favorite };
+      const req: SSHHostCreateRequest = { name: form.name, host: form.host, port: form.port || 22, username: form.username, auth_type: form.auth_type, password: form.auth_type === 'password' ? form.password : undefined, private_key: form.auth_type === 'key' ? form.private_key : undefined, passphrase: form.auth_type === 'key' ? form.passphrase : undefined, is_favorite: form.is_favorite, save_password: form.save_password };
       if (editId) { await sshHostsApi.update(editId, req); toast('success', tt.hostUpdated || 'Host updated'); }
       else { await sshHostsApi.create(req); toast('success', tt.hostCreated || 'Host created'); }
       setForm({ ...emptyForm }); setEditId(null); setView(tabs.length > 0 ? 'sessions' : 'hosts'); loadHosts();
@@ -665,7 +650,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [confirm, toast, tt, loadHosts]);
 
   const startEdit = useCallback((host: SSHHost) => {
-    setForm({ name: host.name, host: host.host, port: host.port, username: host.username, auth_type: host.auth_type, password: '', private_key: '', passphrase: '', is_favorite: host.is_favorite });
+    setForm({ name: host.name, host: host.host, port: host.port, username: host.username, auth_type: host.auth_type, password: '', private_key: '', passphrase: '', is_favorite: host.is_favorite, save_password: host.save_password });
     setEditId(host.id); setView('edit');
   }, []);
 
@@ -750,7 +735,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   // ── Sessions view ──
   if (view === 'sessions') {
     const showSftp = activeTab?.sftpOpen ?? false;
-    return (
+    return (<>
       <div className={`h-full flex flex-col overflow-hidden ${isDark ? 'bg-[#1a1b26]' : 'bg-[#fafafa]'}`}>
         {/* Tab bar */}
         <div className={`flex items-center shrink-0 overflow-x-auto no-scrollbar border-b ${isDark ? 'bg-[#13141c] border-white/5' : 'bg-[#ececec] border-black/5'}`}>
@@ -1010,13 +995,6 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       <button onClick={() => setBottomTab('commands')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${bottomTab === 'commands' ? (isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-500/10 text-amber-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
                         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>code</span>{tt.commands || 'Commands'}
                       </button>
-                      {activeTab.editorFile && (
-                        <button onClick={() => setBottomTab('editor')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${bottomTab === 'editor' ? (isDark ? 'bg-purple-500/15 text-purple-400' : 'bg-purple-500/10 text-purple-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
-                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit_document</span>
-                          <span className="truncate max-w-[100px]">{activeTab.editorFile.name}</span>
-                          {activeTab.editorDirty && <span className="text-amber-400">●</span>}
-                        </button>
-                      )}
                       {/* Breadcrumb (files tab only) */}
                       {bottomTab === 'files' && (
                         <div className="flex items-center gap-0.5 text-[11px] overflow-x-auto no-scrollbar ms-2">
@@ -1115,6 +1093,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                                   <div className="flex-1 min-w-0"><span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span></div>
                                   <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
                                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); openFileInEditor(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.editor || 'Edit'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit_document</span></button>)}
                                     {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
                                     <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
                                   </div>
@@ -1171,32 +1150,44 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                     </div>
                   )}
 
-                  {/* ── Editor tab content ── */}
-                  {bottomTab === 'editor' && activeTab.editorFile && (
-                    <Suspense fallback={<div className="flex items-center justify-center h-24"><span className="material-symbols-outlined animate-spin text-lg text-text-muted">progress_activity</span></div>}>
-                      <SftpEditor
-                        content={activeTab.editorFile.content}
-                        filename={activeTab.editorFile.name}
-                        filePath={activeTab.editorFile.path}
-                        isDark={isDark}
-                        isDirty={activeTab.editorDirty}
-                        saving={activeTab.editorSaving}
-                        fileSize={activeTab.editorFile.size}
-                        lineEnding={activeTab.editorFile.lineEnding}
-                        onContentChange={editorContentChange}
-                        onSave={editorSave}
-                        onClose={editorClose}
-                        tt={tt}
-                      />
-                    </Suspense>
-                  )}
                 </div>
               </>
             )}
           </div>
         </div>
       </div>
-    );
+
+      {/* ── File Loading Overlay ── */}
+      {activeTab?.editorLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ animation: 'fade-in 0.1s ease-out' }}>
+          <div className={`absolute inset-0 ${isDark ? 'bg-black/40' : 'bg-black/20'} backdrop-blur-sm`} />
+          <div className={`relative flex flex-col items-center gap-3 px-8 py-6 rounded-xl shadow-xl ${isDark ? 'bg-[#1e1e2e] border border-white/10' : 'bg-white border border-black/10'}`}>
+            <span className="material-symbols-outlined text-3xl text-cyan-400 animate-spin">progress_activity</span>
+            <span className={`text-sm font-medium ${isDark ? 'text-white/70' : 'text-black/70'}`}>{tt.loadingFile || 'Loading file...'}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── File Editor Modal ── */}
+      {activeTab?.editorFile && (
+        <Suspense fallback={null}>
+          <SftpEditor
+            content={activeTab.editorFile.content}
+            filename={activeTab.editorFile.name}
+            filePath={activeTab.editorFile.path}
+            isDark={isDark}
+            isDirty={activeTab.editorDirty}
+            saving={activeTab.editorSaving}
+            fileSize={activeTab.editorFile.size}
+            lineEnding={activeTab.editorFile.lineEnding}
+            onContentChange={editorContentChange}
+            onSave={editorSave}
+            onClose={editorClose}
+            tt={tt}
+          />
+        </Suspense>
+      )}
+    </>);
   }
 
   // ── Add / Edit form ──
@@ -1227,7 +1218,10 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
             <div><label className="text-xs text-text-muted mb-1 block">{tt.privateKey || 'Private Key'}</label><textarea className="sci-input w-full px-3 py-2 rounded-lg bg-surface-sunken text-sm font-mono resize-none" rows={5} value={form.private_key} onChange={(e) => setForm({ ...form, private_key: e.target.value })} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
             <div><label className="text-xs text-text-muted mb-1 block">{tt.passphrase || 'Passphrase'}</label><input type="password" className="sci-input w-full px-3 py-2 rounded-lg bg-surface-sunken text-sm" value={form.passphrase} onChange={(e) => setForm({ ...form, passphrase: e.target.value })} placeholder={tt.optional || 'Optional'} /></div>
           </>)}
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_favorite} onChange={(e) => setForm({ ...form, is_favorite: e.target.checked })} className="w-4 h-4 rounded accent-cyan-500" /><span className="text-xs text-text-muted">{tt.favorite || 'Favorite'}</span></label>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_favorite} onChange={(e) => setForm({ ...form, is_favorite: e.target.checked })} className="w-4 h-4 rounded accent-cyan-500" /><span className="text-xs text-text-muted">{tt.favorite || 'Favorite'}</span></label>
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.save_password} onChange={(e) => setForm({ ...form, save_password: e.target.checked })} className="w-4 h-4 rounded accent-amber-500" /><span className="text-xs text-text-muted">{tt.savePassword || 'Save Password'}</span></label>
+          </div>
         </div>
       </div>
       <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">

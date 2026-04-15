@@ -28,15 +28,16 @@ func NewSSHHostsHandler() *SSHHostsHandler {
 }
 
 type sshHostRequest struct {
-	Name       string `json:"name"`
-	Host       string `json:"host"`
-	Port       int    `json:"port"`
-	Username   string `json:"username"`
-	AuthType   string `json:"auth_type"`
-	Password   string `json:"password,omitempty"`
-	PrivateKey string `json:"private_key,omitempty"`
-	Passphrase string `json:"passphrase,omitempty"`
-	IsFavorite bool   `json:"is_favorite"`
+	Name         string `json:"name"`
+	Host         string `json:"host"`
+	Port         int    `json:"port"`
+	Username     string `json:"username"`
+	AuthType     string `json:"auth_type"`
+	Password     string `json:"password,omitempty"`
+	PrivateKey   string `json:"private_key,omitempty"`
+	Passphrase   string `json:"passphrase,omitempty"`
+	IsFavorite   bool   `json:"is_favorite"`
+	SavePassword *bool  `json:"save_password,omitempty"`
 }
 
 // sshHostResponse is the public representation (no secrets).
@@ -50,6 +51,7 @@ type sshHostResponse struct {
 	HasPassword     bool       `json:"has_password"`
 	HasKey          bool       `json:"has_key"`
 	Fingerprint     string     `json:"fingerprint"`
+	SavePassword    bool       `json:"save_password"`
 	IsFavorite      bool       `json:"is_favorite"`
 	LastConnectedAt *time.Time `json:"last_connected_at,omitempty"`
 	CreatedAt       time.Time  `json:"created_at"`
@@ -67,6 +69,7 @@ func toHostResponse(h *sshterm.SSHHost) sshHostResponse {
 		HasPassword:     h.PasswordEncrypted != "",
 		HasKey:          h.PrivateKeyEncrypted != "",
 		Fingerprint:     h.Fingerprint,
+		SavePassword:    h.SavePassword,
 		IsFavorite:      h.IsFavorite,
 		LastConnectedAt: h.LastConnectedAt,
 		CreatedAt:       h.CreatedAt,
@@ -107,25 +110,29 @@ func (h *SSHHostsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := secretKey()
+	savePass := req.SavePassword == nil || *req.SavePassword
 	host := &sshterm.SSHHost{
-		Name:       req.Name,
-		Host:       req.Host,
-		Port:       req.Port,
-		Username:   req.Username,
-		AuthType:   req.AuthType,
-		IsFavorite: req.IsFavorite,
+		Name:         req.Name,
+		Host:         req.Host,
+		Port:         req.Port,
+		Username:     req.Username,
+		AuthType:     req.AuthType,
+		IsFavorite:   req.IsFavorite,
+		SavePassword: savePass,
 	}
-	if req.Password != "" {
-		enc, _ := secretutil.EncryptString(req.Password, key)
-		host.PasswordEncrypted = enc
-	}
-	if req.PrivateKey != "" {
-		enc, _ := secretutil.EncryptString(req.PrivateKey, key)
-		host.PrivateKeyEncrypted = enc
-	}
-	if req.Passphrase != "" {
-		enc, _ := secretutil.EncryptString(req.Passphrase, key)
-		host.PassphraseEncrypted = enc
+	if savePass {
+		if req.Password != "" {
+			enc, _ := secretutil.EncryptString(req.Password, key)
+			host.PasswordEncrypted = enc
+		}
+		if req.PrivateKey != "" {
+			enc, _ := secretutil.EncryptString(req.PrivateKey, key)
+			host.PrivateKeyEncrypted = enc
+		}
+		if req.Passphrase != "" {
+			enc, _ := secretutil.EncryptString(req.Passphrase, key)
+			host.PassphraseEncrypted = enc
+		}
 	}
 
 	if err := h.repo.Create(host); err != nil {
@@ -182,17 +189,27 @@ func (h *SSHHostsHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	existing.IsFavorite = req.IsFavorite
 
-	if req.Password != "" {
-		enc, _ := secretutil.EncryptString(req.Password, key)
-		existing.PasswordEncrypted = enc
-	}
-	if req.PrivateKey != "" {
-		enc, _ := secretutil.EncryptString(req.PrivateKey, key)
-		existing.PrivateKeyEncrypted = enc
-	}
-	if req.Passphrase != "" {
-		enc, _ := secretutil.EncryptString(req.Passphrase, key)
-		existing.PassphraseEncrypted = enc
+	savePassUpdate := req.SavePassword == nil || *req.SavePassword
+	existing.SavePassword = savePassUpdate
+
+	if savePassUpdate {
+		if req.Password != "" {
+			enc, _ := secretutil.EncryptString(req.Password, key)
+			existing.PasswordEncrypted = enc
+		}
+		if req.PrivateKey != "" {
+			enc, _ := secretutil.EncryptString(req.PrivateKey, key)
+			existing.PrivateKeyEncrypted = enc
+		}
+		if req.Passphrase != "" {
+			enc, _ := secretutil.EncryptString(req.Passphrase, key)
+			existing.PassphraseEncrypted = enc
+		}
+	} else {
+		// Clear saved credentials from DB
+		existing.PasswordEncrypted = ""
+		existing.PrivateKeyEncrypted = ""
+		existing.PassphraseEncrypted = ""
 	}
 
 	if err := h.repo.Update(existing); err != nil {

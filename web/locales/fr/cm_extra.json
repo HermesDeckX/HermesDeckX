@@ -232,6 +232,8 @@
     "fileTooLarge": "Fichier trop volumineux pour l'édition (max 1 Mo)",
     "unsavedChanges": "Modifications non enregistrées. Abandonner ?",
     "fileSaved": "Fichier enregistré",
+    "loadingFile": "Chargement du fichier...",
+    "savePassword": "Enregistrer le mot de passe",
     "fileConflict": "Le fichier a été modifié sur le serveur. Veuillez recharger.",
     "run": "Exécuter"
   }

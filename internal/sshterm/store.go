@@ -20,6 +20,7 @@ type SSHHost struct {
 	PrivateKeyEncrypted string         `gorm:"type:text" json:"-"`
 	PassphraseEncrypted string         `gorm:"type:text" json:"-"`
 	Fingerprint         string         `gorm:"size:255" json:"fingerprint"`
+	SavePassword        bool           `gorm:"default:true" json:"save_password"`
 	IsFavorite          bool           `gorm:"default:false" json:"is_favorite"`
 	LastConnectedAt     *time.Time     `json:"last_connected_at,omitempty"`
 	CreatedAt           time.Time      `json:"created_at"`

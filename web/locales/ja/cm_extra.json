@@ -232,6 +232,8 @@
     "fileTooLarge": "ファイルが大きすぎて編集できません（最大1MB）",
     "unsavedChanges": "未保存の変更があります。破棄しますか？",
     "fileSaved": "ファイルを保存しました",
+    "loadingFile": "ファイルを読み込み中...",
+    "savePassword": "パスワードを保存",
     "fileConflict": "ファイルはサーバー上で変更されています。再読み込みしてください。",
     "run": "実行"
   }

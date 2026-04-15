@@ -232,6 +232,8 @@
     "fileTooLarge": "檔案過大無法編輯（最大 1 MB）",
     "unsavedChanges": "有未儲存的變更，確定捨棄嗎？",
     "fileSaved": "檔案已儲存",
+    "loadingFile": "正在載入檔案...",
+    "savePassword": "儲存密碼",
     "fileConflict": "檔案已在伺服器上被修改，請重新載入後再試。",
     "run": "執行"
   }

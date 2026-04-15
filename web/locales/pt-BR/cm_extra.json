@@ -232,6 +232,8 @@
     "fileTooLarge": "Arquivo muito grande para editar (máx. 1 MB)",
     "unsavedChanges": "Alterações não salvas. Descartar?",
     "fileSaved": "Arquivo salvo",
+    "loadingFile": "Carregando arquivo...",
+    "savePassword": "Salvar senha",
     "fileConflict": "O arquivo foi modificado no servidor. Recarregue e tente novamente.",
     "run": "Executar"
   }

@@ -232,6 +232,8 @@
     "fileTooLarge": "File is too large to edit (max 1 MB)",
     "unsavedChanges": "You have unsaved changes. Discard?",
     "fileSaved": "File saved",
+    "loadingFile": "Loading file...",
+    "savePassword": "Save Password",
     "fileConflict": "File was modified on the server. Please reload and try again.",
     "run": "Run"
   }

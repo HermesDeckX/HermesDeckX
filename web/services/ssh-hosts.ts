@@ -11,6 +11,7 @@ export interface SSHHost {
   has_password: boolean;
   has_key: boolean;
   fingerprint: string;
+  save_password: boolean;
   is_favorite: boolean;
   last_connected_at: string | null;
   created_at: string;
@@ -27,6 +28,7 @@ export interface SSHHostCreateRequest {
   private_key?: string;
   passphrase?: string;
   is_favorite?: boolean;
+  save_password?: boolean;
 }
 
 export interface SSHHostTestResult {

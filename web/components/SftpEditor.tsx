@@ -172,39 +172,44 @@ export default function SftpEditor({ content, filename, filePath, isDark, isDirt
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {/* Toolbar */}
-      <div className={`flex items-center gap-2 px-3 py-1.5 border-b shrink-0 ${isDark ? 'border-white/5 bg-white/[.02]' : 'border-black/5 bg-black/[.01]'}`}>
-        <span className="material-symbols-outlined text-sm text-amber-400">edit_document</span>
-        <span className={`text-xs font-mono truncate flex-1 min-w-0 ${isDark ? 'text-white/60' : 'text-black/60'}`} title={filePath}>
-          {filename}{isDirty && <span className="text-amber-400 ms-1">●</span>}
-        </span>
-        <span className={`text-[9px] font-mono shrink-0 ${isDark ? 'text-white/20' : 'text-black/20'}`}>
-          {lineEnding.toUpperCase()} | Ln {lineCol.line}, Col {lineCol.col} | {fmtSize(fileSize)}
-        </span>
-        <button
-          onClick={onSave}
-          disabled={saving || !isDirty}
-          className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-40 transition-colors shrink-0"
-          title="Ctrl+S"
-        >
-          {saving ? (
-            <span className="material-symbols-outlined animate-spin" style={{ fontSize: '12px' }}>progress_activity</span>
-          ) : (
-            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>save</span>
-          )}
-          {tt.save || 'Save'}
-        </button>
-        <button
-          onClick={onClose}
-          className={`p-0.5 rounded transition-colors shrink-0 ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`}
-          title={tt.close || 'Close'}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
-        </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ animation: 'fade-in 0.15s ease-out' }}>
+      {/* Backdrop */}
+      <div className={`absolute inset-0 ${isDark ? 'bg-black/60' : 'bg-black/30'} backdrop-blur-sm`} onClick={onClose} />
+      {/* Modal Panel */}
+      <div className={`relative flex flex-col rounded-xl shadow-2xl overflow-hidden ${isDark ? 'bg-[#1e1e2e] border border-white/10' : 'bg-white border border-black/10'}`} style={{ width: '80vw', height: '75vh', maxWidth: '1200px', maxHeight: '800px', minWidth: '500px', minHeight: '400px' }}>
+        {/* Title bar */}
+        <div className={`flex items-center gap-2 px-4 py-2.5 border-b shrink-0 ${isDark ? 'border-white/5 bg-white/[.03]' : 'border-black/5 bg-gray-50'}`}>
+          <span className="material-symbols-outlined text-base text-amber-400">edit_document</span>
+          <span className={`text-sm font-medium truncate ${isDark ? 'text-white/80' : 'text-black/80'}`}>{filename}</span>
+          {isDirty && <span className="text-amber-400 text-sm">●</span>}
+          <span className={`text-[10px] font-mono truncate flex-1 min-w-0 ${isDark ? 'text-white/25' : 'text-black/25'}`} title={filePath}>{filePath}</span>
+          <span className={`text-[10px] font-mono shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>
+            {lineEnding.toUpperCase()} | Ln {lineCol.line}, Col {lineCol.col} | {fmtSize(fileSize)}
+          </span>
+          <button
+            onClick={onSave}
+            disabled={saving || !isDirty}
+            className="flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-40 transition-colors shrink-0"
+            title="Ctrl+S"
+          >
+            {saving ? (
+              <span className="material-symbols-outlined animate-spin" style={{ fontSize: '14px' }}>progress_activity</span>
+            ) : (
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>save</span>
+            )}
+            {tt.save || 'Save'}
+          </button>
+          <button
+            onClick={onClose}
+            className={`p-1 rounded-lg transition-colors shrink-0 ${isDark ? 'hover:bg-white/10 text-white/40 hover:text-white/70' : 'hover:bg-black/5 text-gray-400 hover:text-gray-600'}`}
+            title={tt.close || 'Close'}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+          </button>
+        </div>
+        {/* Editor */}
+        <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
       </div>
-      {/* Editor */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
     </div>
   );
 }

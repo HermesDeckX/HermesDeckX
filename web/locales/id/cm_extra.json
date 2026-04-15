@@ -232,6 +232,8 @@
     "fileTooLarge": "File terlalu besar untuk diedit (maks 1 MB)",
     "unsavedChanges": "Ada perubahan yang belum disimpan. Buang?",
     "fileSaved": "File disimpan",
+    "loadingFile": "Memuat file...",
+    "savePassword": "Simpan Kata Sandi",
     "fileConflict": "File telah diubah di server. Silakan muat ulang.",
     "run": "Jalankan"
   }
