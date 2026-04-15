@@ -184,6 +184,24 @@
     "fieldsRequired": "名前、ホスト、ユーザー名は必須です",
     "deleteConfirmTitle": "ホスト削除",
     "deleteConfirmMsg": "「{name}」を削除しますか？",
-    "leaveBlank": "空欄で現在の値を維持"
+    "leaveBlank": "空欄で現在の値を維持",
+    "files": "ファイル",
+    "sftpToggle": "ファイルブラウザ",
+    "sftpNeedSession": "SFTPにはアクティブなセッションが必要です",
+    "sftpName": "名前",
+    "sftpSize": "サイズ",
+    "sftpMode": "権限",
+    "sftpModified": "更新日時",
+    "sftpRefresh": "更新",
+    "sftpNewFolder": "新しいフォルダ名：",
+    "sftpUpload": "アップロード",
+    "sftpDownload": "ダウンロード",
+    "sftpUploaded": "アップロード完了：{name}",
+    "sftpDeleted": "削除完了：{name}",
+    "sftpDeleteTitle": "削除",
+    "sftpDeleteMsg": "「{name}」を削除しますか？",
+    "sftpEmpty": "ディレクトリは空です",
+    "noTabs": "アクティブなセッションなし",
+    "connectHost": "ホストに接続"
   }
 }

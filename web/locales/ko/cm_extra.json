@@ -184,6 +184,24 @@
     "fieldsRequired": "이름, 호스트, 사용자명은 필수입니다",
     "deleteConfirmTitle": "호스트 삭제",
     "deleteConfirmMsg": "\"{name}\"을(를) 삭제하시겠습니까?",
-    "leaveBlank": "현재 값을 유지하려면 비워두세요"
+    "leaveBlank": "현재 값을 유지하려면 비워두세요",
+    "files": "파일",
+    "sftpToggle": "파일 브라우저",
+    "sftpNeedSession": "SFTP에는 활성 세션이 필요합니다",
+    "sftpName": "이름",
+    "sftpSize": "크기",
+    "sftpMode": "권한",
+    "sftpModified": "수정일",
+    "sftpRefresh": "새로고침",
+    "sftpNewFolder": "새 폴더 이름:",
+    "sftpUpload": "업로드",
+    "sftpDownload": "다운로드",
+    "sftpUploaded": "업로드 완료: {name}",
+    "sftpDeleted": "삭제 완료: {name}",
+    "sftpDeleteTitle": "삭제",
+    "sftpDeleteMsg": "\"{name}\"을(를) 삭제하시겠습니까?",
+    "sftpEmpty": "디렉토리가 비어 있습니다",
+    "noTabs": "활성 세션 없음",
+    "connectHost": "호스트에 연결"
   }
 }

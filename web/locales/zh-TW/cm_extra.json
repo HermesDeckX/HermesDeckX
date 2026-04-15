@@ -184,6 +184,24 @@
     "fieldsRequired": "名稱、主機和使用者名稱為必填",
     "deleteConfirmTitle": "刪除主機",
     "deleteConfirmMsg": "確定刪除「{name}」？",
-    "leaveBlank": "留空保留目前值"
+    "leaveBlank": "留空保留目前值",
+    "files": "檔案",
+    "sftpToggle": "檔案瀏覽器",
+    "sftpNeedSession": "SFTP 需要活躍的連線",
+    "sftpName": "名稱",
+    "sftpSize": "大小",
+    "sftpMode": "權限",
+    "sftpModified": "修改時間",
+    "sftpRefresh": "重新整理",
+    "sftpNewFolder": "新資料夾名稱：",
+    "sftpUpload": "上傳",
+    "sftpDownload": "下載",
+    "sftpUploaded": "已上傳：{name}",
+    "sftpDeleted": "已刪除：{name}",
+    "sftpDeleteTitle": "刪除",
+    "sftpDeleteMsg": "確定刪除「{name}」？",
+    "sftpEmpty": "目錄為空",
+    "noTabs": "沒有活躍連線",
+    "connectHost": "連線到主機"
   }
 }

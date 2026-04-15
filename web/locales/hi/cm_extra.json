@@ -184,6 +184,24 @@
     "fieldsRequired": "Name, host, and username are required",
     "deleteConfirmTitle": "Delete Host",
     "deleteConfirmMsg": "Delete \"{name}\"?",
-    "leaveBlank": "Leave blank to keep current"
+    "leaveBlank": "Leave blank to keep current",
+    "files": "Files",
+    "sftpToggle": "File Browser",
+    "sftpNeedSession": "SFTP requires an active session",
+    "sftpName": "Name",
+    "sftpSize": "Size",
+    "sftpMode": "Mode",
+    "sftpModified": "Modified",
+    "sftpRefresh": "Refresh",
+    "sftpNewFolder": "New folder name:",
+    "sftpUpload": "Upload",
+    "sftpDownload": "Download",
+    "sftpUploaded": "Uploaded: {name}",
+    "sftpDeleted": "Deleted: {name}",
+    "sftpDeleteTitle": "Delete",
+    "sftpDeleteMsg": "Delete \"{name}\"?",
+    "sftpEmpty": "Directory is empty",
+    "noTabs": "No active sessions",
+    "connectHost": "Connect to a host"
   }
 }

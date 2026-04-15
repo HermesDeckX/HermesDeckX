@@ -184,6 +184,24 @@
     "fieldsRequired": "名称、主机和用户名为必填项",
     "deleteConfirmTitle": "删除主机",
     "deleteConfirmMsg": "确定删除「{name}」？",
-    "leaveBlank": "留空保留当前值"
+    "leaveBlank": "留空保留当前值",
+    "files": "文件",
+    "sftpToggle": "文件浏览器",
+    "sftpNeedSession": "SFTP 需要活跃的会话",
+    "sftpName": "名称",
+    "sftpSize": "大小",
+    "sftpMode": "权限",
+    "sftpModified": "修改时间",
+    "sftpRefresh": "刷新",
+    "sftpNewFolder": "新建文件夹名称：",
+    "sftpUpload": "上传",
+    "sftpDownload": "下载",
+    "sftpUploaded": "已上传：{name}",
+    "sftpDeleted": "已删除：{name}",
+    "sftpDeleteTitle": "删除",
+    "sftpDeleteMsg": "确定删除「{name}」？",
+    "sftpEmpty": "目录为空",
+    "noTabs": "没有活跃会话",
+    "connectHost": "连接到主机"
   }
 }

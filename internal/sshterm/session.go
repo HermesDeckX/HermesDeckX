@@ -23,15 +23,15 @@ type Session struct {
 	LastActiveAt time.Time
 	Status       string // "connecting", "connected", "closed", "error"
 
-	client     *ssh.Client
-	session    *ssh.Session
-	stdin      io.WriteCloser
-	stdout     io.Reader
-	stderr     io.Reader
-	mu         sync.Mutex
-	closed     bool
-	onOutput   func(data []byte)
-	onExit     func(code int, reason string)
+	client   *ssh.Client
+	session  *ssh.Session
+	stdin    io.WriteCloser
+	stdout   io.Reader
+	stderr   io.Reader
+	mu       sync.Mutex
+	closed   bool
+	onOutput func(data []byte)
+	onExit   func(code int, reason string)
 }
 
 // SessionConfig holds parameters to create a new SSH session.
@@ -251,4 +251,9 @@ func (s *Session) IsClosed() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.closed
+}
+
+// Client returns the underlying SSH client for subsystem reuse (e.g. SFTP).
+func (s *Session) Client() *ssh.Client {
+	return s.client
 }

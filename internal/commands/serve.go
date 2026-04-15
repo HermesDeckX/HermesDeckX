@@ -500,6 +500,7 @@ func RunServe(args []string) int {
 	defer termManager.CloseAll()
 	terminalWSHandler := handlers.NewTerminalWSHandler(termManager)
 	sshHostsHandler := handlers.NewSSHHostsHandler()
+	sftpHandler := handlers.NewSFTPHandler(termManager)
 
 	router := web.NewRouter()
 
@@ -845,6 +846,14 @@ func RunServe(args []string) int {
 	router.PUT("/api/v1/ssh-hosts", web.RequireAdmin(sshHostsHandler.Update))
 	router.DELETE("/api/v1/ssh-hosts", web.RequireAdmin(sshHostsHandler.Delete))
 	router.POST("/api/v1/ssh-hosts/test", web.RequireAdmin(sshHostsHandler.TestConnection))
+
+	// SFTP
+	router.GET("/api/v1/sftp/list", sftpHandler.List)
+	router.GET("/api/v1/sftp/download", sftpHandler.Download)
+	router.POST("/api/v1/sftp/upload", sftpHandler.Upload)
+	router.POST("/api/v1/sftp/mkdir", sftpHandler.Mkdir)
+	router.POST("/api/v1/sftp/remove", sftpHandler.Remove)
+	router.POST("/api/v1/sftp/rename", sftpHandler.Rename)
 
 	// WebSocket
 	router.GET("/api/v1/ws", wsHub.HandleWS(cfg.Auth.JWTSecret))
