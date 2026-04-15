@@ -202,6 +202,9 @@
     "sftpDeleteMsg": "确定删除「{name}」？",
     "sftpEmpty": "目录为空",
     "noTabs": "没有活跃会话",
-    "connectHost": "连接到主机"
+    "connectHost": "连接到主机",
+    "sftpDropHere": "拖放文件以上传",
+    "sftpUploadedCount": "已上传 {n} 个文件",
+    "sftpUploadFailed": "{n} 个文件上传失败"
   }
 }

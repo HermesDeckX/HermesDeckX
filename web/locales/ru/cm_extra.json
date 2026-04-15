@@ -202,6 +202,9 @@
     "sftpDeleteMsg": "Delete \"{name}\"?",
     "sftpEmpty": "Directory is empty",
     "noTabs": "No active sessions",
-    "connectHost": "Connect to a host"
+    "connectHost": "Connect to a host",
+    "sftpDropHere": "Drop files to upload",
+    "sftpUploadedCount": "{n} file(s) uploaded",
+    "sftpUploadFailed": "{n} file(s) failed"
   }
 }

@@ -202,6 +202,9 @@
     "sftpDeleteMsg": "\"{name}\"을(를) 삭제하시겠습니까?",
     "sftpEmpty": "디렉토리가 비어 있습니다",
     "noTabs": "활성 세션 없음",
-    "connectHost": "호스트에 연결"
+    "connectHost": "호스트에 연결",
+    "sftpDropHere": "파일을 드롭하여 업로드",
+    "sftpUploadedCount": "{n}개 파일 업로드 완료",
+    "sftpUploadFailed": "{n}개 파일 업로드 실패"
   }
 }

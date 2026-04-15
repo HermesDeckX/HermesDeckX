@@ -202,6 +202,9 @@
     "sftpDeleteMsg": "確定刪除「{name}」？",
     "sftpEmpty": "目錄為空",
     "noTabs": "沒有活躍連線",
-    "connectHost": "連線到主機"
+    "connectHost": "連線到主機",
+    "sftpDropHere": "拖放檔案以上傳",
+    "sftpUploadedCount": "已上傳 {n} 個檔案",
+    "sftpUploadFailed": "{n} 個檔案上傳失敗"
   }
 }

@@ -92,6 +92,8 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   // SFTP upload ref
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const dragCounterRef = useRef(0);
 
   const activeTab = useMemo(() => tabs.find((tb) => tb.id === activeTabId) || null, [tabs, activeTabId]);
 
@@ -314,6 +316,48 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       toast('error', e?.message || 'Upload failed');
     }
   }, [activeTab, toast, tt, sftpNavigate]);
+
+  const sftpUploadMulti = useCallback(async (files: File[]) => {
+    if (!activeTab?.sessionId || files.length === 0) return;
+    let ok = 0;
+    let fail = 0;
+    for (const file of files) {
+      try {
+        await sftpApi.upload(activeTab.sessionId, activeTab.sftpPath + '/', file);
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    if (ok > 0) toast('success', (tt.sftpUploadedCount || '{n} file(s) uploaded').replace('{n}', String(ok)));
+    if (fail > 0) toast('error', (tt.sftpUploadFailed || '{n} file(s) failed').replace('{n}', String(fail)));
+    sftpNavigate(activeTab.sftpPath);
+  }, [activeTab, toast, tt, sftpNavigate]);
+
+  // Drag & drop handlers
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes('Files')) setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounterRef.current--;
+    if (dragCounterRef.current <= 0) { dragCounterRef.current = 0; setDragging(false); }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounterRef.current = 0;
+    setDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) sftpUploadMulti(files);
+  }, [sftpUploadMulti]);
 
   const sftpMkdir = useCallback(async () => {
     if (!activeTab?.sessionId) return;
@@ -620,7 +664,22 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
               {/* SFTP file browser */}
               {tab.panelMode === 'sftp' && (
-                <div className="flex-1 flex flex-col overflow-hidden bg-surface text-text">
+                <div
+                  className="flex-1 flex flex-col overflow-hidden bg-surface text-text relative"
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  {/* Drop overlay */}
+                  {dragging && tab.id === activeTabId && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-cyan-500/10 border-2 border-dashed border-cyan-400 rounded-xl backdrop-blur-sm pointer-events-none">
+                      <div className="flex flex-col items-center gap-2 text-cyan-400">
+                        <span className="material-symbols-outlined text-4xl">cloud_upload</span>
+                        <span className="text-sm font-medium">{tt.sftpDropHere || 'Drop files to upload'}</span>
+                      </div>
+                    </div>
+                  )}
                   {/* SFTP toolbar */}
                   <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 shrink-0">
                     <button
@@ -649,10 +708,12 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                     <input
                       ref={uploadInputRef}
                       type="file"
+                      multiple
                       className="hidden"
                       onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) sftpUpload(f);
+                        const files = Array.from(e.target.files || []);
+                        if (files.length === 1) sftpUpload(files[0]);
+                        else if (files.length > 1) sftpUploadMulti(files);
                         e.target.value = '';
                       }}
                     />

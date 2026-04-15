@@ -202,6 +202,9 @@
     "sftpDeleteMsg": "「{name}」を削除しますか？",
     "sftpEmpty": "ディレクトリは空です",
     "noTabs": "アクティブなセッションなし",
-    "connectHost": "ホストに接続"
+    "connectHost": "ホストに接続",
+    "sftpDropHere": "ファイルをドロップしてアップロード",
+    "sftpUploadedCount": "{n}件アップロード完了",
+    "sftpUploadFailed": "{n}件アップロード失敗"
   }
 }
