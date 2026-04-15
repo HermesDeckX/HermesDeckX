@@ -555,6 +555,7 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
             <input ref={snapshotImportRef} type="file" accept=".clawbak" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImportSnapshot(f); }} />
             <input ref={hermesAgentImportRef} type="file" accept=".zip" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImportHermesAgentBackup(f); }} />
             <button onClick={() => snapshotImportRef.current?.click()} disabled={snapshotImporting} className="flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[12px] font-medium border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-40" title={s.snapshotImport || 'Import .clawbak'}><span className={`material-symbols-outlined text-[16px] ${snapshotImporting ? 'animate-spin' : ''}`}>{snapshotImporting ? 'progress_activity' : 'upload'}</span>{s.snapshotImport || 'Import'}</button>
+            <button onClick={() => hermesAgentImportRef.current?.click()} disabled={hermesAgentImporting} className="flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[12px] font-medium border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors disabled:opacity-40" title={s.snapshotOcImport || 'Import Hermes Backup (.zip)'}><span className={`material-symbols-outlined text-[16px] ${hermesAgentImporting ? 'animate-spin' : ''}`}>{hermesAgentImporting ? 'progress_activity' : 'folder_zip'}</span>{hermesAgentImporting ? (s.snapshotOcImportBtn || 'Importing...') : '.zip'}</button>
           </div>
         </div>
 
@@ -698,10 +699,6 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
                 {s.snapshotOcExportDesc || 'Upstream Hermes backup creates a standard .zip archive of the Hermes home directory. Workspace/config-only/verify options are not provided by Hermes CLI.'}
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => hermesAgentImportRef.current?.click()} disabled={hermesAgentImporting} className="flex items-center gap-1.5 px-4 py-[7px] rounded-lg text-[13px] font-medium border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors disabled:opacity-40">
-                  <span className={`material-symbols-outlined text-[16px] ${hermesAgentImporting ? 'animate-spin' : ''}`}>{hermesAgentImporting ? 'progress_activity' : 'upload_file'}</span>
-                  {hermesAgentImporting ? (s.snapshotOcImportBtn || 'Importing...') : 'Import Hermes Backup (.zip)'}
-                </button>
                 <button onClick={handleCreateHermesAgentBackup} disabled={hermesAgentBackupCreating} className="flex items-center gap-1.5 px-4 py-[7px] bg-primary text-white rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:opacity-90 shadow-sm">
                   <span className={`material-symbols-outlined text-[16px] ${hermesAgentBackupCreating ? 'animate-spin' : ''}`}>{hermesAgentBackupCreating ? 'progress_activity' : 'backup'}</span>
                   {hermesAgentBackupCreating ? (s.ocBackupCreating || 'Creating backup...') : (s.ocBackupCreate || 'Create Hermes Backup (.zip)')}
