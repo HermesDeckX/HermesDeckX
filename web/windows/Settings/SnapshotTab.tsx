@@ -695,9 +695,6 @@ const SnapshotTab: React.FC<SnapshotTabProps> = ({ s, inputCls, labelCls, rowCls
                 <p className="text-[12px] text-slate-400 dark:text-white/40">{s.ocBackupNotInstalled || 'Hermes CLI not installed'}</p>
               </div>
             ) : (<>
-              <div className="rounded-xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/60 dark:bg-blue-500/5 px-3 py-2.5 text-[11px] text-blue-700 dark:text-blue-300">
-                {s.snapshotOcExportDesc || 'Upstream Hermes backup creates a standard .zip archive of the Hermes home directory. Workspace/config-only/verify options are not provided by Hermes CLI.'}
-              </div>
               <div className="flex justify-end gap-2">
                 <button onClick={handleCreateHermesAgentBackup} disabled={hermesAgentBackupCreating} className="flex items-center gap-1.5 px-4 py-[7px] bg-primary text-white rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:opacity-90 shadow-sm">
                   <span className={`material-symbols-outlined text-[16px] ${hermesAgentBackupCreating ? 'animate-spin' : ''}`}>{hermesAgentBackupCreating ? 'progress_activity' : 'backup'}</span>
