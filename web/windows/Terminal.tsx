@@ -45,8 +45,10 @@ interface TabState {
   netHistory: { rx: number; tx: number }[];
   snippets: SSHSnippet[];
   snippetsLoaded: boolean;
+  collapsedSections: Set<string>;
 }
 type BottomTab = 'files' | 'commands';
+type SysSection = 'processes' | 'disks' | 'network';
 
 const XTERM_DARK = {
   background: '#1a1b26', foreground: '#c0caf5', cursor: '#c0caf5', selectionBackground: '#33467c',
@@ -122,8 +124,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const [sftpHeight, setSftpHeight] = useState(SFTP_PANEL_DEFAULT);
   const resizingRef = useRef(false);
   const [bottomTab, setBottomTab] = useState<BottomTab>('files');
-  const [snippetForm, setSnippetForm] = useState({ name: '', command: '' });
-  const [snippetAdding, setSnippetAdding] = useState(false);
+  const [cmdInput, setCmdInput] = useState('');
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -183,8 +184,8 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       xterm: null, fitAddon: null, wsClient: null, resizeObserver: null,
       sftpPath: '/', sftpEntries: [], sftpLoading: false,
       treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
-      sysInfo: null, sysInfoOpen: false, netHistory: [],
-      snippets: [], snippetsLoaded: false,
+      sysInfo: null, sysInfoOpen: true, netHistory: [],
+      snippets: [], snippetsLoaded: false, collapsedSections: new Set(),
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -429,7 +430,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     return () => clearInterval(iv);
   }, [activeTab?.sysInfoOpen, activeTab?.sessionId, fetchSysInfo]);
 
-  // Snippets
+  // Snippets / Command History
   const loadSnippets = useCallback(async () => {
     if (!activeTab) return;
     try {
@@ -438,32 +439,49 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     } catch { /* silent */ }
   }, [activeTab, updateTab]);
 
-  const addSnippet = useCallback(async () => {
-    if (!activeTab || !snippetForm.name.trim() || !snippetForm.command.trim()) return;
-    setSnippetAdding(true);
+  const recordCommand = useCallback(async (command: string) => {
+    if (!activeTab || !command.trim()) return;
     try {
-      await snippetsApi.create({ host_id: activeTab.hostId, name: snippetForm.name, command: snippetForm.command });
-      setSnippetForm({ name: '', command: '' });
+      await snippetsApi.record(activeTab.hostId, command);
       loadSnippets();
-    } catch (e: any) { toast('error', e?.message || 'Failed to save snippet'); }
-    finally { setSnippetAdding(false); }
-  }, [activeTab, snippetForm, toast, loadSnippets]);
+    } catch { /* silent */ }
+  }, [activeTab, loadSnippets]);
+
+  const toggleFavorite = useCallback(async (id: number) => {
+    try { await snippetsApi.toggleFavorite(id); loadSnippets(); }
+    catch (e: any) { toast('error', e?.message || 'Failed'); }
+  }, [toast, loadSnippets]);
 
   const deleteSnippet = useCallback(async (id: number) => {
-    if (!await confirm(tt.deleteSnippetConfirm || 'Delete this command snippet?')) return;
     try { await snippetsApi.delete(id); loadSnippets(); }
     catch (e: any) { toast('error', e?.message || 'Delete failed'); }
-  }, [confirm, toast, tt, loadSnippets]);
+  }, [toast, loadSnippets]);
 
   const execSnippet = useCallback((command: string) => {
     if (!activeTab?.xterm || !activeTab?.wsClient) return;
     activeTab.wsClient.send('terminal.input', command + '\n');
-  }, [activeTab]);
+    recordCommand(command);
+  }, [activeTab, recordCommand]);
 
-  // Load snippets when switching to commands tab
+  const sendCmdInput = useCallback(() => {
+    const cmd = cmdInput.trim();
+    if (!cmd) return;
+    execSnippet(cmd);
+    setCmdInput('');
+  }, [cmdInput, execSnippet]);
+
+  // Load snippets when switching to commands tab or on connect
   useEffect(() => {
-    if (bottomTab === 'commands' && activeTab && !activeTab.snippetsLoaded) { loadSnippets(); }
-  }, [bottomTab, activeTab, loadSnippets]);
+    if (activeTab && !activeTab.snippetsLoaded) { loadSnippets(); }
+  }, [activeTab?.id, activeTab?.snippetsLoaded, loadSnippets]);
+
+  // Toggle collapsible sysinfo section
+  const toggleSection = useCallback((section: SysSection) => {
+    if (!activeTab) return;
+    const next = new Set(activeTab.collapsedSections);
+    if (next.has(section)) next.delete(section); else next.add(section);
+    updateTab(activeTab.id, { collapsedSections: next });
+  }, [activeTab, updateTab]);
 
   const fmtBytes = (b: number) => {
     if (b < 1024) return `${b} B`;
@@ -676,76 +694,77 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       <div className="truncate">{activeTab.sysInfo.hostname}</div>
                       <div className="truncate">{activeTab.sysInfo.kernel}</div>
                     </div>
-                    {/* Uptime */}
+                    {/* Uptime + Load */}
                     <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                       <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>schedule</span>
                       <span className="truncate">{activeTab.sysInfo.uptime}</span>
                     </div>
-                    {/* Load */}
                     <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                       <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>speed</span>
                       <span>{activeTab.sysInfo.load_avg.load1} / {activeTab.sysInfo.load_avg.load5} / {activeTab.sysInfo.load_avg.load15}</span>
                     </div>
-                    {/* CPU gauge */}
-                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>memory</span>CPU</span>
-                        <span className={`text-[10px] font-bold ${pctColor(activeTab.sysInfo.cpu.use_pct)}`}>{activeTab.sysInfo.cpu.use_pct}%</span>
-                      </div>
-                      <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.cpu.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.cpu.use_pct)}%` }} /></div>
-                      <div className={`flex justify-between mt-1 text-[9px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>
-                        <span>{activeTab.sysInfo.cpu.cores} {tt.cores || 'cores'}</span>
-                        <span>u{activeTab.sysInfo.cpu.user_pct}% s{activeTab.sysInfo.cpu.sys_pct}%</span>
-                      </div>
-                    </div>
-                    {/* Memory gauge */}
-                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>memory_alt</span>{tt.memory || 'Mem'}</span>
-                        <span className={`text-[10px] font-bold ${pctColor(activeTab.sysInfo.memory.use_pct)}`}>{activeTab.sysInfo.memory.use_pct}%</span>
-                      </div>
-                      <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.memory.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.memory.use_pct)}%` }} /></div>
-                      <div className={`flex justify-between mt-1 text-[9px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>
-                        <span>{fmtBytes(activeTab.sysInfo.memory.used)}</span>
-                        <span>{fmtBytes(activeTab.sysInfo.memory.total)}</span>
-                      </div>
-                    </div>
-                    {/* Swap gauge */}
-                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>swap_horiz</span>Swap</span>
-                        <span className={`text-[10px] font-bold ${activeTab.sysInfo.swap.total > 0 ? pctColor(activeTab.sysInfo.swap.use_pct) : (isDark ? 'text-white/25' : 'text-black/25')}`}>{activeTab.sysInfo.swap.total > 0 ? `${activeTab.sysInfo.swap.use_pct}%` : 'N/A'}</span>
-                      </div>
-                      <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>{activeTab.sysInfo.swap.total > 0 && <div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.swap.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.swap.use_pct)}%` }} />}</div>
-                      <div className={`flex justify-between mt-1 text-[9px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>
-                        <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.used) : '-'}</span>
-                        <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.total) : '-'}</span>
-                      </div>
-                    </div>
-                    {/* Process list */}
-                    {activeTab.sysInfo.processes?.length > 0 && (
-                      <div>
-                        <div className={`flex items-center justify-between px-1 mb-1`}>
-                          <span className="flex items-center gap-1 text-[10px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>list</span>{tt.processes || 'Processes'}</span>
-                          <span className={`text-[9px] ${isDark ? 'text-white/20' : 'text-black/20'}`}>MEM CPU</span>
+
+                    {/* ── Ring gauges row: CPU / Mem / Swap ── */}
+                    {(() => {
+                      const ringSize = 56;
+                      const strokeW = 5;
+                      const r = (ringSize - strokeW) / 2;
+                      const circ = 2 * Math.PI * r;
+                      const ring = (pct: number, label: string, sub: string, color: string) => {
+                        const offset = circ * (1 - Math.min(100, pct) / 100);
+                        return (
+                          <div className="flex flex-col items-center gap-0.5">
+                            <svg width={ringSize} height={ringSize} className="-rotate-90">
+                              <circle cx={ringSize / 2} cy={ringSize / 2} r={r} fill="none" stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} strokeWidth={strokeW} />
+                              <circle cx={ringSize / 2} cy={ringSize / 2} r={r} fill="none" stroke={color} strokeWidth={strokeW} strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-500" />
+                              <text x={ringSize / 2} y={ringSize / 2} textAnchor="middle" dominantBaseline="central" fill={color} fontSize="11" fontWeight="700" className="rotate-90" style={{ transformOrigin: 'center' }}>{pct}%</text>
+                            </svg>
+                            <span className="text-[9px] font-medium" style={{ color }}>{label}</span>
+                            <span className={`text-[8px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>{sub}</span>
+                          </div>
+                        );
+                      };
+                      const cpuColor = activeTab.sysInfo!.cpu.use_pct > 90 ? '#f87171' : activeTab.sysInfo!.cpu.use_pct > 70 ? '#fbbf24' : '#4ade80';
+                      const memColor = activeTab.sysInfo!.memory.use_pct > 90 ? '#f87171' : activeTab.sysInfo!.memory.use_pct > 70 ? '#fbbf24' : '#60a5fa';
+                      const swapPct = activeTab.sysInfo!.swap.total > 0 ? activeTab.sysInfo!.swap.use_pct : 0;
+                      const swapColor = swapPct > 90 ? '#f87171' : swapPct > 70 ? '#fbbf24' : '#a78bfa';
+                      return (
+                        <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                          <div className="flex items-start justify-around">
+                            {ring(activeTab.sysInfo!.cpu.use_pct, 'CPU', `${activeTab.sysInfo!.cpu.cores}C`, cpuColor)}
+                            {ring(activeTab.sysInfo!.memory.use_pct, tt.memory || 'Mem', fmtBytes(activeTab.sysInfo!.memory.total), memColor)}
+                            {ring(swapPct, 'Swap', activeTab.sysInfo!.swap.total > 0 ? fmtBytes(activeTab.sysInfo!.swap.total) : 'N/A', swapColor)}
+                          </div>
                         </div>
-                        <div className={`rounded-lg overflow-hidden ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                          {activeTab.sysInfo.processes.map((p, i) => (
-                            <div key={`${p.pid}-${i}`} className={`flex items-center gap-1 px-1.5 py-[3px] text-[9px] font-mono ${i % 2 === 0 ? '' : isDark ? 'bg-white/[.02]' : 'bg-black/[.015]'}`}>
-                              <span className={`w-3 text-end shrink-0 ${isDark ? 'text-white/20' : 'text-black/20'}`}>{i + 1}</span>
-                              <span className={`flex-1 min-w-0 truncate ${isDark ? 'text-white/60' : 'text-black/60'}`}>{p.name}</span>
-                              <span className={`shrink-0 w-8 text-end ${pctColor(p.mem_pct)}`}>{p.mem_pct}%</span>
-                              <span className={`shrink-0 w-8 text-end ${pctColor(p.cpu_pct)}`}>{p.cpu_pct}%</span>
-                            </div>
-                          ))}
+                      );
+                    })()}
+
+                    {/* ── Network sparkline (always visible) ── */}
+                    {activeTab.sysInfo.network.length > 0 && (
+                      <div className={`rounded-lg p-1.5 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                        <div className="flex items-center justify-between mb-1 text-[8px]">
+                          <span className="text-green-400 flex items-center gap-0.5"><span className="material-symbols-outlined" style={{ fontSize: '9px' }}>download</span>{netRates.length >= 2 ? fmtRate(netRates[netRates.length - 1].rx) : '0 B/s'}</span>
+                          <span className="text-blue-400 flex items-center gap-0.5"><span className="material-symbols-outlined" style={{ fontSize: '9px' }}>upload</span>{netRates.length >= 2 ? fmtRate(netRates[netRates.length - 1].tx) : '0 B/s'}</span>
                         </div>
+                        {netRates.length >= 2 && (
+                          <svg width="100%" height="28" viewBox={`0 0 ${SYSINFO_WIDTH - 24} 28`} preserveAspectRatio="none">
+                            {renderSparkline(netRates.map((rv) => rv.rx), '#4ade80', SYSINFO_WIDTH - 24, 28)}
+                            {renderSparkline(netRates.map((rv) => rv.tx), '#60a5fa', SYSINFO_WIDTH - 24, 28)}
+                          </svg>
+                        )}
                       </div>
                     )}
-                    {/* Disks */}
+
+                    {/* ── Disks (collapsible) ── */}
                     {activeTab.sysInfo.disks.length > 0 && (
                       <div>
-                        <div className="flex items-center gap-1 px-1 mb-1"><span className="material-symbols-outlined" style={{ fontSize: '12px', color: 'var(--glow-purple, #a855f7)' }}>hard_drive_2</span><span className="text-[10px] font-medium">{tt.disks || 'Disks'}</span></div>
-                        {activeTab.sysInfo.disks.map((d) => (
+                        <button onClick={() => toggleSection('disks')} className={`flex items-center gap-1 px-1 py-0.5 w-full text-start rounded transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>{activeTab.collapsedSections.has('disks') ? 'chevron_right' : 'expand_more'}</span>
+                          <span className="material-symbols-outlined text-purple-400" style={{ fontSize: '12px' }}>hard_drive_2</span>
+                          <span className="text-[10px] font-medium flex-1">{tt.disks || 'Disks'}</span>
+                          <span className={`text-[9px] ${isDark ? 'text-white/20' : 'text-black/20'}`}>{activeTab.sysInfo.disks.length}</span>
+                        </button>
+                        {!activeTab.collapsedSections.has('disks') && activeTab.sysInfo.disks.map((d) => (
                           <div key={d.mount} className={`px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
                             <div className="flex items-center justify-between mb-0.5">
                               <span className={`font-mono truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{d.mount}</span>
@@ -757,24 +776,17 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                         ))}
                       </div>
                     )}
-                    {/* Network */}
+
+                    {/* ── Network interfaces (collapsible) ── */}
                     {activeTab.sysInfo.network.length > 0 && (
                       <div>
-                        <div className="flex items-center gap-1 px-1 mb-1"><span className="material-symbols-outlined" style={{ fontSize: '12px', color: 'var(--glow-purple, #a855f7)' }}>lan</span><span className="text-[10px] font-medium">{tt.network || 'Network'}</span></div>
-                        {/* Sparkline chart */}
-                        {netRates.length >= 2 && (
-                          <div className={`rounded-lg p-1.5 mb-1.5 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
-                            <div className="flex items-center justify-between mb-1 text-[8px]">
-                              <span className="text-green-400 flex items-center gap-0.5"><span className="material-symbols-outlined" style={{ fontSize: '9px' }}>download</span>{fmtRate(netRates[netRates.length - 1].rx)}</span>
-                              <span className="text-blue-400 flex items-center gap-0.5"><span className="material-symbols-outlined" style={{ fontSize: '9px' }}>upload</span>{fmtRate(netRates[netRates.length - 1].tx)}</span>
-                            </div>
-                            <svg width="100%" height="32" viewBox={`0 0 ${SYSINFO_WIDTH - 24} 32`} preserveAspectRatio="none">
-                              {renderSparkline(netRates.map((r) => r.rx), '#4ade80', SYSINFO_WIDTH - 24, 32)}
-                              {renderSparkline(netRates.map((r) => r.tx), '#60a5fa', SYSINFO_WIDTH - 24, 32)}
-                            </svg>
-                          </div>
-                        )}
-                        {activeTab.sysInfo.network.map((n) => (
+                        <button onClick={() => toggleSection('network')} className={`flex items-center gap-1 px-1 py-0.5 w-full text-start rounded transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>{activeTab.collapsedSections.has('network') ? 'chevron_right' : 'expand_more'}</span>
+                          <span className="material-symbols-outlined text-purple-400" style={{ fontSize: '12px' }}>lan</span>
+                          <span className="text-[10px] font-medium flex-1">{tt.network || 'Network'}</span>
+                          <span className={`text-[9px] ${isDark ? 'text-white/20' : 'text-black/20'}`}>{activeTab.sysInfo.network.length}</span>
+                        </button>
+                        {!activeTab.collapsedSections.has('network') && activeTab.sysInfo.network.map((n) => (
                           <div key={n.name} className={`px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
                             <div className={`font-mono mb-0.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{n.name}</div>
                             <div className="flex items-center gap-2">
@@ -783,6 +795,36 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* ── Processes (collapsible) ── */}
+                    {activeTab.sysInfo.processes?.length > 0 && (
+                      <div>
+                        <button onClick={() => toggleSection('processes')} className={`flex items-center gap-1 px-1 py-0.5 w-full text-start rounded transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>{activeTab.collapsedSections.has('processes') ? 'chevron_right' : 'expand_more'}</span>
+                          <span className="material-symbols-outlined text-purple-400" style={{ fontSize: '12px' }}>list</span>
+                          <span className="text-[10px] font-medium flex-1">{tt.processes || 'Processes'}</span>
+                          <span className={`text-[9px] ${isDark ? 'text-white/20' : 'text-black/20'}`}>{activeTab.sysInfo.processes.length}</span>
+                        </button>
+                        {!activeTab.collapsedSections.has('processes') && (
+                          <div className={`rounded-lg overflow-hidden ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                            <div className={`flex items-center gap-1 px-1.5 py-[2px] text-[8px] font-semibold ${isDark ? 'text-white/25 bg-white/[.03]' : 'text-black/25 bg-black/[.02]'}`}>
+                              <span className="w-3 text-end shrink-0">#</span>
+                              <span className="flex-1 min-w-0">{tt.processName || 'Process'}</span>
+                              <span className="shrink-0 w-8 text-end">MEM</span>
+                              <span className="shrink-0 w-8 text-end">CPU</span>
+                            </div>
+                            {activeTab.sysInfo.processes.map((p, i) => (
+                              <div key={`${p.pid}-${i}`} className={`flex items-center gap-1 px-1.5 py-[3px] text-[9px] font-mono ${i % 2 === 0 ? '' : isDark ? 'bg-white/[.02]' : 'bg-black/[.015]'}`}>
+                                <span className={`w-3 text-end shrink-0 ${isDark ? 'text-white/20' : 'text-black/20'}`}>{i + 1}</span>
+                                <span className={`flex-1 min-w-0 truncate ${isDark ? 'text-white/60' : 'text-black/60'}`}>{p.name}</span>
+                                <span className={`shrink-0 w-8 text-end ${pctColor(p.mem_pct)}`}>{p.mem_pct}%</span>
+                                <span className={`shrink-0 w-8 text-end ${pctColor(p.cpu_pct)}`}>{p.cpu_pct}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -956,36 +998,38 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                   {/* ── Commands tab content ── */}
                   {bottomTab === 'commands' && (
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      {/* Add snippet form */}
+                      {/* Command input bar */}
                       <div className={`flex items-center gap-2 px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                        <input className={`sci-input flex-[2] min-w-0 px-2 py-1 rounded-md text-xs ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`} placeholder={tt.snippetName || 'Name'} value={snippetForm.name} onChange={(e) => setSnippetForm({ ...snippetForm, name: e.target.value })} />
-                        <input className={`sci-input flex-[3] min-w-0 px-2 py-1 rounded-md text-xs font-mono ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`} placeholder={tt.snippetCommand || 'Command (e.g. systemctl restart nginx)'} value={snippetForm.command} onChange={(e) => setSnippetForm({ ...snippetForm, command: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') addSnippet(); }} />
-                        <button onClick={addSnippet} disabled={snippetAdding || !snippetForm.name.trim() || !snippetForm.command.trim()} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 disabled:opacity-40 transition-colors shrink-0">
-                          {snippetAdding ? <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> : <span className="material-symbols-outlined text-sm">add</span>}
-                          {tt.add || 'Add'}
+                        <span className={`text-xs font-mono shrink-0 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>$</span>
+                        <input className={`sci-input flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-mono ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`} placeholder={tt.typeCommand || 'Type a command and press Enter...'} value={cmdInput} onChange={(e) => setCmdInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendCmdInput(); }} />
+                        <button onClick={sendCmdInput} disabled={!cmdInput.trim()} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-40 transition-colors shrink-0">
+                          <span className="material-symbols-outlined text-sm">send</span>
+                          {tt.send || 'Send'}
                         </button>
                       </div>
-                      {/* Snippet list */}
+                      {/* Command history list */}
                       <div className="flex-1 overflow-y-auto neon-scrollbar">
                         {activeTab.snippets.length === 0 ? (
                           <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
-                            <span className="material-symbols-outlined text-2xl">code_off</span>
-                            <span className="text-xs">{tt.noSnippets || 'No saved commands'}</span>
+                            <span className="material-symbols-outlined text-2xl">terminal</span>
+                            <span className="text-xs">{tt.noCommands || 'No command history'}</span>
                           </div>
                         ) : (
                           <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
                             {activeTab.snippets.map((s) => (
-                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1.5 group transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
-                                <span className="material-symbols-outlined text-sm text-amber-400" style={{ fontSize: '14px' }}>code</span>
+                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1.5 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => execSnippet(s.command)}>
+                                <span className={`material-symbols-outlined shrink-0 ${s.is_favorite ? 'text-amber-400' : isDark ? 'text-white/20' : 'text-black/15'}`} style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'chevron_right'}</span>
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-xs font-medium truncate">{s.name}</div>
-                                  <div className={`text-[10px] font-mono truncate ${isDark ? 'text-white/30' : 'text-black/30'}`}>{s.command}</div>
+                                  <div className={`text-xs font-mono truncate ${isDark ? 'text-white/70' : 'text-black/70'}`}>{s.command}</div>
+                                  <div className={`text-[9px] ${isDark ? 'text-white/15' : 'text-black/15'}`}>{new Date(s.created_at).toLocaleString()}</div>
                                 </div>
-                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button onClick={() => execSnippet(s.command)} className={`flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${isDark ? 'bg-green-500/15 text-green-400 hover:bg-green-500/25' : 'bg-green-500/10 text-green-600 hover:bg-green-500/20'}`} title={tt.run || 'Run'}>
-                                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>play_arrow</span>{tt.run || 'Run'}
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                  <button onClick={() => toggleFavorite(s.id)} className={`p-0.5 rounded transition-colors ${s.is_favorite ? 'text-amber-400 hover:text-amber-300' : isDark ? 'hover:bg-white/10 text-white/30 hover:text-amber-400' : 'hover:bg-black/5 text-gray-400 hover:text-amber-500'}`} title={s.is_favorite ? (tt.unfavorite || 'Unfavorite') : (tt.favorite || 'Favorite')}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'star_outline'}</span>
                                   </button>
-                                  <button onClick={() => deleteSnippet(s.id)} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
+                                  <button onClick={() => deleteSnippet(s.id)} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                                  </button>
                                 </div>
                               </div>
                             ))}

@@ -222,10 +222,11 @@
     "network": "網路",
     "processes": "處理程序",
     "commands": "指令",
-    "snippetName": "名稱",
-    "snippetCommand": "指令 (例如 systemctl restart nginx)",
-    "noSnippets": "尚無儲存的指令",
-    "deleteSnippetConfirm": "刪除此指令片段？",
+    "processName": "程序",
+    "typeCommand": "輸入指令後按 Enter 發送...",
+    "send": "發送",
+    "noCommands": "暫無指令歷史",
+    "unfavorite": "取消收藏",
     "run": "執行"
   }
 }

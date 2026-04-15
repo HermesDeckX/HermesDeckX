@@ -222,10 +222,11 @@
     "network": "Red",
     "processes": "Procesos",
     "commands": "Comandos",
-    "snippetName": "Nombre",
-    "snippetCommand": "Comando (ej. systemctl restart nginx)",
-    "noSnippets": "Sin comandos guardados",
-    "deleteSnippetConfirm": "¿Eliminar este comando?",
+    "processName": "Proceso",
+    "typeCommand": "Escribe un comando y presiona Enter...",
+    "send": "Enviar",
+    "noCommands": "Sin historial de comandos",
+    "unfavorite": "Quitar favorito",
     "run": "Ejecutar"
   }
 }

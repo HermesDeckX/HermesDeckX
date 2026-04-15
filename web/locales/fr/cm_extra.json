@@ -222,10 +222,11 @@
     "network": "Réseau",
     "processes": "Processus",
     "commands": "Commandes",
-    "snippetName": "Nom",
-    "snippetCommand": "Commande (ex. systemctl restart nginx)",
-    "noSnippets": "Aucune commande enregistrée",
-    "deleteSnippetConfirm": "Supprimer cette commande ?",
+    "processName": "Processus",
+    "typeCommand": "Tapez une commande et appuyez sur Entrée...",
+    "send": "Envoyer",
+    "noCommands": "Aucun historique de commandes",
+    "unfavorite": "Retirer des favoris",
     "run": "Exécuter"
   }
 }

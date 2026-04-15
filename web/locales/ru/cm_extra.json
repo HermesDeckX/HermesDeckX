@@ -222,10 +222,11 @@
     "network": "Сеть",
     "processes": "Процессы",
     "commands": "Команды",
-    "snippetName": "Имя",
-    "snippetCommand": "Команда (напр. systemctl restart nginx)",
-    "noSnippets": "Нет сохранённых команд",
-    "deleteSnippetConfirm": "Удалить этот фрагмент команды?",
+    "processName": "Процесс",
+    "typeCommand": "Введите команду и нажмите Enter...",
+    "send": "Отправить",
+    "noCommands": "Нет истории команд",
+    "unfavorite": "Убрать из избранного",
     "run": "Выполнить"
   }
 }

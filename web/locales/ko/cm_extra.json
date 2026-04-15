@@ -222,10 +222,11 @@
     "network": "네트워크",
     "processes": "프로세스",
     "commands": "명령어",
-    "snippetName": "이름",
-    "snippetCommand": "명령어 (예: systemctl restart nginx)",
-    "noSnippets": "저장된 명령어 없음",
-    "deleteSnippetConfirm": "이 명령 스니펫을 삭제하시겠습니까?",
+    "processName": "프로세스",
+    "typeCommand": "명령어를 입력하고 Enter를 누르세요...",
+    "send": "전송",
+    "noCommands": "명령 기록 없음",
+    "unfavorite": "즐겨찾기 해제",
     "run": "실행"
   }
 }

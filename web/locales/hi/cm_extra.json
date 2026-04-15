@@ -222,10 +222,11 @@
     "network": "नेटवर्क",
     "processes": "प्रक्रियाएँ",
     "commands": "कमांड",
-    "snippetName": "नाम",
-    "snippetCommand": "कमांड (जैसे systemctl restart nginx)",
-    "noSnippets": "कोई सहेजा गया कमांड नहीं",
-    "deleteSnippetConfirm": "इस कमांड स्निपेट को हटाएँ?",
+    "processName": "प्रक्रिया",
+    "typeCommand": "कमांड टाइप करें और Enter दबाएं...",
+    "send": "भेजें",
+    "noCommands": "कोई कमांड इतिहास नहीं",
+    "unfavorite": "पसंदीदा हटाएं",
     "run": "चलाएँ"
   }
 }

@@ -222,10 +222,11 @@
     "network": "الشبكة",
     "processes": "العمليات",
     "commands": "الأوامر",
-    "snippetName": "الاسم",
-    "snippetCommand": "الأمر (مثال: systemctl restart nginx)",
-    "noSnippets": "لا توجد أوامر محفوظة",
-    "deleteSnippetConfirm": "حذف مقتطف الأمر هذا؟",
+    "processName": "العملية",
+    "typeCommand": "اكتب أمرًا واضغط Enter...",
+    "send": "إرسال",
+    "noCommands": "لا يوجد سجل أوامر",
+    "unfavorite": "إزالة من المفضلة",
     "run": "تشغيل"
   }
 }

@@ -862,8 +862,8 @@ func RunServe(args []string) int {
 
 	// Command Snippets
 	router.GET("/api/v1/ssh/snippets", snippetHandler.List)
-	router.POST("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Create))
-	router.PUT("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Update))
+	router.POST("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Record))
+	router.PUT("/api/v1/ssh/snippets/favorite", web.RequireAdmin(snippetHandler.ToggleFavorite))
 	router.DELETE("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Delete))
 
 	// WebSocket

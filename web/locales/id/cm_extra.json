@@ -222,10 +222,11 @@
     "network": "Jaringan",
     "processes": "Proses",
     "commands": "Perintah",
-    "snippetName": "Nama",
-    "snippetCommand": "Perintah (mis. systemctl restart nginx)",
-    "noSnippets": "Tidak ada perintah tersimpan",
-    "deleteSnippetConfirm": "Hapus cuplikan perintah ini?",
+    "processName": "Proses",
+    "typeCommand": "Ketik perintah dan tekan Enter...",
+    "send": "Kirim",
+    "noCommands": "Tidak ada riwayat perintah",
+    "unfavorite": "Hapus favorit",
     "run": "Jalankan"
   }
 }

@@ -222,10 +222,11 @@
     "network": "网络",
     "processes": "进程",
     "commands": "命令",
-    "snippetName": "名称",
-    "snippetCommand": "命令 (例如 systemctl restart nginx)",
-    "noSnippets": "暂无保存的命令",
-    "deleteSnippetConfirm": "删除这个命令片段？",
+    "processName": "进程",
+    "typeCommand": "输入命令后按回车发送...",
+    "send": "发送",
+    "noCommands": "暂无命令历史",
+    "unfavorite": "取消收藏",
     "run": "执行"
   }
 }

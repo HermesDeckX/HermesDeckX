@@ -222,10 +222,11 @@
     "network": "ネットワーク",
     "processes": "プロセス",
     "commands": "コマンド",
-    "snippetName": "名前",
-    "snippetCommand": "コマンド (例: systemctl restart nginx)",
-    "noSnippets": "保存されたコマンドはありません",
-    "deleteSnippetConfirm": "このコマンドスニペットを削除しますか？",
+    "processName": "プロセス",
+    "typeCommand": "コマンドを入力してEnterで送信...",
+    "send": "送信",
+    "noCommands": "コマンド履歴なし",
+    "unfavorite": "お気に入り解除",
     "run": "実行"
   }
 }
