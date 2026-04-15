@@ -18,7 +18,7 @@ import (
 	"HermesDeckX/internal/web"
 )
 
-const maxTextFileSize = 1 << 20 // 1 MB
+const maxTextFileSize = 5 << 20 // 5 MB
 
 // SFTPHandler provides REST endpoints for SFTP file operations.
 type SFTPHandler struct {
