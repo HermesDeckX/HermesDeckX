@@ -257,6 +257,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [activeTabId]);
 
   // SFTP toggle — terminal stays mounted
+  // When opening, auto-expand tree from / down to the user's home directory
   const toggleSFTP = useCallback(async () => {
     if (!activeTab) return;
     if (activeTab.sftpOpen) { updateTab(activeTab.id, { sftpOpen: false }); refitActiveTerminal(); return; }
@@ -264,10 +265,32 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     updateTab(activeTab.id, { sftpOpen: true, sftpLoading: true });
     refitActiveTerminal();
     try {
-      const result = await sftpApi.list(activeTab.sessionId);
-      const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
-      const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(result.path);
-      updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
+      // 1. Get home directory listing (backend defaults to $HOME when no path)
+      const homeResult = await sftpApi.list(activeTab.sessionId);
+      const homePath = homeResult.path; // e.g. "/root" or "/home/user"
+      const newCache: Record<string, FileEntry[]> = { ...activeTab.treeCache, [homePath]: homeResult.entries };
+      const newExpanded = new Set(activeTab.expandedDirs);
+      newExpanded.add(homePath);
+
+      // 2. Build ancestor paths: / → /home → /home/user
+      const segments = homePath.split('/').filter(Boolean);
+      const ancestorPaths: string[] = ['/'];
+      for (let i = 0; i < segments.length; i++) {
+        ancestorPaths.push('/' + segments.slice(0, i + 1).join('/'));
+      }
+
+      // 3. Load each ancestor directory in parallel for the tree
+      const ancestorLoads = ancestorPaths
+        .filter((p) => p !== homePath && !newCache[p])
+        .map((p) => sftpApi.list(activeTab.sessionId!, p).then((r) => ({ path: r.path, entries: r.entries })).catch(() => null));
+      const results = await Promise.all(ancestorLoads);
+      for (const r of results) {
+        if (r) { newCache[r.path] = r.entries; newExpanded.add(r.path); }
+      }
+      // Also expand all ancestors already in cache
+      for (const p of ancestorPaths) { newExpanded.add(p); }
+
+      updateTab(activeTab.id, { sftpPath: homePath, sftpEntries: homeResult.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
     } catch (e: any) {
       toast('error', e?.message || 'SFTP list failed');
       updateTab(activeTab.id, { sftpLoading: false, sftpOpen: false }); refitActiveTerminal();
