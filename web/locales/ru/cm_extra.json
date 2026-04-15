@@ -212,6 +212,13 @@
     "reconnect": "Переподключить",
     "sessionEnded": "Сессия завершена",
     "disconnected": "Отключено",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "serverStatus": "Состояние сервера",
+    "status": "Статус",
+    "sysInfoNeedSession": "Требуется активная сессия",
+    "memory": "Память",
+    "cores": "ядер",
+    "disks": "Диски",
+    "network": "Сеть"
   }
 }

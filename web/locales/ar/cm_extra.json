@@ -212,6 +212,13 @@
     "reconnect": "إعادة الاتصال",
     "sessionEnded": "انتهت الجلسة",
     "disconnected": "غير متصل",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "serverStatus": "حالة الخادم",
+    "status": "الحالة",
+    "sysInfoNeedSession": "يتطلب جلسة نشطة",
+    "memory": "الذاكرة",
+    "cores": "أنوية",
+    "disks": "الأقراص",
+    "network": "الشبكة"
   }
 }

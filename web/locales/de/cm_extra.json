@@ -212,6 +212,13 @@
     "reconnect": "Neu verbinden",
     "sessionEnded": "Sitzung beendet",
     "disconnected": "Getrennt",
-    "close": "Schließen"
+    "close": "Schließen",
+    "serverStatus": "Serverstatus",
+    "status": "Status",
+    "sysInfoNeedSession": "Erfordert eine aktive Sitzung",
+    "memory": "Speicher",
+    "cores": "Kerne",
+    "disks": "Festplatten",
+    "network": "Netzwerk"
   }
 }

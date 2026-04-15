@@ -212,6 +212,13 @@
     "reconnect": "पुनः कनेक्ट",
     "sessionEnded": "सत्र समाप्त",
     "disconnected": "डिस्कनेक्ट",
-    "close": "बंद करें"
+    "close": "बंद करें",
+    "serverStatus": "सर्वर स्थिति",
+    "status": "स्थिति",
+    "sysInfoNeedSession": "एक सक्रिय सत्र आवश्यक है",
+    "memory": "मेमोरी",
+    "cores": "कोर",
+    "disks": "डिस्क",
+    "network": "नेटवर्क"
   }
 }

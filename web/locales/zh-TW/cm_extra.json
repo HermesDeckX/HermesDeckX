@@ -212,6 +212,13 @@
     "reconnect": "重新連線",
     "sessionEnded": "工作階段已結束",
     "disconnected": "已斷開",
-    "close": "關閉"
+    "close": "關閉",
+    "serverStatus": "伺服器狀態",
+    "status": "狀態",
+    "sysInfoNeedSession": "需要活躍的工作階段",
+    "memory": "記憶體",
+    "cores": "核心",
+    "disks": "磁碟",
+    "network": "網路"
   }
 }

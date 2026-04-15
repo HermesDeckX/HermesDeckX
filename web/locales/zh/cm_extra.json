@@ -212,6 +212,13 @@
     "reconnect": "重新连接",
     "sessionEnded": "会话已结束",
     "disconnected": "已断开",
-    "close": "关闭"
+    "close": "关闭",
+    "serverStatus": "服务器状态",
+    "status": "状态",
+    "sysInfoNeedSession": "需要活跃的会话",
+    "memory": "内存",
+    "cores": "核心",
+    "disks": "磁盘",
+    "network": "网络"
   }
 }

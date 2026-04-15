@@ -9,6 +9,8 @@ import { TerminalWSClient } from '../services/terminal-ws';
 import type { TerminalMessage, TerminalCreatedPayload, TerminalOutputPayload, TerminalExitPayload, TerminalErrorPayload } from '../services/terminal-ws';
 import { sftpApi } from '../services/sftp';
 import type { FileEntry } from '../services/sftp';
+import { sysInfoApi } from '../services/sysinfo';
+import type { SysInfo } from '../services/sysinfo';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
@@ -36,6 +38,8 @@ interface TabState {
   treeCache: Record<string, FileEntry[]>;
   expandedDirs: Set<string>;
   treeLoading: Set<string>;
+  sysInfo: SysInfo | null;
+  sysInfoOpen: boolean;
 }
 
 const XTERM_DARK = {
@@ -169,6 +173,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       xterm: null, fitAddon: null, wsClient: null, resizeObserver: null,
       sftpPath: '/', sftpEntries: [], sftpLoading: false,
       treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
+      sysInfo: null, sysInfoOpen: false,
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -360,6 +365,39 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   }, [sftpWidth, refitActiveTerminal]);
 
+  // Server status
+  const fetchSysInfo = useCallback(async () => {
+    if (!activeTab?.sessionId) return;
+    try {
+      const info = await sysInfoApi.get(activeTab.sessionId);
+      updateTab(activeTab.id, { sysInfo: info });
+    } catch { /* silent */ }
+  }, [activeTab, updateTab]);
+
+  const toggleSysInfo = useCallback(() => {
+    if (!activeTab) return;
+    if (activeTab.sysInfoOpen) { updateTab(activeTab.id, { sysInfoOpen: false }); return; }
+    if (!activeTab.sessionId) { toast('error', tt.sysInfoNeedSession || 'Requires an active session'); return; }
+    updateTab(activeTab.id, { sysInfoOpen: true });
+    fetchSysInfo();
+  }, [activeTab, updateTab, toast, tt, fetchSysInfo]);
+
+  // Auto-refresh sysinfo every 5s when open
+  useEffect(() => {
+    if (!activeTab?.sysInfoOpen || !activeTab?.sessionId) return;
+    const iv = setInterval(fetchSysInfo, 5000);
+    return () => clearInterval(iv);
+  }, [activeTab?.sysInfoOpen, activeTab?.sessionId, fetchSysInfo]);
+
+  const fmtBytes = (b: number) => {
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 ** 2) return `${(b / 1024).toFixed(1)} KB`;
+    if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
+    return `${(b / 1024 ** 3).toFixed(1)} GB`;
+  };
+  const pctColor = (pct: number) => pct > 90 ? 'text-red-400' : pct > 70 ? 'text-amber-400' : 'text-green-400';
+  const pctBarColor = (pct: number) => pct > 90 ? 'bg-red-400' : pct > 70 ? 'bg-amber-400' : 'bg-green-400';
+
   const handleSave = useCallback(async () => {
     if (!form.name.trim() || !form.host.trim() || !form.username.trim()) { toast('error', tt.fieldsRequired || 'Name, host, and username are required'); return; }
     setSaving(true);
@@ -501,6 +539,10 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
               {!activeTab.sessionId && !activeTab.connecting && (<span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-full bg-red-500/15 text-red-400 font-medium">{tt.disconnected || 'Disconnected'}</span>)}
             </div>
             <div className="flex items-center gap-1">
+              <button onClick={toggleSysInfo} className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg transition-all ${activeTab.sysInfoOpen ? 'bg-purple-500/20 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.15)]' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`} title={tt.serverStatus || 'Server Status'}>
+                <span className="material-symbols-outlined text-sm">monitoring</span>
+                <span className="hidden sm:inline">{tt.status || 'Status'}</span>
+              </button>
               <button onClick={toggleSFTP} className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg transition-all ${showSftp ? 'bg-cyan-500/20 text-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.15)]' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`} title={tt.sftpToggle || 'File Browser'}>
                 <span className="material-symbols-outlined text-sm">{showSftp ? 'folder_open' : 'folder'}</span>
                 <span className="hidden sm:inline">{tt.files || 'Files'}</span>
@@ -539,6 +581,107 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                   <span className="material-symbols-outlined text-5xl mb-3 block">terminal</span>
                   <p className="text-sm font-medium">{tt.noTabs || 'No active sessions'}</p>
                   <button onClick={() => setView('hosts')} className="text-xs text-cyan-400 mt-3 hover:underline">{tt.connectHost || 'Connect to a host'}</button>
+                </div>
+              </div>
+            )}
+
+            {/* Server status overlay */}
+            {activeTab?.sysInfoOpen && (
+              <div className={`absolute inset-x-0 bottom-0 z-20 border-t overflow-y-auto neon-scrollbar ${isDark ? 'bg-[#16171f]/95 border-white/10' : 'bg-white/95 border-black/10'} backdrop-blur-md`} style={{ maxHeight: '55%', animation: 'fade-in 0.2s ease-out' }}>
+                <div className="p-3 space-y-3">
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-sm text-purple-400">monitoring</span>
+                      <span className="text-xs font-semibold">{tt.serverStatus || 'Server Status'}</span>
+                      {activeTab.sysInfo && (<span className={`text-[10px] font-mono ${isDark ? 'text-white/30' : 'text-black/30'}`}>{activeTab.sysInfo.hostname} · {activeTab.sysInfo.kernel}</span>)}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={fetchSysInfo} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
+                      <button onClick={toggleSysInfo} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`}><span className="material-symbols-outlined text-sm">close</span></button>
+                    </div>
+                  </div>
+                  {!activeTab.sysInfo ? (
+                    <div className="flex items-center justify-center py-8"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
+                  ) : (
+                    <>
+                      {/* Uptime & Load */}
+                      <div className={`flex items-center gap-3 text-[11px] px-2 py-1.5 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                        <span className="flex items-center gap-1"><span className="material-symbols-outlined" style={{ fontSize: '13px' }}>schedule</span>{activeTab.sysInfo.uptime}</span>
+                        <span className={`flex items-center gap-1 ${isDark ? 'text-white/40' : 'text-black/40'}`}>Load: {activeTab.sysInfo.load_avg.load1} / {activeTab.sysInfo.load_avg.load5} / {activeTab.sysInfo.load_avg.load15}</span>
+                      </div>
+                      {/* Gauges row */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* CPU */}
+                        <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="flex items-center gap-1 text-[11px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>memory</span>CPU</span>
+                            <span className={`text-xs font-bold ${pctColor(activeTab.sysInfo.cpu.use_pct)}`}>{activeTab.sysInfo.cpu.use_pct}%</span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.cpu.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.cpu.use_pct)}%` }} /></div>
+                          <div className={`flex justify-between mt-1.5 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+                            <span>{activeTab.sysInfo.cpu.cores} {tt.cores || 'cores'}</span>
+                            <span>usr {activeTab.sysInfo.cpu.user_pct}% · sys {activeTab.sysInfo.cpu.sys_pct}%</span>
+                          </div>
+                        </div>
+                        {/* Memory */}
+                        <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="flex items-center gap-1 text-[11px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>memory_alt</span>{tt.memory || 'Memory'}</span>
+                            <span className={`text-xs font-bold ${pctColor(activeTab.sysInfo.memory.use_pct)}`}>{activeTab.sysInfo.memory.use_pct}%</span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.memory.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.memory.use_pct)}%` }} /></div>
+                          <div className={`flex justify-between mt-1.5 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+                            <span>{fmtBytes(activeTab.sysInfo.memory.used)}</span>
+                            <span>{fmtBytes(activeTab.sysInfo.memory.total)}</span>
+                          </div>
+                        </div>
+                        {/* Swap */}
+                        <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="flex items-center gap-1 text-[11px] font-medium"><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>swap_horiz</span>Swap</span>
+                            <span className={`text-xs font-bold ${activeTab.sysInfo.swap.total > 0 ? pctColor(activeTab.sysInfo.swap.use_pct) : (isDark ? 'text-white/30' : 'text-black/30')}`}>{activeTab.sysInfo.swap.total > 0 ? `${activeTab.sysInfo.swap.use_pct}%` : 'N/A'}</span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>{activeTab.sysInfo.swap.total > 0 && <div className={`h-full rounded-full transition-all ${pctBarColor(activeTab.sysInfo.swap.use_pct)}`} style={{ width: `${Math.min(100, activeTab.sysInfo.swap.use_pct)}%` }} />}</div>
+                          <div className={`flex justify-between mt-1.5 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+                            <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.used) : '-'}</span>
+                            <span>{activeTab.sysInfo.swap.total > 0 ? fmtBytes(activeTab.sysInfo.swap.total) : '-'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Disks */}
+                      {activeTab.sysInfo.disks.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1 mb-1.5"><span className="material-symbols-outlined text-sm text-purple-400">hard_drive_2</span><span className="text-[11px] font-medium">{tt.disks || 'Disks'}</span></div>
+                          <div className="space-y-1.5">
+                            {activeTab.sysInfo.disks.map((d) => (
+                              <div key={d.mount} className={`flex items-center gap-2 px-2 py-1 rounded-lg text-[11px] ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                                <span className={`font-mono shrink-0 w-24 truncate ${isDark ? 'text-white/50' : 'text-black/50'}`}>{d.mount}</span>
+                                <div className={`flex-1 h-1.5 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full ${pctBarColor(d.use_pct)}`} style={{ width: `${Math.min(100, d.use_pct)}%` }} /></div>
+                                <span className={`shrink-0 w-10 text-end font-medium ${pctColor(d.use_pct)}`}>{d.use_pct}%</span>
+                                <span className={`shrink-0 text-[10px] ${isDark ? 'text-white/25' : 'text-black/25'}`}>{fmtBytes(d.used)}/{fmtBytes(d.total)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* Network */}
+                      {activeTab.sysInfo.network.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1 mb-1.5"><span className="material-symbols-outlined text-sm text-purple-400">lan</span><span className="text-[11px] font-medium">{tt.network || 'Network'}</span></div>
+                          <div className="space-y-1">
+                            {activeTab.sysInfo.network.map((n) => (
+                              <div key={n.name} className={`flex items-center gap-3 px-2 py-1 rounded-lg text-[11px] ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                                <span className={`font-mono shrink-0 w-16 truncate ${isDark ? 'text-white/50' : 'text-black/50'}`}>{n.name}</span>
+                                <span className="flex items-center gap-1 text-green-400"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>download</span>{fmtBytes(n.rx_bytes)}</span>
+                                <span className="flex items-center gap-1 text-blue-400"><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>upload</span>{fmtBytes(n.tx_bytes)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}

@@ -212,6 +212,13 @@
     "reconnect": "Reconnecter",
     "sessionEnded": "Session terminée",
     "disconnected": "Déconnecté",
-    "close": "Fermer"
+    "close": "Fermer",
+    "serverStatus": "État du serveur",
+    "status": "État",
+    "sysInfoNeedSession": "Nécessite une session active",
+    "memory": "Mémoire",
+    "cores": "cœurs",
+    "disks": "Disques",
+    "network": "Réseau"
   }
 }

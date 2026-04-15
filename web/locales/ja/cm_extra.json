@@ -212,6 +212,13 @@
     "reconnect": "再接続",
     "sessionEnded": "セッション終了",
     "disconnected": "切断済み",
-    "close": "閉じる"
+    "close": "閉じる",
+    "serverStatus": "サーバー状態",
+    "status": "状態",
+    "sysInfoNeedSession": "アクティブなセッションが必要です",
+    "memory": "メモリ",
+    "cores": "コア",
+    "disks": "ディスク",
+    "network": "ネットワーク"
   }
 }

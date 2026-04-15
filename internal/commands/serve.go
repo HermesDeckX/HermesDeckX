@@ -501,6 +501,7 @@ func RunServe(args []string) int {
 	terminalWSHandler := handlers.NewTerminalWSHandler(termManager)
 	sshHostsHandler := handlers.NewSSHHostsHandler()
 	sftpHandler := handlers.NewSFTPHandler(termManager)
+	sysInfoHandler := handlers.NewSysInfoHandler(termManager)
 
 	router := web.NewRouter()
 
@@ -854,6 +855,9 @@ func RunServe(args []string) int {
 	router.POST("/api/v1/sftp/mkdir", sftpHandler.Mkdir)
 	router.POST("/api/v1/sftp/remove", sftpHandler.Remove)
 	router.POST("/api/v1/sftp/rename", sftpHandler.Rename)
+
+	// Server System Info
+	router.GET("/api/v1/ssh/sysinfo", sysInfoHandler.Get)
 
 	// WebSocket
 	router.GET("/api/v1/ws", wsHub.HandleWS(cfg.Auth.JWTSecret))

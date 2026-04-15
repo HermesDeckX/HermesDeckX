@@ -212,6 +212,13 @@
     "reconnect": "Hubungkan ulang",
     "sessionEnded": "Sesi berakhir",
     "disconnected": "Terputus",
-    "close": "Tutup"
+    "close": "Tutup",
+    "serverStatus": "Status Server",
+    "status": "Status",
+    "sysInfoNeedSession": "Memerlukan sesi aktif",
+    "memory": "Memori",
+    "cores": "inti",
+    "disks": "Disk",
+    "network": "Jaringan"
   }
 }

@@ -212,6 +212,13 @@
     "reconnect": "재연결",
     "sessionEnded": "세션 종료",
     "disconnected": "연결 끊김",
-    "close": "닫기"
+    "close": "닫기",
+    "serverStatus": "서버 상태",
+    "status": "상태",
+    "sysInfoNeedSession": "활성 세션이 필요합니다",
+    "memory": "메모리",
+    "cores": "코어",
+    "disks": "디스크",
+    "network": "네트워크"
   }
 }
