@@ -33,6 +33,9 @@ interface TabState {
   xterm: XTerm | null; fitAddon: FitAddon | null;
   wsClient: TerminalWSClient | null; resizeObserver: ResizeObserver | null;
   sftpPath: string; sftpEntries: FileEntry[]; sftpLoading: boolean;
+  treeCache: Record<string, FileEntry[]>;
+  expandedDirs: Set<string>;
+  treeLoading: Set<string>;
 }
 
 const XTERM_DARK = {
@@ -165,6 +168,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       sessionId: null, connecting: true, sftpOpen: false,
       xterm: null, fitAddon: null, wsClient: null, resizeObserver: null,
       sftpPath: '/', sftpEntries: [], sftpLoading: false,
+      treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -245,7 +249,9 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     refitActiveTerminal();
     try {
       const result = await sftpApi.list(activeTab.sessionId);
-      updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false });
+      const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
+      const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(result.path);
+      updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
     } catch (e: any) {
       toast('error', e?.message || 'SFTP list failed');
       updateTab(activeTab.id, { sftpLoading: false, sftpOpen: false }); refitActiveTerminal();
@@ -257,8 +263,41 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     updateTab(activeTab.id, { sftpLoading: true });
     try {
       const result = await sftpApi.list(activeTab.sessionId, path);
-      updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false });
+      const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
+      const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(result.path);
+      updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
     } catch (e: any) { toast('error', e?.message || 'SFTP list failed'); updateTab(activeTab.id, { sftpLoading: false }); }
+  }, [activeTab, updateTab, toast]);
+
+  // Toggle tree directory expand/collapse with lazy loading
+  const toggleTreeDir = useCallback(async (dirPath: string) => {
+    if (!activeTab?.sessionId) return;
+    const expanded = activeTab.expandedDirs;
+    if (expanded.has(dirPath)) {
+      const newExpanded = new Set(expanded); newExpanded.delete(dirPath);
+      updateTab(activeTab.id, { expandedDirs: newExpanded });
+      return;
+    }
+    // If already cached, just expand
+    if (activeTab.treeCache[dirPath]) {
+      const newExpanded = new Set(expanded); newExpanded.add(dirPath);
+      updateTab(activeTab.id, { expandedDirs: newExpanded });
+      return;
+    }
+    // Lazy load
+    const newLoading = new Set(activeTab.treeLoading); newLoading.add(dirPath);
+    updateTab(activeTab.id, { treeLoading: newLoading });
+    try {
+      const result = await sftpApi.list(activeTab.sessionId, dirPath);
+      const newCache = { ...activeTab.treeCache, [dirPath]: result.entries };
+      const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(dirPath);
+      const doneLoading = new Set(activeTab.treeLoading); doneLoading.delete(dirPath);
+      updateTab(activeTab.id, { treeCache: newCache, expandedDirs: newExpanded, treeLoading: doneLoading });
+    } catch (e: any) {
+      toast('error', e?.message || 'Failed to load directory');
+      const doneLoading = new Set(activeTab.treeLoading); doneLoading.delete(dirPath);
+      updateTab(activeTab.id, { treeLoading: doneLoading });
+    }
   }, [activeTab, updateTab, toast]);
 
   const sftpDownload = useCallback((entry: FileEntry) => {
@@ -505,7 +544,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
             )}
           </div>
 
-          {/* SFTP right panel */}
+          {/* SFTP right panel — dual pane: tree + file list */}
           {showSftp && activeTab && (
             <>
               <div className={`w-1 cursor-col-resize shrink-0 transition-colors hover:bg-cyan-400/30 active:bg-cyan-400/50 ${isDark ? 'bg-white/5' : 'bg-black/5'}`} onMouseDown={startResize} />
@@ -519,7 +558,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                 <div className={`flex items-center justify-between px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
                   <span className="text-xs font-semibold flex items-center gap-1.5"><span className="material-symbols-outlined text-sm text-cyan-400">folder_open</span>{tt.files || 'Files'}</span>
                   <div className="flex items-center gap-0.5">
-                    <button onClick={() => sftpNavigate(activeTab.sftpPath)} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
+                    <button onClick={() => { const newCache = { ...activeTab.treeCache }; Object.keys(newCache).forEach((k) => { if (k === activeTab.sftpPath) delete newCache[k]; }); updateTab(activeTab.id, { treeCache: newCache }); sftpNavigate(activeTab.sftpPath); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
                     <button onClick={sftpMkdir} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFolder || 'New Folder'}><span className="material-symbols-outlined text-sm">create_new_folder</span></button>
                     <button onClick={() => uploadInputRef.current?.click()} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpUpload || 'Upload'}><span className="material-symbols-outlined text-sm">upload_file</span></button>
                     <button onClick={toggleSFTP} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.close || 'Close'}><span className="material-symbols-outlined text-sm">close</span></button>
@@ -535,35 +574,90 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                     </React.Fragment>
                   ))}
                 </div>
-                {/* File list */}
-                <div className="flex-1 overflow-y-auto neon-scrollbar">
-                  {activeTab.sftpLoading ? (
-                    <div className="flex items-center justify-center h-32"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
-                  ) : activeTab.sftpEntries.length === 0 ? (
-                    <div className={`flex flex-col items-center justify-center h-32 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
-                      <span className="material-symbols-outlined text-2xl">folder_off</span>
-                      <span className="text-xs">{tt.sftpEmpty || 'Directory is empty'}</span>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
-                      {activeTab.sftpEntries.map((entry) => {
-                        const fi = fileIcon(entry.name, entry.is_dir);
+                {/* Dual pane: tree + file list */}
+                <div className="flex-1 flex min-h-0 overflow-hidden">
+                  {/* Left: directory tree */}
+                  <div className={`w-[140px] shrink-0 overflow-y-auto neon-scrollbar border-e ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                    <div className="py-1">
+                      {(() => {
+                        const renderTree = (dirPath: string, depth: number): React.ReactNode => {
+                          const entries = activeTab.treeCache[dirPath];
+                          if (!entries) return null;
+                          const dirs = entries.filter((e) => e.is_dir).sort((a, b) => a.name.localeCompare(b.name));
+                          return dirs.map((entry) => {
+                            const isExpanded = activeTab.expandedDirs.has(entry.path);
+                            const isLoading = activeTab.treeLoading.has(entry.path);
+                            const isActive = activeTab.sftpPath === entry.path;
+                            return (
+                              <div key={entry.path}>
+                                <div
+                                  className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${isActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
+                                  style={{ paddingInlineStart: `${depth * 12 + 4}px` }}
+                                  onClick={() => { toggleTreeDir(entry.path); sftpNavigate(entry.path); }}
+                                >
+                                  {isLoading ? (
+                                    <span className="material-symbols-outlined animate-spin shrink-0" style={{ fontSize: '12px' }}>progress_activity</span>
+                                  ) : (
+                                    <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{isExpanded ? 'expand_more' : 'chevron_right'}</span>
+                                  )}
+                                  <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>{isExpanded ? 'folder_open' : 'folder'}</span>
+                                  <span className="truncate">{entry.name}</span>
+                                </div>
+                                {isExpanded && renderTree(entry.path, depth + 1)}
+                              </div>
+                            );
+                          });
+                        };
+                        // Root node
+                        const rootExpanded = activeTab.expandedDirs.has('/');
+                        const rootActive = activeTab.sftpPath === '/';
                         return (
-                          <div key={entry.path} className={`flex items-center gap-2 px-3 py-1.5 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
-                            <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
-                            <div className="flex-1 min-w-0">
-                              <span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span>
+                          <>
+                            <div
+                              className={`flex items-center gap-0.5 py-0.5 pe-2 cursor-pointer transition-colors text-[11px] ${rootActive ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/[.03]'}`}
+                              style={{ paddingInlineStart: '4px' }}
+                              onClick={() => sftpNavigate('/')}
+                            >
+                              <span className="material-symbols-outlined shrink-0" style={{ fontSize: '12px' }}>{rootExpanded ? 'expand_more' : 'chevron_right'}</span>
+                              <span className="material-symbols-outlined shrink-0 text-cyan-400" style={{ fontSize: '13px' }}>folder_open</span>
+                              <span className="truncate font-medium">/</span>
                             </div>
-                            <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
-                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
-                              <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
-                            </div>
-                          </div>
+                            {rootExpanded && renderTree('/', 1)}
+                          </>
                         );
-                      })}
+                      })()}
                     </div>
-                  )}
+                  </div>
+                  {/* Right: file list */}
+                  <div className="flex-1 min-w-0 overflow-y-auto neon-scrollbar">
+                    {activeTab.sftpLoading ? (
+                      <div className="flex items-center justify-center h-32"><span className="material-symbols-outlined animate-spin text-xl text-text-muted">progress_activity</span></div>
+                    ) : activeTab.sftpEntries.length === 0 ? (
+                      <div className={`flex flex-col items-center justify-center h-32 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
+                        <span className="material-symbols-outlined text-2xl">folder_off</span>
+                        <span className="text-xs">{tt.sftpEmpty || 'Directory is empty'}</span>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
+                        {activeTab.sftpEntries.map((entry) => {
+                          const fi = fileIcon(entry.name, entry.is_dir);
+                          return (
+                            <div key={entry.path} className={`flex items-center gap-2 px-3 py-1.5 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => entry.is_dir && sftpNavigate(entry.path)}>
+                              <span className={`material-symbols-outlined text-sm ${fi.color}`}>{fi.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <span className={`text-xs truncate block ${entry.is_dir ? 'text-cyan-400 font-medium' : ''}`}>{entry.name}</span>
+                              </div>
+                              <span className={`text-[10px] shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{entry.is_dir ? '' : formatSize(entry.size)}</span>
+                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
+                                <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </>
