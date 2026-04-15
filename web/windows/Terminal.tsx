@@ -109,6 +109,20 @@ const fileIcon = (name: string, isDir: boolean): { icon: string; color: string }
   return m[ext] || { icon: 'description', color: 'text-text-muted' };
 };
 
+const fmtUptime = (sec: number, tt: Record<string, string>) => {
+  if (!sec) return '';
+  const w = Math.floor(sec / 604800); sec %= 604800;
+  const d = Math.floor(sec / 86400); sec %= 86400;
+  const h = Math.floor(sec / 3600); sec %= 3600;
+  const m = Math.floor(sec / 60);
+  const parts: string[] = [];
+  if (w) parts.push(`${w}${tt.uptimeWeek || 'w'}`);
+  if (d) parts.push(`${d}${tt.uptimeDay || 'd'}`);
+  if (h) parts.push(`${h}${tt.uptimeHour || 'h'}`);
+  if (m) parts.push(`${m}${tt.uptimeMin || 'm'}`);
+  return parts.join(' ') || '0m';
+};
+
 const SFTP_PANEL_MIN = 120;
 const SFTP_PANEL_MAX = 500;
 const SFTP_PANEL_DEFAULT = 220;
@@ -832,7 +846,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                     {/* Uptime + Load */}
                     <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                       <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>schedule</span>
-                      <span className="truncate">{activeTab.sysInfo.uptime}</span>
+                      <span className="truncate">{activeTab.sysInfo.uptime_seconds ? fmtUptime(activeTab.sysInfo.uptime_seconds, tt) : activeTab.sysInfo.uptime}</span>
                     </div>
                     <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                       <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>speed</span>

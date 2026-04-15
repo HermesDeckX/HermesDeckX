@@ -49,6 +49,7 @@ export interface SysInfo {
   hostname: string;
   kernel: string;
   uptime: string;
+  uptime_seconds: number;
   load_avg: LoadAvg;
   cpu: CPUInfo;
   memory: MemInfo;

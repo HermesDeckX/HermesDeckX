@@ -14,6 +14,7 @@ type SysInfo struct {
 	Hostname  string    `json:"hostname"`
 	Kernel    string    `json:"kernel"`
 	Uptime    string    `json:"uptime"`
+	UptimeSec int64     `json:"uptime_seconds"`
 	LoadAvg   LoadAvg   `json:"load_avg"`
 	CPU       CPUInfo   `json:"cpu"`
 	Memory    MemInfo   `json:"memory"`
@@ -81,6 +82,7 @@ func CollectSysInfo(client *ssh.Client) (*SysInfo, error) {
 	script := `echo "===HOSTNAME==="; hostname 2>/dev/null
 echo "===KERNEL==="; uname -r 2>/dev/null
 echo "===UPTIME==="; uptime -p 2>/dev/null || uptime 2>/dev/null
+echo "===UPTIMESEC==="; cat /proc/uptime 2>/dev/null
 echo "===LOADAVG==="; cat /proc/loadavg 2>/dev/null
 echo "===CPUCORES==="; nproc 2>/dev/null
 echo "===CPUSTAT==="; head -1 /proc/stat 2>/dev/null
@@ -110,6 +112,14 @@ echo "===END==="`
 	// Uptime
 	if v, ok := sections["UPTIME"]; ok {
 		info.Uptime = strings.TrimSpace(v)
+	}
+	if v, ok := sections["UPTIMESEC"]; ok {
+		parts := strings.Fields(strings.TrimSpace(v))
+		if len(parts) > 0 {
+			if f, err := strconv.ParseFloat(parts[0], 64); err == nil {
+				info.UptimeSec = int64(f)
+			}
+		}
 	}
 
 	// Load average
