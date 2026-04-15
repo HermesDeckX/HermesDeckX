@@ -205,6 +205,13 @@
     "connectHost": "連線到主機",
     "sftpDropHere": "拖放檔案以上傳",
     "sftpUploadedCount": "已上傳 {n} 個檔案",
-    "sftpUploadFailed": "{n} 個檔案上傳失敗"
+    "sftpUploadFailed": "{n} 個檔案上傳失敗",
+    "noHostsHint": "新增伺服器以開始使用",
+    "backToSessions": "工作階段",
+    "connect": "連線",
+    "reconnect": "重新連線",
+    "sessionEnded": "工作階段已結束",
+    "disconnected": "已斷開",
+    "close": "關閉"
   }
 }

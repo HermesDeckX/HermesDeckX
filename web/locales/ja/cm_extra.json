@@ -205,6 +205,13 @@
     "connectHost": "ホストに接続",
     "sftpDropHere": "ファイルをドロップしてアップロード",
     "sftpUploadedCount": "{n}件アップロード完了",
-    "sftpUploadFailed": "{n}件アップロード失敗"
+    "sftpUploadFailed": "{n}件アップロード失敗",
+    "noHostsHint": "サーバーを追加して始めましょう",
+    "backToSessions": "セッション",
+    "connect": "接続",
+    "reconnect": "再接続",
+    "sessionEnded": "セッション終了",
+    "disconnected": "切断済み",
+    "close": "閉じる"
   }
 }

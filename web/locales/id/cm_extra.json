@@ -205,6 +205,13 @@
     "connectHost": "Connect to a host",
     "sftpDropHere": "Drop files to upload",
     "sftpUploadedCount": "{n} file(s) uploaded",
-    "sftpUploadFailed": "{n} file(s) failed"
+    "sftpUploadFailed": "{n} file(s) failed",
+    "noHostsHint": "Tambahkan server untuk memulai",
+    "backToSessions": "Sesi",
+    "connect": "Hubungkan",
+    "reconnect": "Hubungkan ulang",
+    "sessionEnded": "Sesi berakhir",
+    "disconnected": "Terputus",
+    "close": "Tutup"
   }
 }

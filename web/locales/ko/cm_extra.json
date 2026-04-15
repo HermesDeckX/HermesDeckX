@@ -205,6 +205,13 @@
     "connectHost": "호스트에 연결",
     "sftpDropHere": "파일을 드롭하여 업로드",
     "sftpUploadedCount": "{n}개 파일 업로드 완료",
-    "sftpUploadFailed": "{n}개 파일 업로드 실패"
+    "sftpUploadFailed": "{n}개 파일 업로드 실패",
+    "noHostsHint": "서버를 추가하여 시작하세요",
+    "backToSessions": "세션",
+    "connect": "연결",
+    "reconnect": "재연결",
+    "sessionEnded": "세션 종료",
+    "disconnected": "연결 끊김",
+    "close": "닫기"
   }
 }

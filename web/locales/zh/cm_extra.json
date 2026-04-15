@@ -205,6 +205,13 @@
     "connectHost": "连接到主机",
     "sftpDropHere": "拖放文件以上传",
     "sftpUploadedCount": "已上传 {n} 个文件",
-    "sftpUploadFailed": "{n} 个文件上传失败"
+    "sftpUploadFailed": "{n} 个文件上传失败",
+    "noHostsHint": "添加服务器以开始使用",
+    "backToSessions": "会话",
+    "connect": "连接",
+    "reconnect": "重新连接",
+    "sessionEnded": "会话已结束",
+    "disconnected": "已断开",
+    "close": "关闭"
   }
 }

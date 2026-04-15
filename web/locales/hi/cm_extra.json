@@ -205,6 +205,13 @@
     "connectHost": "Connect to a host",
     "sftpDropHere": "Drop files to upload",
     "sftpUploadedCount": "{n} file(s) uploaded",
-    "sftpUploadFailed": "{n} file(s) failed"
+    "sftpUploadFailed": "{n} file(s) failed",
+    "noHostsHint": "शुरू करने के लिए एक सर्वर जोड़ें",
+    "backToSessions": "सत्र",
+    "connect": "कनेक्ट",
+    "reconnect": "पुनः कनेक्ट",
+    "sessionEnded": "सत्र समाप्त",
+    "disconnected": "डिस्कनेक्ट",
+    "close": "बंद करें"
   }
 }

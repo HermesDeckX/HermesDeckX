@@ -205,6 +205,13 @@
     "connectHost": "Connect to a host",
     "sftpDropHere": "Drop files to upload",
     "sftpUploadedCount": "{n} file(s) uploaded",
-    "sftpUploadFailed": "{n} file(s) failed"
+    "sftpUploadFailed": "{n} file(s) failed",
+    "noHostsHint": "Agrega un servidor para comenzar",
+    "backToSessions": "Sesiones",
+    "connect": "Conectar",
+    "reconnect": "Reconectar",
+    "sessionEnded": "Sesión terminada",
+    "disconnected": "Desconectado",
+    "close": "Cerrar"
   }
 }

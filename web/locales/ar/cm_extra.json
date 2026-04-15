@@ -205,6 +205,13 @@
     "connectHost": "Connect to a host",
     "sftpDropHere": "Drop files to upload",
     "sftpUploadedCount": "{n} file(s) uploaded",
-    "sftpUploadFailed": "{n} file(s) failed"
+    "sftpUploadFailed": "{n} file(s) failed",
+    "noHostsHint": "أضف خادمًا للبدء",
+    "backToSessions": "الجلسات",
+    "connect": "اتصال",
+    "reconnect": "إعادة الاتصال",
+    "sessionEnded": "انتهت الجلسة",
+    "disconnected": "غير متصل",
+    "close": "إغلاق"
   }
 }
