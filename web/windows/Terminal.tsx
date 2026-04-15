@@ -142,6 +142,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const resizingRef = useRef(false);
   const [bottomTab, setBottomTab] = useState<BottomTab>('files');
   const [cmdInput, setCmdInput] = useState('');
+  const inputBufRef = useRef<Record<string, string>>({});
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -242,7 +243,29 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       xterm.writeln(`\r\n\x1b[31m✗ Error: ${(msg.payload as TerminalErrorPayload).message}\x1b[0m`);
       updateTab(tabId, { connecting: false });
     });
-    xterm.onData((data: string) => { if (sid) client.sendInput(sid, data); });
+    xterm.onData((data: string) => {
+      if (sid) client.sendInput(sid, data);
+      // Buffer keystrokes to capture commands on Enter
+      const buf = inputBufRef.current;
+      if (!buf[tabId]) buf[tabId] = '';
+      if (data === '\r' || data === '\n') {
+        const cmd = buf[tabId].trim();
+        if (cmd) {
+          snippetsApi.record(host.id, cmd).then(() => {
+            const tab = tabsRef.current.find(t => t.id === tabId);
+            if (tab && tab.snippetsLoaded) loadSnippets();
+          }).catch(() => {});
+        }
+        buf[tabId] = '';
+      } else if (data === '\x7f' || data === '\b') {
+        buf[tabId] = buf[tabId].slice(0, -1);
+      } else if (data.length === 1 && data >= ' ') {
+        buf[tabId] += data;
+      } else if (data.length > 1 && !data.startsWith('\x1b')) {
+        // Pasted text
+        buf[tabId] += data;
+      }
+    });
     xterm.onResize(({ cols, rows }) => { if (sid) client.resizeSession(sid, cols, rows); });
 
     updateTab(tabId, { xterm, fitAddon, wsClient: client });
@@ -476,8 +499,8 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [toast, loadSnippets]);
 
   const execSnippet = useCallback((command: string) => {
-    if (!activeTab?.xterm || !activeTab?.wsClient) return;
-    activeTab.wsClient.send('terminal.input', command + '\n');
+    if (!activeTab?.sessionId || !activeTab?.wsClient) return;
+    activeTab.wsClient.sendInput(activeTab.sessionId, command + '\n');
     recordCommand(command);
   }, [activeTab, recordCommand]);
 
