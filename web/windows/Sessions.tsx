@@ -2041,6 +2041,7 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
           }
         }
         finalizedAtRef.current = Date.now();
+        clearStream();
         setRunPhase('idle');
         setRunId(null);
         pendingRunRef.current = null;
