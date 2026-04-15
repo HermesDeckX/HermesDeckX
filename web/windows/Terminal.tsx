@@ -900,11 +900,13 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                           <span className={`text-[9px] ${isDark ? 'text-white/20' : 'text-black/20'}`}>{activeTab.sysInfo.disks.length}</span>
                         </button>
                         {!activeTab.collapsedSections.has('disks') && activeTab.sysInfo.disks.map((d) => (
-                          <div key={d.mount} className={`px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                          <div key={d.mount} className={`group/disk relative px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
                             <div className="flex items-center justify-between mb-0.5">
                               <span className={`font-mono truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{d.mount}</span>
                               <span className={`font-medium ${pctColor(d.use_pct)}`}>{d.use_pct}%</span>
                             </div>
+                            {/* Full path tooltip */}
+                            <div className={`absolute z-50 hidden group-hover/disk:block start-0 bottom-full mb-1 px-2 py-1 rounded text-[9px] font-mono shadow-lg max-w-[260px] break-all whitespace-pre-wrap ${isDark ? 'bg-[#1e1e2e] border border-white/10 text-white/60' : 'bg-white border border-black/10 text-black/60'}`}>{d.mount}</div>
                             <div className={`w-full h-1 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}><div className={`h-full rounded-full ${pctBarColor(d.use_pct)}`} style={{ width: `${Math.min(100, d.use_pct)}%` }} /></div>
                             <div className={`text-[8px] mt-0.5 ${isDark ? 'text-white/20' : 'text-black/20'}`}>{fmtBytes(d.used)} / {fmtBytes(d.total)}</div>
                           </div>
@@ -1137,7 +1139,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       {/* Command input bar */}
                       <div className={`flex items-center gap-2 px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
                         <span className={`text-xs font-mono shrink-0 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>$</span>
-                        <input className={`sci-input flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-mono ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`} placeholder={tt.typeCommand || 'Type a command and press Enter...'} value={cmdInput} onChange={(e) => setCmdInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendCmdInput(); }} />
+                        <input className={`flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-mono border-none outline-none focus:ring-0 ${isDark ? 'bg-white/5 text-white/70 placeholder:text-white/20' : 'bg-black/[.03] text-black/70 placeholder:text-black/20'}`} placeholder={tt.typeCommand || 'Type a command and press Enter...'} value={cmdInput} onChange={(e) => setCmdInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendCmdInput(); }} />
                         <button onClick={sendCmdInput} disabled={!cmdInput.trim()} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-40 transition-colors shrink-0">
                           <span className="material-symbols-outlined text-sm">send</span>
                           {tt.send || 'Send'}
