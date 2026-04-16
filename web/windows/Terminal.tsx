@@ -268,16 +268,31 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     xterm.loadAddon(new WebLinksAddon());
     xterm.writeln(`\x1b[36m⟡ Connecting to ${host.name} (${host.username}@${host.host}:${host.port})...\x1b[0m`);
 
-    // Custom keyboard shortcuts
+    // Smart keyboard shortcuts (Windows Terminal / VS Code style)
     xterm.attachCustomKeyEventHandler((e: KeyboardEvent) => {
-      // Ctrl+Shift+C → copy selection
-      if (e.ctrlKey && e.shiftKey && e.key === 'C' && e.type === 'keydown') {
+      if (e.type !== 'keydown') return true;
+      // Ctrl+C: copy if has selection, otherwise send interrupt (^C)
+      if (e.ctrlKey && !e.shiftKey && e.key === 'c') {
         const sel = xterm.getSelection();
-        if (sel) navigator.clipboard.writeText(sel);
+        if (sel) {
+          navigator.clipboard.writeText(sel);
+          xterm.clearSelection();
+          return false; // handled, don't send ^C
+        }
+        return true; // no selection → let xterm send ^C
+      }
+      // Ctrl+V: paste from clipboard
+      if (e.ctrlKey && !e.shiftKey && e.key === 'v') {
+        navigator.clipboard.readText().then((text) => { if (text) xterm.paste(text); });
         return false;
       }
-      // Ctrl+Shift+V → paste from clipboard
-      if (e.ctrlKey && e.shiftKey && e.key === 'V' && e.type === 'keydown') {
+      // Ctrl+Shift+C/V as fallback
+      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        const sel = xterm.getSelection();
+        if (sel) { navigator.clipboard.writeText(sel); xterm.clearSelection(); }
+        return false;
+      }
+      if (e.ctrlKey && e.shiftKey && e.key === 'V') {
         navigator.clipboard.readText().then((text) => { if (text) xterm.paste(text); });
         return false;
       }
