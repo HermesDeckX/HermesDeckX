@@ -256,6 +256,8 @@
     "commandHistory": "Historial de comandos",
     "commandTemplates": "Plantillas de comandos",
     "sftpNewFile": "Nombre del nuevo archivo:",
-    "sftpFileCreated": "Creado: {name}"
+    "sftpFileCreated": "Creado: {name}",
+    "sftpRename": "Renombrar a:",
+    "sftpRenamed": "Renombrado a {name}"
   }
 }

@@ -589,6 +589,19 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     catch (e: any) { toast('error', e?.message || 'Delete failed'); }
   }, [activeTab, confirm, toast, tt, sftpNavigate]);
 
+  const sftpRename = useCallback(async (entry: FileEntry) => {
+    if (!activeTab?.sessionId) return;
+    const newName = prompt((tt.sftpRename || 'Rename to:'), entry.name);
+    if (!newName || newName === entry.name) return;
+    const parentDir = entry.path.substring(0, entry.path.lastIndexOf('/')) || '/';
+    const newPath = parentDir === '/' ? `/${newName}` : `${parentDir}/${newName}`;
+    try {
+      await sftpApi.rename(activeTab.sessionId, entry.path, newPath);
+      toast('success', (tt.sftpRenamed || 'Renamed to {name}').replace('{name}', newName));
+      sftpNavigate(activeTab.sftpPath);
+    } catch (e: any) { toast('error', e?.message || 'Rename failed'); }
+  }, [activeTab, toast, tt, sftpNavigate]);
+
   const breadcrumbs = useMemo(() => {
     if (!activeTab) return [];
     const p = activeTab.sftpPath;
@@ -1354,6 +1367,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                     {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); openFileInEditor(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.editor || 'Edit'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit_document</span></button>)}
                                     {!entry.is_dir && (<button onClick={(e) => { e.stopPropagation(); sftpDownload(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpDownload || 'Download'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span></button>)}
+                                    <button onClick={(e) => { e.stopPropagation(); sftpRename(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/30' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRename || 'Rename'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>drive_file_rename_outline</span></button>
                                     <button onClick={(e) => { e.stopPropagation(); sftpRemove(entry); }} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span></button>
                                   </div>
                                 </div>

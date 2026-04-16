@@ -256,6 +256,8 @@
     "commandHistory": "命令歷史",
     "commandTemplates": "命令範本",
     "sftpNewFile": "新建檔案名稱：",
-    "sftpFileCreated": "已建立：{name}"
+    "sftpFileCreated": "已建立：{name}",
+    "sftpRename": "重新命名為：",
+    "sftpRenamed": "已重新命名為 {name}"
   }
 }

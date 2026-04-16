@@ -256,6 +256,8 @@
     "commandHistory": "سجل الأوامر",
     "commandTemplates": "قوالب الأوامر",
     "sftpNewFile": "اسم الملف الجديد:",
-    "sftpFileCreated": "تم الإنشاء: {name}"
+    "sftpFileCreated": "تم الإنشاء: {name}",
+    "sftpRename": "إعادة تسمية إلى:",
+    "sftpRenamed": "تمت إعادة التسمية إلى {name}"
   }
 }

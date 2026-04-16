@@ -256,6 +256,8 @@
     "commandHistory": "Riwayat perintah",
     "commandTemplates": "Template perintah",
     "sftpNewFile": "Nama file baru:",
-    "sftpFileCreated": "Dibuat: {name}"
+    "sftpFileCreated": "Dibuat: {name}",
+    "sftpRename": "Ubah nama menjadi:",
+    "sftpRenamed": "Diubah namanya menjadi {name}"
   }
 }

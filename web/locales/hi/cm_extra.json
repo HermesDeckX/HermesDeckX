@@ -256,6 +256,8 @@
     "commandHistory": "कमांड इतिहास",
     "commandTemplates": "कमांड टेम्पलेट",
     "sftpNewFile": "नई फ़ाइल का नाम:",
-    "sftpFileCreated": "बनाया गया: {name}"
+    "sftpFileCreated": "बनाया गया: {name}",
+    "sftpRename": "नाम बदलें:",
+    "sftpRenamed": "{name} में नाम बदला गया"
   }
 }

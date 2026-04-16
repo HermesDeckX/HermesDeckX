@@ -256,6 +256,8 @@
     "commandHistory": "Befehlsverlauf",
     "commandTemplates": "Befehlsvorlagen",
     "sftpNewFile": "Neuer Dateiname:",
-    "sftpFileCreated": "Erstellt: {name}"
+    "sftpFileCreated": "Erstellt: {name}",
+    "sftpRename": "Umbenennen in:",
+    "sftpRenamed": "Umbenannt zu {name}"
   }
 }

@@ -256,6 +256,8 @@
     "commandHistory": "コマンド履歴",
     "commandTemplates": "コマンドテンプレート",
     "sftpNewFile": "新規ファイル名：",
-    "sftpFileCreated": "作成しました：{name}"
+    "sftpFileCreated": "作成しました：{name}",
+    "sftpRename": "名前の変更：",
+    "sftpRenamed": "{name} に変更しました"
   }
 }

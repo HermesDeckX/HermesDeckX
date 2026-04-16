@@ -256,6 +256,8 @@
     "commandHistory": "명령 기록",
     "commandTemplates": "명령 템플릿",
     "sftpNewFile": "새 파일 이름:",
-    "sftpFileCreated": "생성됨: {name}"
+    "sftpFileCreated": "생성됨: {name}",
+    "sftpRename": "이름 변경:",
+    "sftpRenamed": "{name}(으)로 변경됨"
   }
 }

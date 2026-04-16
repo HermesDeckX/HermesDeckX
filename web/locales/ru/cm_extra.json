@@ -256,6 +256,8 @@
     "commandHistory": "История команд",
     "commandTemplates": "Шаблоны команд",
     "sftpNewFile": "Имя нового файла:",
-    "sftpFileCreated": "Создано: {name}"
+    "sftpFileCreated": "Создано: {name}",
+    "sftpRename": "Переименовать в:",
+    "sftpRenamed": "Переименовано в {name}"
   }
 }
