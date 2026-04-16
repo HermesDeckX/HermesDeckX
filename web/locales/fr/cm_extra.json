@@ -243,6 +243,17 @@
     "termSettings": "Paramètres du terminal",
     "termFontSize": "Taille de police",
     "termTheme": "Thème",
-    "noResults": "Aucune commande correspondante"
+    "noResults": "Aucune commande correspondante",
+    "copied": "Copié",
+    "copyPath": "Copier le chemin",
+    "clear": "Effacer",
+    "templates": "Modèles",
+    "closeTabTitle": "Fermer la session",
+    "closeTabMsg": "Déconnecter de \"{name}\" ?",
+    "groupName": "Groupe",
+    "groupPlaceholder": "Ex : Production, Staging...",
+    "ungrouped": "Non groupé",
+    "commandHistory": "Historique des commandes",
+    "commandTemplates": "Modèles de commandes"
   }
 }

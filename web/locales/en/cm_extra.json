@@ -243,6 +243,17 @@
     "termSettings": "Terminal Settings",
     "termFontSize": "Font Size",
     "termTheme": "Theme",
-    "noResults": "No matching commands"
+    "noResults": "No matching commands",
+    "copied": "Copied",
+    "copyPath": "Copy path",
+    "clear": "Clear",
+    "templates": "Templates",
+    "closeTabTitle": "Close Session",
+    "closeTabMsg": "Disconnect from \"{name}\"?",
+    "groupName": "Group",
+    "groupPlaceholder": "e.g. Production, Staging...",
+    "ungrouped": "Ungrouped",
+    "commandHistory": "Command History",
+    "commandTemplates": "Command Templates"
   }
 }

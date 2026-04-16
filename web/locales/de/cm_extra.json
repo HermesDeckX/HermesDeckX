@@ -243,6 +243,17 @@
     "termSettings": "Terminal-Einstellungen",
     "termFontSize": "Schriftgröße",
     "termTheme": "Thema",
-    "noResults": "Keine passenden Befehle"
+    "noResults": "Keine passenden Befehle",
+    "copied": "Kopiert",
+    "copyPath": "Pfad kopieren",
+    "clear": "Löschen",
+    "templates": "Vorlagen",
+    "closeTabTitle": "Sitzung schließen",
+    "closeTabMsg": "Verbindung zu \"{name}\" trennen?",
+    "groupName": "Gruppe",
+    "groupPlaceholder": "z.B. Produktion, Staging...",
+    "ungrouped": "Nicht gruppiert",
+    "commandHistory": "Befehlsverlauf",
+    "commandTemplates": "Befehlsvorlagen"
   }
 }

@@ -243,6 +243,17 @@
     "termSettings": "终端设置",
     "termFontSize": "字体大小",
     "termTheme": "主题",
-    "noResults": "没有匹配的命令"
+    "noResults": "没有匹配的命令",
+    "copied": "已复制",
+    "copyPath": "复制路径",
+    "clear": "清除",
+    "templates": "模板",
+    "closeTabTitle": "关闭会话",
+    "closeTabMsg": "断开与 \"{name}\" 的连接？",
+    "groupName": "分组",
+    "groupPlaceholder": "例如：生产环境、测试环境...",
+    "ungrouped": "未分组",
+    "commandHistory": "命令历史",
+    "commandTemplates": "命令模板"
   }
 }

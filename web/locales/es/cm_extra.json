@@ -243,6 +243,17 @@
     "termSettings": "Configuración del terminal",
     "termFontSize": "Tamaño de fuente",
     "termTheme": "Tema",
-    "noResults": "Sin comandos coincidentes"
+    "noResults": "Sin comandos coincidentes",
+    "copied": "Copiado",
+    "copyPath": "Copiar ruta",
+    "clear": "Limpiar",
+    "templates": "Plantillas",
+    "closeTabTitle": "Cerrar sesión",
+    "closeTabMsg": "¿Desconectar de \"{name}\"?",
+    "groupName": "Grupo",
+    "groupPlaceholder": "Ej: Producción, Staging...",
+    "ungrouped": "Sin grupo",
+    "commandHistory": "Historial de comandos",
+    "commandTemplates": "Plantillas de comandos"
   }
 }

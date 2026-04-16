@@ -243,6 +243,17 @@
     "termSettings": "終端設定",
     "termFontSize": "字體大小",
     "termTheme": "主題",
-    "noResults": "沒有匹配的命令"
+    "noResults": "沒有匹配的命令",
+    "copied": "已複製",
+    "copyPath": "複製路徑",
+    "clear": "清除",
+    "templates": "範本",
+    "closeTabTitle": "關閉工作階段",
+    "closeTabMsg": "中斷與 \"{name}\" 的連線？",
+    "groupName": "群組",
+    "groupPlaceholder": "例如：正式環境、測試環境...",
+    "ungrouped": "未分組",
+    "commandHistory": "命令歷史",
+    "commandTemplates": "命令範本"
   }
 }

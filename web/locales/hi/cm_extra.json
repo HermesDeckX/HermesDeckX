@@ -243,6 +243,17 @@
     "termSettings": "टर्मिनल सेटिंग्स",
     "termFontSize": "फ़ॉन्ट आकार",
     "termTheme": "थीम",
-    "noResults": "कोई मिलान आदेश नहीं"
+    "noResults": "कोई मिलान आदेश नहीं",
+    "copied": "कॉपी किया गया",
+    "copyPath": "पथ कॉपी करें",
+    "clear": "साफ़ करें",
+    "templates": "टेम्पलेट",
+    "closeTabTitle": "सत्र बंद करें",
+    "closeTabMsg": "\"{name}\" से डिस्कनेक्ट करें?",
+    "groupName": "समूह",
+    "groupPlaceholder": "उदा: प्रोडक्शन, स्टेजिंग...",
+    "ungrouped": "असमूहित",
+    "commandHistory": "कमांड इतिहास",
+    "commandTemplates": "कमांड टेम्पलेट"
   }
 }

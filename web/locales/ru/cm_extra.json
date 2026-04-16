@@ -243,6 +243,17 @@
     "termSettings": "Настройки терминала",
     "termFontSize": "Размер шрифта",
     "termTheme": "Тема",
-    "noResults": "Нет совпадающих команд"
+    "noResults": "Нет совпадающих команд",
+    "copied": "Скопировано",
+    "copyPath": "Копировать путь",
+    "clear": "Очистить",
+    "templates": "Шаблоны",
+    "closeTabTitle": "Закрыть сессию",
+    "closeTabMsg": "Отключиться от \"{name}\"?",
+    "groupName": "Группа",
+    "groupPlaceholder": "Напр.: Продакшн, Стейджинг...",
+    "ungrouped": "Без группы",
+    "commandHistory": "История команд",
+    "commandTemplates": "Шаблоны команд"
   }
 }

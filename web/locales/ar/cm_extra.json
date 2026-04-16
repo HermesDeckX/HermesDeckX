@@ -243,6 +243,17 @@
     "termSettings": "إعدادات الطرفية",
     "termFontSize": "حجم الخط",
     "termTheme": "السمة",
-    "noResults": "لا توجد أوامر مطابقة"
+    "noResults": "لا توجد أوامر مطابقة",
+    "copied": "تم النسخ",
+    "copyPath": "نسخ المسار",
+    "clear": "مسح",
+    "templates": "قوالب",
+    "closeTabTitle": "إغلاق الجلسة",
+    "closeTabMsg": "قطع الاتصال بـ \"{name}\"؟",
+    "groupName": "المجموعة",
+    "groupPlaceholder": "مثال: الإنتاج، التجريبي...",
+    "ungrouped": "غير مصنف",
+    "commandHistory": "سجل الأوامر",
+    "commandTemplates": "قوالب الأوامر"
   }
 }

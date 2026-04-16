@@ -243,6 +243,17 @@
     "termSettings": "ターミナル設定",
     "termFontSize": "フォントサイズ",
     "termTheme": "テーマ",
-    "noResults": "一致するコマンドなし"
+    "noResults": "一致するコマンドなし",
+    "copied": "コピーしました",
+    "copyPath": "パスをコピー",
+    "clear": "クリア",
+    "templates": "テンプレート",
+    "closeTabTitle": "セッションを閉じる",
+    "closeTabMsg": "\"{name}\" から切断しますか？",
+    "groupName": "グループ",
+    "groupPlaceholder": "例：本番、ステージング...",
+    "ungrouped": "未分類",
+    "commandHistory": "コマンド履歴",
+    "commandTemplates": "コマンドテンプレート"
   }
 }

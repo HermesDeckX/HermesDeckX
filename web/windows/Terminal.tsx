@@ -1358,26 +1358,43 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       {/* Command input bar */}
                       <div className={`flex items-center gap-2 px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
                         <span className={`text-xs font-mono shrink-0 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>$</span>
-                        <input className={`flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-mono border-none outline-none focus:ring-0 ${isDark ? 'bg-white/5 text-white/70 placeholder:text-white/20' : 'bg-black/[.03] text-black/70 placeholder:text-black/20'}`} placeholder={tt.typeCommand || 'Type a command and press Enter...'} value={cmdInput} onChange={(e) => setCmdInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendCmdInput(); }} />
+                        <div className="flex-1 min-w-0 relative">
+                          <input className={`w-full px-2 py-1 rounded-md text-xs font-mono border-none outline-none focus:ring-0 ${cmdInput ? 'pe-6' : ''} ${isDark ? 'bg-white/5 text-white/70 placeholder:text-white/20' : 'bg-black/[.03] text-black/70 placeholder:text-black/20'}`} placeholder={tt.typeCommand || 'Type a command and press Enter...'} value={cmdInput} onChange={(e) => setCmdInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendCmdInput(); }} />
+                          {cmdInput && (
+                            <button onClick={() => setCmdInput('')} className={`absolute end-1 top-1/2 -translate-y-1/2 p-0.5 rounded transition-colors ${isDark ? 'text-white/25 hover:text-white/60 hover:bg-white/10' : 'text-black/20 hover:text-black/50 hover:bg-black/5'}`} title={tt.clear || 'Clear'}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                            </button>
+                          )}
+                        </div>
                         <button onClick={sendCmdInput} disabled={!cmdInput.trim()} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-40 transition-colors shrink-0">
                           <span className="material-symbols-outlined text-sm">send</span>
                           {tt.send || 'Send'}
                         </button>
-                      </div>
-                      {/* Command templates */}
-                      <div className={`flex items-center gap-1 px-3 py-1 border-b overflow-x-auto no-scrollbar shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                        {[
-                          { label: 'Top', cmd: 'top -bn1 | head -20' },
-                          { label: 'Disk', cmd: 'df -h' },
-                          { label: 'Memory', cmd: 'free -h' },
-                          { label: 'Ports', cmd: 'ss -tlnp' },
-                          { label: 'PS', cmd: 'ps aux --sort=-%mem | head -15' },
-                          { label: 'Uptime', cmd: 'uptime' },
-                          { label: 'IP', cmd: 'ip addr show' },
-                          { label: 'Logs', cmd: 'journalctl -n 50 --no-pager' },
-                        ].map((tpl) => (
-                          <button key={tpl.label} onClick={() => setCmdInput(tpl.cmd)} onDoubleClick={() => execSnippet(tpl.cmd)} className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70' : 'bg-black/[.03] text-black/40 hover:bg-black/[.06] hover:text-black/70'}`} title={tpl.cmd}>{tpl.label}</button>
-                        ))}
+                        {/* Command templates dropdown */}
+                        <div className="relative shrink-0 group/tpl">
+                          <button className={`flex items-center gap-0.5 px-2 py-1 text-[11px] font-medium rounded-md transition-colors shrink-0 ${isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70' : 'bg-black/[.03] text-black/40 hover:bg-black/[.06] hover:text-black/70'}`}>
+                            <span className="material-symbols-outlined text-sm">terminal</span>
+                            {tt.templates || 'Templates'}
+                            <span className="material-symbols-outlined text-sm">expand_more</span>
+                          </button>
+                          <div className={`absolute end-0 top-full mt-1 z-50 hidden group-hover/tpl:block rounded-lg border shadow-xl py-1 min-w-[220px] ${isDark ? 'bg-[#1e2028] border-white/10 shadow-black/40' : 'bg-white border-black/10 shadow-black/10'}`}>
+                            {[
+                              { label: 'Top', cmd: 'top -bn1 | head -20' },
+                              { label: 'Disk', cmd: 'df -h' },
+                              { label: 'Memory', cmd: 'free -h' },
+                              { label: 'Ports', cmd: 'ss -tlnp' },
+                              { label: 'PS', cmd: 'ps aux --sort=-%mem | head -15' },
+                              { label: 'Uptime', cmd: 'uptime' },
+                              { label: 'IP', cmd: 'ip addr show' },
+                              { label: 'Logs', cmd: 'journalctl -n 50 --no-pager' },
+                            ].map((tpl) => (
+                              <button key={tpl.label} onClick={() => setCmdInput(tpl.cmd)} onDoubleClick={() => execSnippet(tpl.cmd)} className={`w-full flex items-center gap-2 px-3 py-1.5 text-start transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
+                                <span className={`text-[10px] font-semibold w-12 shrink-0 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>{tpl.label}</span>
+                                <span className={`text-[10px] font-mono truncate ${isDark ? 'text-white/50' : 'text-black/50'}`}>{tpl.cmd}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                       {/* Command history list */}
                       <div className="flex-1 overflow-y-auto neon-scrollbar">

@@ -243,6 +243,17 @@
     "termSettings": "Pengaturan Terminal",
     "termFontSize": "Ukuran Font",
     "termTheme": "Tema",
-    "noResults": "Tidak ada perintah cocok"
+    "noResults": "Tidak ada perintah cocok",
+    "copied": "Disalin",
+    "copyPath": "Salin path",
+    "clear": "Hapus",
+    "templates": "Template",
+    "closeTabTitle": "Tutup Sesi",
+    "closeTabMsg": "Putuskan koneksi dari \"{name}\"?",
+    "groupName": "Grup",
+    "groupPlaceholder": "Cth: Produksi, Staging...",
+    "ungrouped": "Tidak dikelompokkan",
+    "commandHistory": "Riwayat perintah",
+    "commandTemplates": "Template perintah"
   }
 }
