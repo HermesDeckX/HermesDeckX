@@ -54,13 +54,6 @@ func (m *Manager) CreateSession(cfg SessionConfig) (*Session, error) {
 	m.sessions[id] = sess
 	m.mu.Unlock()
 
-	// Auto-remove on exit
-	sess.SetExitHandler(func(code int, reason string) {
-		m.mu.Lock()
-		delete(m.sessions, id)
-		m.mu.Unlock()
-	})
-
 	logger.Terminal.Info().
 		Str("sessionId", id).
 		Str("host", cfg.Host).
@@ -69,6 +62,13 @@ func (m *Manager) CreateSession(cfg SessionConfig) (*Session, error) {
 		Msg("SSH terminal session created")
 
 	return sess, nil
+}
+
+// RemoveSession removes a session from the manager map (does not close it).
+func (m *Manager) RemoveSession(id string) {
+	m.mu.Lock()
+	delete(m.sessions, id)
+	m.mu.Unlock()
 }
 
 // GetSession returns a session by ID.

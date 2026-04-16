@@ -236,9 +236,13 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       if (!tab.xterm) return;
       tab.xterm.options.theme = isDark ? themeColors.dark : themeColors.light;
       tab.xterm.options.fontSize = termFontSize;
-      try { tab.fitAddon?.fit(); } catch { /* */ }
+      // Only fit the visible (active) tab — fitting a display:none tab
+      // makes xterm compute 0×0 dimensions and clears its render buffer.
+      if (tab.id === activeTabId) {
+        try { tab.fitAddon?.fit(); } catch { /* */ }
+      }
     });
-  }, [isDark, tabs, termTheme, termFontSize]);
+  }, [isDark, tabs, termTheme, termFontSize, activeTabId]);
 
   // Persist terminal settings
   useEffect(() => { localStorage.setItem('hdx_term_theme', termTheme); }, [termTheme]);
