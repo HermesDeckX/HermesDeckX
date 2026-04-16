@@ -847,7 +847,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const editorClose = useCallback(async () => {
     if (!activeTab) return;
     if (activeTab.editorDirty) {
-      const ok = await confirm(tt.unsavedChanges || 'You have unsaved changes. Discard?');
+      const ok = await confirm({ title: tt.unsavedChanges || 'Unsaved Changes', message: tt.unsavedChangesMsg || 'You have unsaved changes. Discard?', danger: true });
       if (!ok) return;
     }
     updateTab(activeTab.id, { editorFile: null, editorDirty: false, editorSaving: false });

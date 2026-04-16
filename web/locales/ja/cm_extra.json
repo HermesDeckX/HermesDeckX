@@ -234,7 +234,7 @@
     "editor": "エディタ",
     "binaryCannotEdit": "このファイルタイプはテキストとして編集できません",
     "fileTooLarge": "ファイルが大きすぎて編集できません（最大1MB）",
-    "unsavedChanges": "未保存の変更があります。破棄しますか？",
+    "unsavedChanges": "未保存の変更",
     "fileSaved": "ファイルを保存しました",
     "loadingFile": "ファイルを読み込み中...",
     "savePassword": "パスワードを保存",
@@ -262,6 +262,7 @@
     "sftpNameHelper": "無効な文字は使用しないでください: \\ / : * ? \" < > |",
     "sftpNameRequired": "名前を入力してください",
     "sftpNameInvalid": "この名前は使用できません",
-    "sftpNameInvalidChars": "無効な文字が含まれています: \\ / : * ? \" < > |"
+    "sftpNameInvalidChars": "無効な文字が含まれています: \\ / : * ? \" < > |",
+    "unsavedChangesMsg": "未保存の変更があります。破棄しますか？"
   }
 }

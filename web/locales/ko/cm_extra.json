@@ -234,7 +234,7 @@
     "editor": "편집기",
     "binaryCannotEdit": "이 파일 형식은 텍스트로 편집할 수 없습니다",
     "fileTooLarge": "파일이 너무 커서 편집할 수 없습니다 (최대 1MB)",
-    "unsavedChanges": "저장되지 않은 변경 사항이 있습니다. 버리시겠습니까?",
+    "unsavedChanges": "저장되지 않은 변경",
     "fileSaved": "파일이 저장되었습니다",
     "loadingFile": "파일 로딩 중...",
     "savePassword": "비밀번호 저장",
@@ -262,6 +262,7 @@
     "sftpNameHelper": "잘못된 문자를 피하세요: \\ / : * ? \" < > |",
     "sftpNameRequired": "이름을 입력하세요",
     "sftpNameInvalid": "이 이름은 사용할 수 없습니다",
-    "sftpNameInvalidChars": "잘못된 문자가 포함되어 있습니다: \\ / : * ? \" < > |"
+    "sftpNameInvalidChars": "잘못된 문자가 포함되어 있습니다: \\ / : * ? \" < > |",
+    "unsavedChangesMsg": "저장되지 않은 변경 사항이 있습니다. 삭제하시겠습니까?"
   }
 }

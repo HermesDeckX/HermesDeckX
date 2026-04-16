@@ -234,7 +234,7 @@
     "editor": "Editor",
     "binaryCannotEdit": "This file type cannot be edited as text",
     "fileTooLarge": "File is too large to edit (max 1 MB)",
-    "unsavedChanges": "You have unsaved changes. Discard?",
+    "unsavedChanges": "Unsaved Changes",
     "fileSaved": "File saved",
     "loadingFile": "Loading file...",
     "savePassword": "Save Password",
@@ -262,6 +262,7 @@
     "sftpNameHelper": "Avoid invalid characters: \\ / : * ? \" < > |",
     "sftpNameRequired": "Please enter a name",
     "sftpNameInvalid": "This name is not allowed",
-    "sftpNameInvalidChars": "Contains invalid characters: \\ / : * ? \" < > |"
+    "sftpNameInvalidChars": "Contains invalid characters: \\ / : * ? \" < > |",
+    "unsavedChangesMsg": "You have unsaved changes. Discard?"
   }
 }

@@ -234,7 +234,7 @@
     "editor": "Editor",
     "binaryCannotEdit": "Tipe file ini tidak dapat diedit sebagai teks",
     "fileTooLarge": "File terlalu besar untuk diedit (maks 1 MB)",
-    "unsavedChanges": "Ada perubahan yang belum disimpan. Buang?",
+    "unsavedChanges": "Perubahan Belum Disimpan",
     "fileSaved": "File disimpan",
     "loadingFile": "Memuat file...",
     "savePassword": "Simpan Kata Sandi",
@@ -262,6 +262,7 @@
     "sftpNameHelper": "Hindari karakter tidak valid: \\ / : * ? \" < > |",
     "sftpNameRequired": "Masukkan nama",
     "sftpNameInvalid": "Nama ini tidak diizinkan",
-    "sftpNameInvalidChars": "Mengandung karakter tidak valid: \\ / : * ? \" < > |"
+    "sftpNameInvalidChars": "Mengandung karakter tidak valid: \\ / : * ? \" < > |",
+    "unsavedChangesMsg": "Anda memiliki perubahan yang belum disimpan. Buang?"
   }
 }

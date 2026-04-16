@@ -234,7 +234,7 @@
     "editor": "编辑器",
     "binaryCannotEdit": "此文件类型无法作为文本编辑",
     "fileTooLarge": "文件过大无法编辑（最大 1 MB）",
-    "unsavedChanges": "有未保存的更改，确定放弃吗？",
+    "unsavedChanges": "未保存的更改",
     "fileSaved": "文件已保存",
     "loadingFile": "正在加载文件...",
     "savePassword": "保存密码",
@@ -262,6 +262,7 @@
     "sftpNameHelper": "请避免使用非法字符：\\ / : * ? \" < > |",
     "sftpNameRequired": "请输入名称",
     "sftpNameInvalid": "此名称不允许使用",
-    "sftpNameInvalidChars": "包含非法字符：\\ / : * ? \" < > |"
+    "sftpNameInvalidChars": "包含非法字符：\\ / : * ? \" < > |",
+    "unsavedChangesMsg": "您有未保存的更改，确定放弃吗？"
   }
 }

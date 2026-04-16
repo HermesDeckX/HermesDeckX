@@ -234,7 +234,7 @@
     "editor": "Editor",
     "binaryCannotEdit": "Este tipo de arquivo não pode ser editado como texto",
     "fileTooLarge": "Arquivo muito grande para editar (máx. 1 MB)",
-    "unsavedChanges": "Alterações não salvas. Descartar?",
+    "unsavedChanges": "Alterações não salvas",
     "fileSaved": "Arquivo salvo",
     "loadingFile": "Carregando arquivo...",
     "savePassword": "Salvar senha",
@@ -262,6 +262,7 @@
     "sftpNameHelper": "Evite caracteres inválidos: \\ / : * ? \" < > |",
     "sftpNameRequired": "Digite um nome",
     "sftpNameInvalid": "Este nome não é permitido",
-    "sftpNameInvalidChars": "Contém caracteres inválidos: \\ / : * ? \" < > |"
+    "sftpNameInvalidChars": "Contém caracteres inválidos: \\ / : * ? \" < > |",
+    "unsavedChangesMsg": "Você tem alterações não salvas. Descartar?"
   }
 }
