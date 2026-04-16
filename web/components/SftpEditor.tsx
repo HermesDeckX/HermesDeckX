@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, highlightActiveLine, rectangularSelection, crosshairCursor } from '@codemirror/view';
 import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
@@ -6,6 +6,7 @@ import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldGutter,
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { oneDark } from '@codemirror/theme-one-dark';
+import CustomSelect from './CustomSelect';
 
 // Language imports (lazy)
 const langLoaders: Record<string, () => Promise<any>> = {
@@ -201,7 +202,12 @@ export default function SftpEditor({ content, filename, filePath, isDark, isDirt
           {isDirty && <span className="text-amber-400 text-sm">●</span>}
           <span className={`text-[10px] font-mono truncate flex-1 min-w-0 ${isDark ? 'text-white/25' : 'text-black/25'}`} title={filePath}>{filePath}</span>
           <span className={`text-[10px] font-mono shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>
-            <select value={currentLang} onChange={(e) => setOverrideLang(e.target.value === (detectedLang ?? 'plain') ? null : e.target.value)} className={`bg-transparent border-none outline-none cursor-pointer text-[10px] font-mono ${isDark ? 'text-white/40' : 'text-black/40'}`}>{availableLangs.map((l) => <option key={l} value={l}>{l}</option>)}</select>
+            <CustomSelect
+              value={currentLang}
+              onChange={(v) => setOverrideLang(v === (detectedLang ?? 'plain') ? null : v)}
+              options={availableLangs.map((l) => ({ value: l, label: l }))}
+              className="text-[10px] font-mono w-[90px]"
+            />
             | {lineEnding.toUpperCase()} | Ln {lineCol.line}, Col {lineCol.col} | {fmtSize(fileSize)}
           </span>
           <button
