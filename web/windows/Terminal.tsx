@@ -162,6 +162,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const dragCounterRef = useRef(0);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; name: string } | null>(null);
   const [sftpHeight, setSftpHeight] = useState(SFTP_PANEL_DEFAULT);
   const resizingRef = useRef(false);
   const [bottomTab, setBottomTab] = useState<BottomTab>('files');
@@ -509,7 +510,11 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const sftpUploadMulti = useCallback(async (files: File[]) => {
     if (!activeTab?.sessionId || files.length === 0) return;
     let ok = 0, fail = 0;
-    for (const file of files) { try { await sftpApi.upload(activeTab.sessionId, activeTab.sftpPath + '/', file); ok++; } catch { fail++; } }
+    for (let i = 0; i < files.length; i++) {
+      setUploadProgress({ current: i + 1, total: files.length, name: files[i].name });
+      try { await sftpApi.upload(activeTab.sessionId, activeTab.sftpPath + '/', files[i]); ok++; } catch { fail++; }
+    }
+    setUploadProgress(null);
     if (ok > 0) toast('success', (tt.sftpUploadedCount || '{n} file(s) uploaded').replace('{n}', String(ok)));
     if (fail > 0) toast('error', (tt.sftpUploadFailed || '{n} file(s) failed').replace('{n}', String(fail)));
     sftpNavigate(activeTab.sftpPath);
@@ -1156,6 +1161,16 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                   {dragging && (
                     <div className="absolute inset-0 z-50 flex items-center justify-center bg-cyan-500/10 border-2 border-dashed border-cyan-400 rounded-xl backdrop-blur-sm pointer-events-none">
                       <div className="flex flex-col items-center gap-2 text-cyan-400"><span className="material-symbols-outlined text-3xl">cloud_upload</span><span className="text-xs font-medium">{tt.sftpDropHere || 'Drop files to upload'}</span></div>
+                    </div>
+                  )}
+                  {uploadProgress && (
+                    <div className={`absolute start-0 end-0 top-0 z-40 px-3 py-1.5 flex items-center gap-2 ${isDark ? 'bg-[#1e1f2e]/95' : 'bg-white/95'} border-b ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+                      <span className="material-symbols-outlined text-sm text-cyan-400 animate-spin">progress_activity</span>
+                      <span className={`text-[11px] font-mono truncate flex-1 ${isDark ? 'text-white/60' : 'text-black/60'}`}>{uploadProgress.name}</span>
+                      <span className={`text-[11px] shrink-0 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{uploadProgress.current}/{uploadProgress.total}</span>
+                      <div className={`w-20 h-1.5 rounded-full overflow-hidden shrink-0 ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
+                        <div className="h-full rounded-full bg-cyan-400 transition-all" style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }} />
+                      </div>
                     </div>
                   )}
                   {/* Header with tabs */}
