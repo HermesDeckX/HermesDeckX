@@ -492,13 +492,24 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpNavigate = useCallback(async (path: string) => {
     if (!activeTab?.sessionId) return;
-    updateTab(activeTab.id, { sftpLoading: true });
-    try {
-      const result = await sftpApi.list(activeTab.sessionId, path);
-      const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
-      const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(result.path);
-      updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
-    } catch (e: any) { toast('error', e?.message || 'SFTP list failed'); updateTab(activeTab.id, { sftpLoading: false }); }
+    const cached = activeTab.treeCache[path];
+    if (cached) {
+      // Show cache immediately, refresh in background
+      const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(path);
+      updateTab(activeTab.id, { sftpPath: path, sftpEntries: cached, sftpLoading: false, expandedDirs: newExpanded });
+      sftpApi.list(activeTab.sessionId, path).then((result) => {
+        const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
+        updateTab(activeTab.id, { sftpEntries: result.entries, treeCache: newCache });
+      }).catch(() => { /* silent background refresh */ });
+    } else {
+      updateTab(activeTab.id, { sftpLoading: true });
+      try {
+        const result = await sftpApi.list(activeTab.sessionId, path);
+        const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
+        const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(result.path);
+        updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
+      } catch (e: any) { toast('error', e?.message || 'SFTP list failed'); updateTab(activeTab.id, { sftpLoading: false }); }
+    }
   }, [activeTab, updateTab, toast]);
 
   // Toggle tree directory expand/collapse with lazy loading
@@ -1054,7 +1065,41 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
               {/* Sidebar content */}
               <div className="flex-1 overflow-y-auto neon-scrollbar">
                 {!activeTab.sysInfo ? (
-                  <div className="flex items-center justify-center py-12"><span className="material-symbols-outlined animate-spin text-lg text-text-muted">progress_activity</span></div>
+                  <div className="p-2 space-y-2 animate-pulse">
+                    {/* Skeleton: hostname + kernel */}
+                    <div className={`px-1.5 py-1 rounded space-y-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className={`h-2.5 w-3/4 rounded ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                      <div className={`h-2.5 w-1/2 rounded ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                    </div>
+                    {/* Skeleton: uptime + load */}
+                    <div className={`h-2.5 w-2/3 rounded mx-1.5 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                    <div className={`h-2.5 w-1/2 rounded mx-1.5 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                    {/* Skeleton: ring gauges */}
+                    <div className={`rounded-lg p-3 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className="flex items-center justify-around">
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className="flex flex-col items-center gap-1">
+                            <div className={`w-14 h-14 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                            <div className={`h-2 w-8 rounded ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Skeleton: network sparkline */}
+                    <div className={`rounded-lg p-2 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className={`h-8 w-full rounded ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                    </div>
+                    {/* Skeleton: disks */}
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className={`px-1.5 py-1 rounded space-y-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                        <div className="flex justify-between">
+                          <div className={`h-2 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                          <div className={`h-2 w-8 rounded ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                        </div>
+                        <div className={`h-1 w-full rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div className="p-2 space-y-2">
                     {/* Hostname + Kernel */}
