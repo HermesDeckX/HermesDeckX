@@ -1343,6 +1343,21 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                           {tt.send || 'Send'}
                         </button>
                       </div>
+                      {/* Command templates */}
+                      <div className={`flex items-center gap-1 px-3 py-1 border-b overflow-x-auto no-scrollbar shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                        {[
+                          { label: 'Top', cmd: 'top -bn1 | head -20' },
+                          { label: 'Disk', cmd: 'df -h' },
+                          { label: 'Memory', cmd: 'free -h' },
+                          { label: 'Ports', cmd: 'ss -tlnp' },
+                          { label: 'PS', cmd: 'ps aux --sort=-%mem | head -15' },
+                          { label: 'Uptime', cmd: 'uptime' },
+                          { label: 'IP', cmd: 'ip addr show' },
+                          { label: 'Logs', cmd: 'journalctl -n 50 --no-pager' },
+                        ].map((tpl) => (
+                          <button key={tpl.label} onClick={() => setCmdInput(tpl.cmd)} onDoubleClick={() => execSnippet(tpl.cmd)} className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70' : 'bg-black/[.03] text-black/40 hover:bg-black/[.06] hover:text-black/70'}`} title={tpl.cmd}>{tpl.label}</button>
+                        ))}
+                      </div>
                       {/* Command history list */}
                       <div className="flex-1 overflow-y-auto neon-scrollbar">
                         {(() => {
