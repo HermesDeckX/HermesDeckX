@@ -239,6 +239,10 @@
     "loadingFile": "ファイルを読み込み中...",
     "savePassword": "パスワードを保存",
     "fileConflict": "ファイルはサーバー上で変更されています。再読み込みしてください。",
-    "run": "実行"
+    "run": "実行",
+    "termSettings": "ターミナル設定",
+    "termFontSize": "フォントサイズ",
+    "termTheme": "テーマ",
+    "noResults": "一致するコマンドなし"
   }
 }

@@ -239,6 +239,10 @@
     "loadingFile": "파일 로딩 중...",
     "savePassword": "비밀번호 저장",
     "fileConflict": "파일이 서버에서 수정되었습니다. 다시 로드해 주세요.",
-    "run": "실행"
+    "run": "실행",
+    "termSettings": "터미널 설정",
+    "termFontSize": "글꼴 크기",
+    "termTheme": "테마",
+    "noResults": "일치하는 명령 없음"
   }
 }

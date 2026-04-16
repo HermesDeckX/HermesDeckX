@@ -67,22 +67,32 @@ interface EditorFile {
 type BottomTab = 'files' | 'commands';
 type SysSection = 'processes' | 'disks' | 'network';
 
-const XTERM_DARK = {
-  background: '#1a1b26', foreground: '#c0caf5', cursor: '#c0caf5', selectionBackground: '#33467c',
-  black: '#15161e', red: '#f7768e', green: '#9ece6a', yellow: '#e0af68',
-  blue: '#7aa2f7', magenta: '#bb9af7', cyan: '#7dcfff', white: '#a9b1d6',
-  brightBlack: '#414868', brightRed: '#f7768e', brightGreen: '#9ece6a',
-  brightYellow: '#e0af68', brightBlue: '#7aa2f7', brightMagenta: '#bb9af7',
-  brightCyan: '#7dcfff', brightWhite: '#c0caf5',
+const TERM_THEMES: Record<string, { dark: Record<string, string>; light: Record<string, string> }> = {
+  'Tokyo Night': {
+    dark: { background: '#1a1b26', foreground: '#c0caf5', cursor: '#c0caf5', selectionBackground: '#33467c', black: '#15161e', red: '#f7768e', green: '#9ece6a', yellow: '#e0af68', blue: '#7aa2f7', magenta: '#bb9af7', cyan: '#7dcfff', white: '#a9b1d6', brightBlack: '#414868', brightRed: '#f7768e', brightGreen: '#9ece6a', brightYellow: '#e0af68', brightBlue: '#7aa2f7', brightMagenta: '#bb9af7', brightCyan: '#7dcfff', brightWhite: '#c0caf5' },
+    light: { background: '#fafafa', foreground: '#383a42', cursor: '#526fff', selectionBackground: '#d7d7ff', black: '#383a42', red: '#e45649', green: '#50a14f', yellow: '#c18401', blue: '#4078f2', magenta: '#a626a4', cyan: '#0184bc', white: '#a0a1a7', brightBlack: '#4f525e', brightRed: '#e45649', brightGreen: '#50a14f', brightYellow: '#c18401', brightBlue: '#4078f2', brightMagenta: '#a626a4', brightCyan: '#0184bc', brightWhite: '#fafafa' },
+  },
+  'Dracula': {
+    dark: { background: '#282a36', foreground: '#f8f8f2', cursor: '#f8f8f2', selectionBackground: '#44475a', black: '#21222c', red: '#ff5555', green: '#50fa7b', yellow: '#f1fa8c', blue: '#bd93f9', magenta: '#ff79c6', cyan: '#8be9fd', white: '#f8f8f2', brightBlack: '#6272a4', brightRed: '#ff6e6e', brightGreen: '#69ff94', brightYellow: '#ffffa5', brightBlue: '#d6acff', brightMagenta: '#ff92df', brightCyan: '#a4ffff', brightWhite: '#ffffff' },
+    light: { background: '#f8f8f2', foreground: '#282a36', cursor: '#282a36', selectionBackground: '#d7d7ff', black: '#282a36', red: '#ff5555', green: '#50fa7b', yellow: '#f1fa8c', blue: '#bd93f9', magenta: '#ff79c6', cyan: '#8be9fd', white: '#f8f8f2', brightBlack: '#6272a4', brightRed: '#ff6e6e', brightGreen: '#69ff94', brightYellow: '#ffffa5', brightBlue: '#d6acff', brightMagenta: '#ff92df', brightCyan: '#a4ffff', brightWhite: '#ffffff' },
+  },
+  'Monokai': {
+    dark: { background: '#272822', foreground: '#f8f8f2', cursor: '#f8f8f0', selectionBackground: '#49483e', black: '#272822', red: '#f92672', green: '#a6e22e', yellow: '#f4bf75', blue: '#66d9ef', magenta: '#ae81ff', cyan: '#a1efe4', white: '#f8f8f2', brightBlack: '#75715e', brightRed: '#f92672', brightGreen: '#a6e22e', brightYellow: '#f4bf75', brightBlue: '#66d9ef', brightMagenta: '#ae81ff', brightCyan: '#a1efe4', brightWhite: '#f9f8f5' },
+    light: { background: '#fafafa', foreground: '#272822', cursor: '#272822', selectionBackground: '#e0e0e0', black: '#272822', red: '#f92672', green: '#a6e22e', yellow: '#f4bf75', blue: '#66d9ef', magenta: '#ae81ff', cyan: '#a1efe4', white: '#f8f8f2', brightBlack: '#75715e', brightRed: '#f92672', brightGreen: '#a6e22e', brightYellow: '#f4bf75', brightBlue: '#66d9ef', brightMagenta: '#ae81ff', brightCyan: '#a1efe4', brightWhite: '#f9f8f5' },
+  },
+  'Solarized': {
+    dark: { background: '#002b36', foreground: '#839496', cursor: '#839496', selectionBackground: '#073642', black: '#073642', red: '#dc322f', green: '#859900', yellow: '#b58900', blue: '#268bd2', magenta: '#d33682', cyan: '#2aa198', white: '#eee8d5', brightBlack: '#586e75', brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83', brightBlue: '#839496', brightMagenta: '#6c71c4', brightCyan: '#93a1a1', brightWhite: '#fdf6e3' },
+    light: { background: '#fdf6e3', foreground: '#657b83', cursor: '#657b83', selectionBackground: '#eee8d5', black: '#073642', red: '#dc322f', green: '#859900', yellow: '#b58900', blue: '#268bd2', magenta: '#d33682', cyan: '#2aa198', white: '#eee8d5', brightBlack: '#586e75', brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83', brightBlue: '#839496', brightMagenta: '#6c71c4', brightCyan: '#93a1a1', brightWhite: '#fdf6e3' },
+  },
+  'GitHub': {
+    dark: { background: '#0d1117', foreground: '#c9d1d9', cursor: '#c9d1d9', selectionBackground: '#264f78', black: '#0d1117', red: '#ff7b72', green: '#7ee787', yellow: '#d29922', blue: '#79c0ff', magenta: '#d2a8ff', cyan: '#a5d6ff', white: '#c9d1d9', brightBlack: '#484f58', brightRed: '#ffa198', brightGreen: '#aff5b4', brightYellow: '#e3b341', brightBlue: '#a5d6ff', brightMagenta: '#d2a8ff', brightCyan: '#a5d6ff', brightWhite: '#f0f6fc' },
+    light: { background: '#ffffff', foreground: '#24292f', cursor: '#24292f', selectionBackground: '#ddf4ff', black: '#24292f', red: '#cf222e', green: '#116329', yellow: '#4d2d00', blue: '#0969da', magenta: '#8250df', cyan: '#1b7c83', white: '#6e7781', brightBlack: '#57606a', brightRed: '#a40e26', brightGreen: '#1a7f37', brightYellow: '#633c01', brightBlue: '#218bff', brightMagenta: '#8250df', brightCyan: '#3192aa', brightWhite: '#8c959f' },
+  },
 };
-const XTERM_LIGHT = {
-  background: '#fafafa', foreground: '#383a42', cursor: '#526fff', selectionBackground: '#d7d7ff',
-  black: '#383a42', red: '#e45649', green: '#50a14f', yellow: '#c18401',
-  blue: '#4078f2', magenta: '#a626a4', cyan: '#0184bc', white: '#a0a1a7',
-  brightBlack: '#4f525e', brightRed: '#e45649', brightGreen: '#50a14f',
-  brightYellow: '#c18401', brightBlue: '#4078f2', brightMagenta: '#a626a4',
-  brightCyan: '#0184bc', brightWhite: '#fafafa',
-};
+const TERM_THEME_NAMES = Object.keys(TERM_THEMES);
+const DEFAULT_TERM_THEME = 'Tokyo Night';
+const DEFAULT_TERM_FONT_SIZE = 14;
+const TERM_FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
 
 const fileIcon = (name: string, isDir: boolean): { icon: string; color: string } => {
   if (isDir) return { icon: 'folder', color: 'text-cyan-400' };
@@ -157,6 +167,10 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const [bottomTab, setBottomTab] = useState<BottomTab>('files');
   const [cmdInput, setCmdInput] = useState('');
   const inputBufRef = useRef<Record<string, string>>({});
+  const [termTheme, setTermTheme] = useState(() => localStorage.getItem('hdx_term_theme') || DEFAULT_TERM_THEME);
+  const [termFontSize, setTermFontSize] = useState(() => parseInt(localStorage.getItem('hdx_term_font_size') || '') || DEFAULT_TERM_FONT_SIZE);
+  const [showTermSettings, setShowTermSettings] = useState(false);
+  const termSettingsRef = useRef<HTMLDivElement>(null);
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -203,10 +217,28 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     activeTab.xterm.focus();
   }, [activeTabId, activeTab?.xterm]);
 
-  // Theme sync
+  // Theme + font sync
   useEffect(() => {
-    tabs.forEach((tab) => { if (tab.xterm) tab.xterm.options.theme = isDark ? XTERM_DARK : XTERM_LIGHT; });
-  }, [isDark, tabs]);
+    const themeColors = TERM_THEMES[termTheme] || TERM_THEMES[DEFAULT_TERM_THEME];
+    tabs.forEach((tab) => {
+      if (!tab.xterm) return;
+      tab.xterm.options.theme = isDark ? themeColors.dark : themeColors.light;
+      tab.xterm.options.fontSize = termFontSize;
+      try { tab.fitAddon?.fit(); } catch { /* */ }
+    });
+  }, [isDark, tabs, termTheme, termFontSize]);
+
+  // Persist terminal settings
+  useEffect(() => { localStorage.setItem('hdx_term_theme', termTheme); }, [termTheme]);
+  useEffect(() => { localStorage.setItem('hdx_term_font_size', String(termFontSize)); }, [termFontSize]);
+
+  // Close settings popover on outside click
+  useEffect(() => {
+    if (!showTermSettings) return;
+    const handler = (e: MouseEvent) => { if (termSettingsRef.current && !termSettingsRef.current.contains(e.target as Node)) setShowTermSettings(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showTermSettings]);
 
   const connectToHost = useCallback(async (host: SSHHost) => {
     const tabId = `tab-${++tabCounter}`;
@@ -224,10 +256,11 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     setActiveTabId(tabId);
     setView('sessions');
 
+    const themeColors = TERM_THEMES[termTheme] || TERM_THEMES[DEFAULT_TERM_THEME];
     const xterm = new XTerm({
-      cursorBlink: true, fontSize: 14,
+      cursorBlink: true, fontSize: termFontSize,
       fontFamily: 'JetBrains Mono, Consolas, monospace',
-      theme: isDark ? XTERM_DARK : XTERM_LIGHT, allowProposedApi: true,
+      theme: isDark ? themeColors.dark : themeColors.light, allowProposedApi: true,
     });
     const fitAddon = new FitAddon();
     xterm.loadAddon(fitAddon);
@@ -810,6 +843,34 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                 <span className="material-symbols-outlined text-sm">{showSftp ? 'folder_open' : 'folder'}</span>
                 <span className="hidden sm:inline">{tt.files || 'Files'}</span>
               </button>
+              <div className="relative" ref={termSettingsRef}>
+                <button onClick={() => setShowTermSettings(!showTermSettings)} className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all ${showTermSettings ? 'bg-amber-500/20 text-amber-400' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`} title={tt.termSettings || 'Terminal Settings'}>
+                  <span className="material-symbols-outlined text-sm">settings</span>
+                </button>
+                {showTermSettings && (
+                  <div className={`absolute end-0 top-full mt-1 z-50 w-52 rounded-xl shadow-lg p-3 space-y-3 ${isDark ? 'bg-[#1e1f2e] border border-white/10' : 'bg-white border border-black/10'}`}>
+                    <div>
+                      <div className={`text-[10px] font-medium mb-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tt.termFontSize || 'Font Size'}</div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setTermFontSize(Math.max(10, termFontSize - 1))} className={`w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${isDark ? 'bg-white/10 hover:bg-white/20 text-white/60' : 'bg-black/5 hover:bg-black/10 text-black/60'}`}>−</button>
+                        <span className={`text-xs font-mono flex-1 text-center ${isDark ? 'text-white/70' : 'text-black/70'}`}>{termFontSize}px</span>
+                        <button onClick={() => setTermFontSize(Math.min(24, termFontSize + 1))} className={`w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${isDark ? 'bg-white/10 hover:bg-white/20 text-white/60' : 'bg-black/5 hover:bg-black/10 text-black/60'}`}>+</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div className={`text-[10px] font-medium mb-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tt.termTheme || 'Theme'}</div>
+                      <div className="space-y-0.5">
+                        {TERM_THEME_NAMES.map((name) => (
+                          <button key={name} onClick={() => setTermTheme(name)} className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-xs transition-colors ${termTheme === name ? 'bg-cyan-500/20 text-cyan-400' : isDark ? 'text-white/50 hover:bg-white/5 hover:text-white/70' : 'text-black/50 hover:bg-black/5 hover:text-black/70'}`}>
+                            <span className="w-3 h-3 rounded-full border shrink-0" style={{ backgroundColor: TERM_THEMES[name].dark.background, borderColor: TERM_THEMES[name].dark.foreground + '40' }} />
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <button onClick={() => closeTab(activeTab.id)} className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-colors ${isDark ? 'text-red-400/70 hover:bg-red-500/15 hover:text-red-400' : 'text-red-400 hover:bg-red-500/10'}`}>
                 <span className="material-symbols-outlined text-sm">power_settings_new</span>
                 <span className="hidden sm:inline">{tt.disconnect || 'Disconnect'}</span>

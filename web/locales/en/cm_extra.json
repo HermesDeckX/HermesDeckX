@@ -239,6 +239,10 @@
     "loadingFile": "Loading file...",
     "savePassword": "Save Password",
     "fileConflict": "File was modified on the server. Please reload and try again.",
-    "run": "Run"
+    "run": "Run",
+    "termSettings": "Terminal Settings",
+    "termFontSize": "Font Size",
+    "termTheme": "Theme",
+    "noResults": "No matching commands"
   }
 }

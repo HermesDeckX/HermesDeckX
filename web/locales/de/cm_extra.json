@@ -239,6 +239,10 @@
     "loadingFile": "Datei wird geladen...",
     "savePassword": "Passwort speichern",
     "fileConflict": "Die Datei wurde auf dem Server geändert. Bitte neu laden.",
-    "run": "Ausführen"
+    "run": "Ausführen",
+    "termSettings": "Terminal-Einstellungen",
+    "termFontSize": "Schriftgröße",
+    "termTheme": "Thema",
+    "noResults": "Keine passenden Befehle"
   }
 }

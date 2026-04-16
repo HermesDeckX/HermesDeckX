@@ -239,6 +239,10 @@
     "loadingFile": "Memuat file...",
     "savePassword": "Simpan Kata Sandi",
     "fileConflict": "File telah diubah di server. Silakan muat ulang.",
-    "run": "Jalankan"
+    "run": "Jalankan",
+    "termSettings": "Pengaturan Terminal",
+    "termFontSize": "Ukuran Font",
+    "termTheme": "Tema",
+    "noResults": "Tidak ada perintah cocok"
   }
 }

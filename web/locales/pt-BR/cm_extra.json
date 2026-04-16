@@ -239,6 +239,10 @@
     "loadingFile": "Carregando arquivo...",
     "savePassword": "Salvar senha",
     "fileConflict": "O arquivo foi modificado no servidor. Recarregue e tente novamente.",
-    "run": "Executar"
+    "run": "Executar",
+    "termSettings": "Configurações do terminal",
+    "termFontSize": "Tamanho da fonte",
+    "termTheme": "Tema",
+    "noResults": "Nenhum comando correspondente"
   }
 }

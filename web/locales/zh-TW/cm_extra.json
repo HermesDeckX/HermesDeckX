@@ -239,6 +239,10 @@
     "loadingFile": "正在載入檔案...",
     "savePassword": "儲存密碼",
     "fileConflict": "檔案已在伺服器上被修改，請重新載入後再試。",
-    "run": "執行"
+    "run": "執行",
+    "termSettings": "終端設定",
+    "termFontSize": "字體大小",
+    "termTheme": "主題",
+    "noResults": "沒有匹配的命令"
   }
 }
