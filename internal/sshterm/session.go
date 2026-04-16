@@ -133,6 +133,9 @@ func NewSession(id string, cfg SessionConfig) (*Session, error) {
 		stderr:       stderr,
 	}
 
+	// Start SSH keepalive to prevent idle disconnect
+	go s.keepAlive()
+
 	return s, nil
 }
 
@@ -227,6 +230,25 @@ func (s *Session) Resize(cols, rows int) error {
 	s.mu.Unlock()
 
 	return s.session.WindowChange(rows, cols)
+}
+
+// keepAlive sends periodic SSH keepalive requests to prevent idle disconnects.
+func (s *Session) keepAlive() {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
+		s.mu.Lock()
+		closed := s.closed
+		s.mu.Unlock()
+		if closed {
+			return
+		}
+		_, _, err := s.client.SendRequest("keepalive@openssh.com", true, nil)
+		if err != nil {
+			logger.Terminal.Debug().Str("sessionId", s.ID).Err(err).Msg("keepalive failed")
+			return
+		}
+	}
 }
 
 // Close terminates the SSH session and client connection.

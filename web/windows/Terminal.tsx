@@ -346,6 +346,72 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     });
   }, [activeTabId]);
 
+  // Reconnect a disconnected tab to the same host
+  const reconnectTab = useCallback(async (tabId: string) => {
+    const tab = tabsRef.current.find((tb) => tb.id === tabId);
+    if (!tab || !tab.xterm) return;
+    const host = hosts.find((h) => h.id === tab.hostId);
+    if (!host) return;
+
+    // Cleanup old ws
+    tab.wsClient?.disconnect();
+    updateTab(tabId, { connecting: true, sessionId: null, sftpOpen: false });
+    tab.xterm.writeln(`\r\n\x1b[36m⟡ Reconnecting to ${host.name}...\x1b[0m`);
+
+    const client = new TerminalWSClient();
+    try { await client.connect(); } catch {
+      tab.xterm.writeln('\x1b[31m✗ WebSocket connection failed\x1b[0m');
+      updateTab(tabId, { connecting: false, wsClient: client });
+      return;
+    }
+
+    let sid = '';
+    client.on('terminal.created', (msg: TerminalMessage) => {
+      const p = msg.payload as TerminalCreatedPayload; sid = p.sessionId;
+      updateTab(tabId, { sessionId: p.sessionId, connecting: false });
+      tab.xterm!.writeln(`\x1b[32m✓ Reconnected (session: ${p.sessionId})\x1b[0m\r\n`);
+      tab.xterm!.focus();
+    });
+    client.on('terminal.output', (msg: TerminalMessage) => { tab.xterm!.write((msg.payload as TerminalOutputPayload).data); });
+    client.on('terminal.exit', (msg: TerminalMessage) => {
+      tab.xterm!.writeln(`\r\n\x1b[33m⟡ Session ended: ${(msg.payload as TerminalExitPayload).reason}\x1b[0m`);
+      updateTab(tabId, { sessionId: null });
+    });
+    client.on('terminal.error', (msg: TerminalMessage) => {
+      tab.xterm!.writeln(`\r\n\x1b[31m✗ Error: ${(msg.payload as TerminalErrorPayload).message}\x1b[0m`);
+      updateTab(tabId, { connecting: false });
+    });
+
+    // Re-wire input
+    const disposable = tab.xterm.onData((data: string) => {
+      if (sid) client.sendInput(sid, data);
+      const buf = inputBufRef.current;
+      if (!buf[tabId]) buf[tabId] = '';
+      if (data === '\r' || data === '\n') {
+        const cmd = buf[tabId].trim();
+        if (cmd) {
+          snippetsApi.record(host.id, cmd).then(() => {
+            snippetsApi.list(host.id).then(list => {
+              updateTab(tabId, { snippets: list || [], snippetsLoaded: true });
+            }).catch(() => {});
+          }).catch(() => {});
+        }
+        buf[tabId] = '';
+      } else if (data === '\x7f' || data === '\b') {
+        buf[tabId] = buf[tabId].slice(0, -1);
+      } else if (data.length === 1 && data >= ' ') {
+        buf[tabId] += data;
+      } else if (data.length > 1 && !data.startsWith('\x1b')) {
+        buf[tabId] += data;
+      }
+    });
+    tab.xterm.onResize(({ cols, rows }) => { if (sid) client.resizeSession(sid, cols, rows); });
+
+    updateTab(tabId, { wsClient: client });
+    const dims = tab.fitAddon?.proposeDimensions();
+    client.createSession(host.id, dims?.cols || 120, dims?.rows || 30);
+  }, [updateTab, hosts]);
+
   // SFTP toggle — terminal stays mounted
   // When opening, auto-expand tree from / down to the user's home directory
   const toggleSFTP = useCallback(async () => {
@@ -832,7 +898,13 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
               <span className="material-symbols-outlined text-sm text-cyan-400">terminal</span>
               <span className={`text-xs font-mono truncate ${isDark ? 'text-white/60' : 'text-gray-500'}`}>{activeTab.hostName}</span>
               {activeTab.sessionId && (<span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-full bg-green-500/15 text-green-500 font-medium"><span className="w-1 h-1 rounded-full bg-green-400" />{tt.connected || 'Connected'}</span>)}
-              {!activeTab.sessionId && !activeTab.connecting && (<span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-full bg-red-500/15 text-red-400 font-medium">{tt.disconnected || 'Disconnected'}</span>)}
+              {!activeTab.sessionId && !activeTab.connecting && (<>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-full bg-red-500/15 text-red-400 font-medium">{tt.disconnected || 'Disconnected'}</span>
+                <button onClick={() => reconnectTab(activeTab.id)} className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-full bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 font-medium transition-colors">
+                  <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>refresh</span>
+                  {tt.reconnect || 'Reconnect'}
+                </button>
+              </>)}
             </div>
             <div className="flex items-center gap-1">
               <button onClick={toggleSysInfo} className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg transition-all ${activeTab.sysInfoOpen ? 'bg-purple-500/20 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.15)]' : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`} title={tt.serverStatus || 'Server Status'}>
