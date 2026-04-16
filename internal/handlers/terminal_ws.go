@@ -256,7 +256,6 @@ func (h *TerminalWSHandler) handleCreate(
 	})
 
 	sess.SetExitHandler(func(code int, reason string) {
-		h.manager.RemoveSession(sess.ID)
 		sendJSON("terminal.exit", map[string]interface{}{
 			"sessionId": sess.ID,
 			"code":      code,

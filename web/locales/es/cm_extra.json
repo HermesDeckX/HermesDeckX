@@ -263,6 +263,22 @@
     "sftpNameRequired": "Introduce un nombre",
     "sftpNameInvalid": "Este nombre no está permitido",
     "sftpNameInvalidChars": "Contiene caracteres no válidos: \\ / : * ? \" < > |",
-    "unsavedChangesMsg": "Tiene cambios sin guardar. ¿Descartar?"
+    "unsavedChangesMsg": "Tiene cambios sin guardar. ¿Descartar?",
+    "termConnecting": "Connecting to {name} ({username}@{host}:{port})...",
+    "termWebsocketFailed": "WebSocket connection failed",
+    "termConnected": "Connected (session: {sessionId})",
+    "termSessionEndedWithReason": "Session ended: {reason}",
+    "termReconnecting": "Reconnecting to {name}...",
+    "termReconnected": "Reconnected (session: {sessionId})",
+    "errorUnknown": "Error: {message}",
+    "errorUnknownMessage": "Unknown error",
+    "errorAuthFailed": "Authentication failed. Please check username, password, private key, or passphrase.",
+    "errorPermissionDenied": "Permission denied. Please verify your SSH credentials and permissions.",
+    "errorConnectionRefused": "Connection refused. Please check whether the SSH service and port are available.",
+    "errorTimeout": "Connection timed out. Please verify the host address, port, and network reachability.",
+    "errorNetworkUnreachable": "Network is unreachable. Please check your network and routing configuration.",
+    "errorHostKeyMismatch": "Host key verification failed. Please verify the server fingerprint and known_hosts configuration.",
+    "errorPassphraseRequired": "This private key is encrypted. Please provide the passphrase.",
+    "errorInvalidPrivateKey": "Invalid private key. Please verify the key format and contents."
   }
 }

@@ -263,6 +263,22 @@
     "sftpNameRequired": "名前を入力してください",
     "sftpNameInvalid": "この名前は使用できません",
     "sftpNameInvalidChars": "無効な文字が含まれています: \\ / : * ? \" < > |",
-    "unsavedChangesMsg": "未保存の変更があります。破棄しますか？"
+    "unsavedChangesMsg": "未保存の変更があります。破棄しますか？",
+    "termConnecting": "{name} に接続中 ({username}@{host}:{port})...",
+    "termWebsocketFailed": "WebSocket 接続に失敗しました",
+    "termConnected": "接続しました（セッション: {sessionId}）",
+    "termSessionEndedWithReason": "セッションが終了しました: {reason}",
+    "termReconnecting": "{name} に再接続中...",
+    "termReconnected": "再接続しました（セッション: {sessionId}）",
+    "errorUnknown": "エラー: {message}",
+    "errorUnknownMessage": "不明なエラー",
+    "errorAuthFailed": "認証に失敗しました。ユーザー名、パスワード、秘密鍵、またはパスフレーズを確認してください。",
+    "errorPermissionDenied": "権限が拒否されました。SSH 認証情報と権限を確認してください。",
+    "errorConnectionRefused": "接続が拒否されました。SSH サービスとポートが利用可能か確認してください。",
+    "errorTimeout": "接続がタイムアウトしました。ホスト、ポート、ネットワーク到達性を確認してください。",
+    "errorNetworkUnreachable": "ネットワークに到達できません。ネットワークとルーティング設定を確認してください。",
+    "errorHostKeyMismatch": "ホストキーの検証に失敗しました。サーバーフィンガープリントと known_hosts 設定を確認してください。",
+    "errorPassphraseRequired": "この秘密鍵は暗号化されています。パスフレーズを入力してください。",
+    "errorInvalidPrivateKey": "秘密鍵が無効です。鍵の形式と内容を確認してください。"
   }
 }

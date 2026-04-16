@@ -141,6 +141,48 @@ const SFTP_PANEL_DEFAULT = 220;
 const SYSINFO_WIDTH = 220;
 let tabCounter = 0;
 
+function formatTerminalText(template: string | undefined, vars: Record<string, string | number> = {}) {
+  return Object.entries(vars).reduce(
+    (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
+    template || ''
+  );
+}
+
+function translateTerminalError(rawMessage: string | undefined, tt: Record<string, string>) {
+  const raw = (rawMessage || '').trim();
+  const lower = raw.toLowerCase();
+  const fallback = formatTerminalText(tt.errorUnknown || 'Error: {message}', {
+    message: raw || (tt.errorUnknownMessage || 'Unknown error'),
+  });
+
+  if (!raw) return fallback;
+  if (lower.includes('handshake failed') || lower.includes('unable to authenticate') || lower.includes('no supported methods remain')) {
+    return tt.errorAuthFailed || 'Authentication failed. Please check username, password, private key, or passphrase.';
+  }
+  if (lower.includes('permission denied')) {
+    return tt.errorPermissionDenied || 'Permission denied. Please verify your SSH credentials and permissions.';
+  }
+  if (lower.includes('connection refused')) {
+    return tt.errorConnectionRefused || 'Connection refused. Please check whether the SSH service and port are available.';
+  }
+  if (lower.includes('i/o timeout') || lower.includes('timed out')) {
+    return tt.errorTimeout || 'Connection timed out. Please verify the host address, port, and network reachability.';
+  }
+  if (lower.includes('no route to host') || lower.includes('network is unreachable')) {
+    return tt.errorNetworkUnreachable || 'Network is unreachable. Please check your network and routing configuration.';
+  }
+  if (lower.includes('host key mismatch') || lower.includes('host key verification failed')) {
+    return tt.errorHostKeyMismatch || 'Host key verification failed. Please verify the server fingerprint and known_hosts configuration.';
+  }
+  if (lower.includes('private key') && lower.includes('encrypted')) {
+    return tt.errorPassphraseRequired || 'This private key is encrypted. Please provide the passphrase.';
+  }
+  if (lower.includes('cannot decode private key') || lower.includes('parse private key') || lower.includes('invalid key')) {
+    return tt.errorInvalidPrivateKey || 'Invalid private key. Please verify the key format and contents.';
+  }
+  return fallback;
+}
+
 function validateSftpEntryName(name: string, tt: Record<string, string>) {
   const trimmed = name.trim();
   if (!trimmed) return tt.sftpNameRequired || 'Please enter a name';
@@ -296,7 +338,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     const fitAddon = new FitAddon();
     xterm.loadAddon(fitAddon);
     xterm.loadAddon(new WebLinksAddon());
-    xterm.writeln(`\x1b[36m⟡ Connecting to ${host.name} (${host.username}@${host.host}:${host.port})...\x1b[0m`);
+    xterm.writeln(`\x1b[36m⟡ ${formatTerminalText(tt.termConnecting || 'Connecting to {name} ({username}@{host}:{port})...', { name: host.name, username: host.username, host: host.host, port: host.port })}\x1b[0m`);
 
     // Smart keyboard shortcuts (Windows Terminal / VS Code style)
     xterm.attachCustomKeyEventHandler((e: KeyboardEvent) => {
@@ -331,7 +373,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
     const client = new TerminalWSClient();
     try { await client.connect(); } catch {
-      xterm.writeln('\x1b[31m✗ WebSocket connection failed\x1b[0m');
+      xterm.writeln(`\x1b[31m✗ ${tt.termWebsocketFailed || 'WebSocket connection failed'}\x1b[0m`);
       updateTab(tabId, { connecting: false, xterm, fitAddon, wsClient: client });
       return;
     }
@@ -340,16 +382,16 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     client.on('terminal.created', (msg: TerminalMessage) => {
       const p = msg.payload as TerminalCreatedPayload; sid = p.sessionId;
       updateTab(tabId, { sessionId: p.sessionId, connecting: false });
-      xterm.writeln(`\x1b[32m✓ Connected (session: ${p.sessionId})\x1b[0m\r\n`);
+      xterm.writeln(`\x1b[32m✓ ${formatTerminalText(tt.termConnected || 'Connected (session: {sessionId})', { sessionId: p.sessionId })}\x1b[0m\r\n`);
       xterm.focus();
     });
     client.on('terminal.output', (msg: TerminalMessage) => { xterm.write((msg.payload as TerminalOutputPayload).data); });
     client.on('terminal.exit', (msg: TerminalMessage) => {
-      xterm.writeln(`\r\n\x1b[33m⟡ Session ended: ${(msg.payload as TerminalExitPayload).reason}\x1b[0m`);
+      xterm.writeln(`\r\n\x1b[33m⟡ ${formatTerminalText(tt.termSessionEndedWithReason || 'Session ended: {reason}', { reason: (msg.payload as TerminalExitPayload).reason })}\x1b[0m`);
       updateTab(tabId, { sessionId: null });
     });
     client.on('terminal.error', (msg: TerminalMessage) => {
-      xterm.writeln(`\r\n\x1b[31m✗ Error: ${(msg.payload as TerminalErrorPayload).message}\x1b[0m`);
+      xterm.writeln(`\r\n\x1b[31m✗ ${translateTerminalError((msg.payload as TerminalErrorPayload).message, tt)}\x1b[0m`);
       updateTab(tabId, { connecting: false });
     });
     xterm.onData((data: string) => {
@@ -422,11 +464,11 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     // Cleanup old ws
     tab.wsClient?.disconnect();
     updateTab(tabId, { connecting: true, sessionId: null, sftpOpen: false });
-    tab.xterm.writeln(`\r\n\x1b[36m⟡ Reconnecting to ${host.name}...\x1b[0m`);
+    tab.xterm.writeln(`\r\n\x1b[36m⟡ ${formatTerminalText(tt.termReconnecting || 'Reconnecting to {name}...', { name: host.name })}\x1b[0m`);
 
     const client = new TerminalWSClient();
     try { await client.connect(); } catch {
-      tab.xterm.writeln('\x1b[31m✗ WebSocket connection failed\x1b[0m');
+      tab.xterm.writeln(`\x1b[31m✗ ${tt.termWebsocketFailed || 'WebSocket connection failed'}\x1b[0m`);
       updateTab(tabId, { connecting: false, wsClient: client });
       return;
     }
@@ -435,16 +477,16 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     client.on('terminal.created', (msg: TerminalMessage) => {
       const p = msg.payload as TerminalCreatedPayload; sid = p.sessionId;
       updateTab(tabId, { sessionId: p.sessionId, connecting: false });
-      tab.xterm!.writeln(`\x1b[32m✓ Reconnected (session: ${p.sessionId})\x1b[0m\r\n`);
+      tab.xterm!.writeln(`\x1b[32m✓ ${formatTerminalText(tt.termReconnected || 'Reconnected (session: {sessionId})', { sessionId: p.sessionId })}\x1b[0m\r\n`);
       tab.xterm!.focus();
     });
     client.on('terminal.output', (msg: TerminalMessage) => { tab.xterm!.write((msg.payload as TerminalOutputPayload).data); });
     client.on('terminal.exit', (msg: TerminalMessage) => {
-      tab.xterm!.writeln(`\r\n\x1b[33m⟡ Session ended: ${(msg.payload as TerminalExitPayload).reason}\x1b[0m`);
+      tab.xterm!.writeln(`\r\n\x1b[33m⟡ ${formatTerminalText(tt.termSessionEndedWithReason || 'Session ended: {reason}', { reason: (msg.payload as TerminalExitPayload).reason })}\x1b[0m`);
       updateTab(tabId, { sessionId: null });
     });
     client.on('terminal.error', (msg: TerminalMessage) => {
-      tab.xterm!.writeln(`\r\n\x1b[31m✗ Error: ${(msg.payload as TerminalErrorPayload).message}\x1b[0m`);
+      tab.xterm!.writeln(`\r\n\x1b[31m✗ ${translateTerminalError((msg.payload as TerminalErrorPayload).message, tt)}\x1b[0m`);
       updateTab(tabId, { connecting: false });
     });
 

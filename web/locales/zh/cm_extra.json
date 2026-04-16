@@ -263,6 +263,22 @@
     "sftpNameRequired": "请输入名称",
     "sftpNameInvalid": "此名称不允许使用",
     "sftpNameInvalidChars": "包含非法字符：\\ / : * ? \" < > |",
-    "unsavedChangesMsg": "您有未保存的更改，确定放弃吗？"
+    "unsavedChangesMsg": "您有未保存的更改，确定放弃吗？",
+    "termConnecting": "正在连接到 {name} ({username}@{host}:{port})...",
+    "termWebsocketFailed": "WebSocket 连接失败",
+    "termConnected": "已连接（会话：{sessionId}）",
+    "termSessionEndedWithReason": "会话已结束：{reason}",
+    "termReconnecting": "正在重新连接到 {name}...",
+    "termReconnected": "已重新连接（会话：{sessionId}）",
+    "errorUnknown": "错误：{message}",
+    "errorUnknownMessage": "未知错误",
+    "errorAuthFailed": "认证失败。请检查用户名、密码、私钥或私钥密码。",
+    "errorPermissionDenied": "权限被拒绝。请检查 SSH 凭据和账户权限。",
+    "errorConnectionRefused": "连接被拒绝。请检查 SSH 服务和端口是否可用。",
+    "errorTimeout": "连接超时。请检查主机地址、端口和网络连通性。",
+    "errorNetworkUnreachable": "网络不可达。请检查网络和路由配置。",
+    "errorHostKeyMismatch": "主机密钥校验失败。请检查服务器指纹和 known_hosts 配置。",
+    "errorPassphraseRequired": "该私钥已加密，请输入私钥密码。",
+    "errorInvalidPrivateKey": "私钥无效。请检查私钥格式和内容。"
   }
 }
