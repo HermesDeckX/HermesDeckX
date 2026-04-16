@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
+import { PromptProvider } from './components/PromptDialog';
 import LockScreen from './components/LockScreen';
 import Desktop from './components/Desktop';
 import WindowFrame from './components/WindowFrame';
@@ -394,6 +395,7 @@ const App: React.FC = () => {
   if (isLocked) return (
     <ToastProvider>
       <ConfirmProvider>
+        <PromptProvider>
         <LockScreen
           onUnlock={() => setIsLocked(false)}
           theme={theme}
@@ -401,6 +403,7 @@ const App: React.FC = () => {
           language={language}
           onChangeLanguage={changeLanguage}
         />
+        </PromptProvider>
       </ConfirmProvider>
     </ToastProvider>
   );
@@ -408,6 +411,7 @@ const App: React.FC = () => {
   return (
     <ToastProvider>
       <ConfirmProvider>
+        <PromptProvider>
         <div className="h-screen w-screen overflow-hidden select-none">
           <Desktop
             onOpenWindow={openWindow}
@@ -469,6 +473,7 @@ const App: React.FC = () => {
           })}
           <CommandPalette language={language} openWindow={openWindow} />
         </div>
+        </PromptProvider>
       </ConfirmProvider>
     </ToastProvider>
   );

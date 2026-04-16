@@ -4,6 +4,7 @@ import type { Language } from '../types';
 import { getTranslation } from '../locales';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
+import { usePromptDialog } from '../components/PromptDialog';
 import { sshHostsApi } from '../services/ssh-hosts';
 import type { SSHHost, SSHHostCreateRequest } from '../services/ssh-hosts';
 import { TerminalWSClient } from '../services/terminal-ws';
@@ -145,6 +146,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const tt = t?.terminalPage || {};
   const { toast } = useToast();
   const { confirm } = useConfirm();
+  const { prompt: promptDialog } = usePromptDialog();
 
   const [view, setView] = useState<View>('hosts');
   const [hosts, setHosts] = useState<SSHHost[]>([]);
@@ -594,7 +596,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpMkdir = useCallback(async () => {
     if (!activeTab?.sessionId) return;
-    const name = prompt(tt.sftpNewFolder || 'New folder name:');
+    const name = await promptDialog({ title: tt.sftpNewFolder || 'New folder name:', placeholder: 'my-folder' });
     if (!name) return;
     try { await sftpApi.mkdir(activeTab.sessionId, activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`); sftpNavigate(activeTab.sftpPath); }
     catch (e: any) { toast('error', e?.message || 'Mkdir failed'); }
@@ -602,7 +604,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpNewFile = useCallback(async () => {
     if (!activeTab?.sessionId) return;
-    const name = prompt(tt.sftpNewFile || 'New file name:');
+    const name = await promptDialog({ title: tt.sftpNewFile || 'New file name:', placeholder: 'file.txt' });
     if (!name) return;
     const filePath = activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`;
     try {
@@ -610,7 +612,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       toast('success', (tt.sftpFileCreated || 'Created: {name}').replace('{name}', name));
       sftpNavigate(activeTab.sftpPath);
     } catch (e: any) { toast('error', e?.message || 'Create file failed'); }
-  }, [activeTab, toast, tt, sftpNavigate]);
+  }, [activeTab, toast, tt, sftpNavigate, promptDialog]);
 
   const sftpRemove = useCallback(async (entry: FileEntry) => {
     if (!activeTab?.sessionId) return;
@@ -622,7 +624,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpRename = useCallback(async (entry: FileEntry) => {
     if (!activeTab?.sessionId) return;
-    const newName = prompt((tt.sftpRename || 'Rename to:'), entry.name);
+    const newName = await promptDialog({ title: tt.sftpRename || 'Rename to:', defaultValue: entry.name });
     if (!newName || newName === entry.name) return;
     const parentDir = entry.path.substring(0, entry.path.lastIndexOf('/')) || '/';
     const newPath = parentDir === '/' ? `/${newName}` : `${parentDir}/${newName}`;
