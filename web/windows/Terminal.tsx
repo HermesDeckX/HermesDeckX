@@ -1161,29 +1161,34 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       </div>
                       {/* Command history list */}
                       <div className="flex-1 overflow-y-auto neon-scrollbar">
-                        {activeTab.snippets.length === 0 ? (
-                          <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
-                            <span className="material-symbols-outlined text-2xl">terminal</span>
-                            <span className="text-xs">{tt.noCommands || 'No command history'}</span>
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
-                            {activeTab.snippets.map((s) => (
-                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => setCmdInput(s.command)} onDoubleClick={() => execSnippet(s.command)}>
-                                <span className={`material-symbols-outlined shrink-0 ${s.is_favorite ? 'text-amber-400' : isDark ? 'text-white/20' : 'text-black/15'}`} style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'chevron_right'}</span>
-                                <div className={`flex-1 min-w-0 text-xs font-mono truncate ${isDark ? 'text-white/70' : 'text-black/70'}`}>{s.command}</div>
-                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                                  <button onClick={() => toggleFavorite(s.id)} className={`p-0.5 rounded transition-colors ${s.is_favorite ? 'text-amber-400 hover:text-amber-300' : isDark ? 'hover:bg-white/10 text-white/30 hover:text-amber-400' : 'hover:bg-black/5 text-gray-400 hover:text-amber-500'}`} title={s.is_favorite ? (tt.unfavorite || 'Unfavorite') : (tt.favorite || 'Favorite')}>
-                                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'star_outline'}</span>
-                                  </button>
-                                  <button onClick={() => deleteSnippet(s.id)} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}>
-                                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
-                                  </button>
+                        {(() => {
+                          const q = cmdInput.trim().toLowerCase();
+                          const filtered = q ? activeTab.snippets.filter((s) => s.command.toLowerCase().includes(q)) : activeTab.snippets;
+                          if (filtered.length === 0) return (
+                            <div className={`flex flex-col items-center justify-center h-24 gap-2 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
+                              <span className="material-symbols-outlined text-2xl">terminal</span>
+                              <span className="text-xs">{q ? (tt.noResults || 'No matching commands') : (tt.noCommands || 'No command history')}</span>
+                            </div>
+                          );
+                          return (
+                            <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
+                              {filtered.map((s) => (
+                                <div key={s.id} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => setCmdInput(s.command)} onDoubleClick={() => execSnippet(s.command)}>
+                                  <span className={`material-symbols-outlined shrink-0 ${s.is_favorite ? 'text-amber-400' : isDark ? 'text-white/20' : 'text-black/15'}`} style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'chevron_right'}</span>
+                                  <div className={`flex-1 min-w-0 text-xs font-mono truncate ${isDark ? 'text-white/70' : 'text-black/70'}`}>{s.command}</div>
+                                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                    <button onClick={() => toggleFavorite(s.id)} className={`p-0.5 rounded transition-colors ${s.is_favorite ? 'text-amber-400 hover:text-amber-300' : isDark ? 'hover:bg-white/10 text-white/30 hover:text-amber-400' : 'hover:bg-black/5 text-gray-400 hover:text-amber-500'}`} title={s.is_favorite ? (tt.unfavorite || 'Unfavorite') : (tt.favorite || 'Favorite')}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'star_outline'}</span>
+                                    </button>
+                                    <button onClick={() => deleteSnippet(s.id)} className={`p-0.5 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/30 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
