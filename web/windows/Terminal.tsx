@@ -214,12 +214,22 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     setTimeout(() => { try { activeTab.fitAddon!.fit(); } catch { /* */ } }, 60);
   }, [activeTab]);
 
-  // Mount xterm when tab container available
+  // Mount / re-mount xterm when switching tabs or when xterm instance becomes available
   useEffect(() => {
     if (!activeTab?.xterm) return;
     const container = termContainerRefs.current[activeTab.id];
     if (!container) return;
-    if (container.querySelector('.xterm')) { try { activeTab.fitAddon?.fit(); } catch { /* */ } return; }
+
+    // Check if xterm DOM is already inside this container
+    const xtermEl = container.querySelector('.xterm');
+    if (xtermEl) {
+      // Already mounted — just re-fit after container becomes visible
+      requestAnimationFrame(() => { try { activeTab.fitAddon?.fit(); } catch { /* */ } });
+      activeTab.xterm.focus();
+      return;
+    }
+
+    // First mount or re-mount (xterm DOM was lost)
     activeTab.xterm.open(container);
     if (activeTab.fitAddon) try { activeTab.fitAddon.fit(); } catch { /* */ }
     if (activeTab.resizeObserver) activeTab.resizeObserver.disconnect();
@@ -229,20 +239,17 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     activeTab.xterm.focus();
   }, [activeTabId, activeTab?.xterm]);
 
-  // Theme + font sync
+  // Theme + font sync — only touch the visible (active) tab.
+  // Modifying xterm options on a display:none tab triggers an internal
+  // re-render that computes 0×0 dimensions and clears the buffer.
   useEffect(() => {
+    const tab = tabsRef.current.find((t) => t.id === activeTabId);
+    if (!tab?.xterm) return;
     const themeColors = TERM_THEMES[termTheme] || TERM_THEMES[DEFAULT_TERM_THEME];
-    tabs.forEach((tab) => {
-      if (!tab.xterm) return;
-      tab.xterm.options.theme = isDark ? themeColors.dark : themeColors.light;
-      tab.xterm.options.fontSize = termFontSize;
-      // Only fit the visible (active) tab — fitting a display:none tab
-      // makes xterm compute 0×0 dimensions and clears its render buffer.
-      if (tab.id === activeTabId) {
-        try { tab.fitAddon?.fit(); } catch { /* */ }
-      }
-    });
-  }, [isDark, tabs, termTheme, termFontSize, activeTabId]);
+    tab.xterm.options.theme = isDark ? themeColors.dark : themeColors.light;
+    tab.xterm.options.fontSize = termFontSize;
+    try { tab.fitAddon?.fit(); } catch { /* */ }
+  }, [isDark, termTheme, termFontSize, activeTabId]);
 
   // Persist terminal settings
   useEffect(() => { localStorage.setItem('hdx_term_theme', termTheme); }, [termTheme]);
