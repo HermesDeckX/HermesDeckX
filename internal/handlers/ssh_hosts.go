@@ -37,6 +37,7 @@ type sshHostRequest struct {
 	PrivateKey   string `json:"private_key,omitempty"`
 	Passphrase   string `json:"passphrase,omitempty"`
 	IsFavorite   bool   `json:"is_favorite"`
+	GroupName    string `json:"group_name"`
 	SavePassword *bool  `json:"save_password,omitempty"`
 }
 
@@ -53,6 +54,7 @@ type sshHostResponse struct {
 	Fingerprint     string     `json:"fingerprint"`
 	SavePassword    bool       `json:"save_password"`
 	IsFavorite      bool       `json:"is_favorite"`
+	GroupName       string     `json:"group_name"`
 	LastConnectedAt *time.Time `json:"last_connected_at,omitempty"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
@@ -71,6 +73,7 @@ func toHostResponse(h *sshterm.SSHHost) sshHostResponse {
 		Fingerprint:     h.Fingerprint,
 		SavePassword:    h.SavePassword,
 		IsFavorite:      h.IsFavorite,
+		GroupName:       h.GroupName,
 		LastConnectedAt: h.LastConnectedAt,
 		CreatedAt:       h.CreatedAt,
 		UpdatedAt:       h.UpdatedAt,
@@ -118,6 +121,7 @@ func (h *SSHHostsHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Username:     req.Username,
 		AuthType:     req.AuthType,
 		IsFavorite:   req.IsFavorite,
+		GroupName:    req.GroupName,
 		SavePassword: savePass,
 	}
 	if savePass {
@@ -188,6 +192,7 @@ func (h *SSHHostsHandler) Update(w http.ResponseWriter, r *http.Request) {
 		existing.AuthType = req.AuthType
 	}
 	existing.IsFavorite = req.IsFavorite
+	existing.GroupName = req.GroupName
 
 	savePassUpdate := req.SavePassword == nil || *req.SavePassword
 	existing.SavePassword = savePassUpdate

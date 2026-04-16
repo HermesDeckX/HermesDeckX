@@ -26,12 +26,12 @@ interface HostFormData {
   name: string; host: string; port: number; username: string;
   auth_type: 'password' | 'key'; password: string;
   private_key: string; passphrase: string; is_favorite: boolean;
-  save_password: boolean;
+  group_name: string; save_password: boolean;
 }
 const emptyForm: HostFormData = {
   name: '', host: '', port: 22, username: 'root',
   auth_type: 'password', password: '', private_key: '', passphrase: '', is_favorite: false,
-  save_password: true,
+  group_name: '', save_password: true,
 };
 
 interface TabState {
@@ -769,7 +769,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!form.name.trim() || !form.host.trim() || !form.username.trim()) { toast('error', tt.fieldsRequired || 'Name, host, and username are required'); return; }
     setSaving(true);
     try {
-      const req: SSHHostCreateRequest = { name: form.name, host: form.host, port: form.port || 22, username: form.username, auth_type: form.auth_type, password: form.auth_type === 'password' ? form.password : undefined, private_key: form.auth_type === 'key' ? form.private_key : undefined, passphrase: form.auth_type === 'key' ? form.passphrase : undefined, is_favorite: form.is_favorite, save_password: form.save_password };
+      const req: SSHHostCreateRequest = { name: form.name, host: form.host, port: form.port || 22, username: form.username, auth_type: form.auth_type, password: form.auth_type === 'password' ? form.password : undefined, private_key: form.auth_type === 'key' ? form.private_key : undefined, passphrase: form.auth_type === 'key' ? form.passphrase : undefined, is_favorite: form.is_favorite, group_name: form.group_name, save_password: form.save_password };
       if (editId) { await sshHostsApi.update(editId, req); toast('success', tt.hostUpdated || 'Host updated'); }
       else { await sshHostsApi.create(req); toast('success', tt.hostCreated || 'Host created'); }
       setForm({ ...emptyForm }); setEditId(null); setView(tabs.length > 0 ? 'sessions' : 'hosts'); loadHosts();
@@ -793,7 +793,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [confirm, toast, tt, loadHosts]);
 
   const startEdit = useCallback((host: SSHHost) => {
-    setForm({ name: host.name, host: host.host, port: host.port, username: host.username, auth_type: host.auth_type, password: '', private_key: '', passphrase: '', is_favorite: host.is_favorite, save_password: host.save_password });
+    setForm({ name: host.name, host: host.host, port: host.port, username: host.username, auth_type: host.auth_type, password: '', private_key: '', passphrase: '', is_favorite: host.is_favorite, group_name: host.group_name || '', save_password: host.save_password });
     setEditId(host.id); setView('edit');
   }, []);
 
@@ -846,28 +846,48 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
               </button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {hosts.map((host) => (
-                <div key={host.id} className="sci-card p-4 flex flex-col gap-3 group hover:border-cyan-500/30 transition-all cursor-pointer active:scale-[0.98]" style={{ animation: 'card-enter 0.3s ease-out' }} onClick={() => connectToHost(host)}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 dark:bg-cyan-500/15 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-xl text-cyan-400">dns</span></div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5"><span className="text-sm font-semibold truncate">{host.name}</span>{host.is_favorite && <span className="material-symbols-outlined text-xs text-amber-400">star</span>}</div>
-                        <p className="text-xs text-text-muted font-mono truncate mt-0.5">{host.username}@{host.host}:{host.port}</p>
+            <div className="space-y-4">
+              {(() => {
+                const groups: Record<string, SSHHost[]> = {};
+                const ungrouped: SSHHost[] = [];
+                hosts.forEach((h) => { if (h.group_name) { (groups[h.group_name] ||= []).push(h); } else { ungrouped.push(h); } });
+                const groupNames = Object.keys(groups).sort();
+                const renderCard = (host: SSHHost) => (
+                  <div key={host.id} className="sci-card p-4 flex flex-col gap-3 group hover:border-cyan-500/30 transition-all cursor-pointer active:scale-[0.98]" style={{ animation: 'card-enter 0.3s ease-out' }} onClick={() => connectToHost(host)}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 dark:bg-cyan-500/15 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-xl text-cyan-400">dns</span></div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5"><span className="text-sm font-semibold truncate">{host.name}</span>{host.is_favorite && <span className="material-symbols-outlined text-xs text-amber-400">star</span>}</div>
+                          <p className="text-xs text-text-muted font-mono truncate mt-0.5">{host.username}@{host.host}:{host.port}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => startEdit(host)} className="p-1.5 rounded-lg hover:bg-white/10 text-text-muted hover:text-text transition-colors" title={tt.edit || 'Edit'}><span className="material-symbols-outlined text-sm">edit</span></button>
+                        <button onClick={() => handleDelete(host)} className="p-1.5 rounded-lg hover:bg-red-500/20 text-text-muted hover:text-red-400 transition-colors" title={tt.delete || 'Delete'}><span className="material-symbols-outlined text-sm">delete</span></button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => startEdit(host)} className="p-1.5 rounded-lg hover:bg-white/10 text-text-muted hover:text-text transition-colors" title={tt.edit || 'Edit'}><span className="material-symbols-outlined text-sm">edit</span></button>
-                      <button onClick={() => handleDelete(host)} className="p-1.5 rounded-lg hover:bg-red-500/20 text-text-muted hover:text-red-400 transition-colors" title={tt.delete || 'Delete'}><span className="material-symbols-outlined text-sm">delete</span></button>
-                    </div>
+                    {host.last_connected_at && (
+                      <div className="flex items-center gap-1 text-[10px] text-text-muted opacity-60"><span className="material-symbols-outlined" style={{ fontSize: '11px' }}>schedule</span>{new Date(host.last_connected_at).toLocaleDateString()}</div>
+                    )}
+                    <div className="flex items-center justify-end"><span className="flex items-center gap-1 text-[11px] text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">{tt.connect || 'Connect'} <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>arrow_forward</span></span></div>
                   </div>
-                  {host.last_connected_at && (
-                    <div className="flex items-center gap-1 text-[10px] text-text-muted opacity-60"><span className="material-symbols-outlined" style={{ fontSize: '11px' }}>schedule</span>{new Date(host.last_connected_at).toLocaleDateString()}</div>
+                );
+                return (<>
+                  {groupNames.map((gn) => (
+                    <div key={gn}>
+                      <div className={`flex items-center gap-2 mb-2 ${isDark ? 'text-white/40' : 'text-black/40'}`}><span className="material-symbols-outlined text-sm">folder</span><span className="text-xs font-semibold uppercase tracking-wide">{gn}</span><span className="text-[10px]">({groups[gn].length})</span></div>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{groups[gn].map(renderCard)}</div>
+                    </div>
+                  ))}
+                  {ungrouped.length > 0 && (
+                    <div>
+                      {groupNames.length > 0 && <div className={`flex items-center gap-2 mb-2 ${isDark ? 'text-white/40' : 'text-black/40'}`}><span className="material-symbols-outlined text-sm">dns</span><span className="text-xs font-semibold uppercase tracking-wide">{tt.ungrouped || 'Ungrouped'}</span><span className="text-[10px]">({ungrouped.length})</span></div>}
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{ungrouped.map(renderCard)}</div>
+                    </div>
                   )}
-                  <div className="flex items-center justify-end"><span className="flex items-center gap-1 text-[11px] text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">{tt.connect || 'Connect'} <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>arrow_forward</span></span></div>
-                </div>
-              ))}
+                </>);
+              })()}
             </div>
           )}
         </div>
@@ -1409,6 +1429,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
             <div><label className="text-xs text-text-muted mb-1 block">{tt.privateKey || 'Private Key'}</label><textarea className="sci-input w-full px-3 py-2 rounded-lg bg-surface-sunken text-sm font-mono resize-none" rows={5} value={form.private_key} onChange={(e) => setForm({ ...form, private_key: e.target.value })} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
             <div><label className="text-xs text-text-muted mb-1 block">{tt.passphrase || 'Passphrase'}</label><input type="password" className="sci-input w-full px-3 py-2 rounded-lg bg-surface-sunken text-sm" value={form.passphrase} onChange={(e) => setForm({ ...form, passphrase: e.target.value })} placeholder={tt.optional || 'Optional'} /></div>
           </>)}
+          <div><label className="text-xs text-text-muted mb-1 block">{tt.groupName || 'Group'}</label><input className="sci-input w-full px-3 py-2 rounded-lg bg-surface-sunken text-sm" value={form.group_name} onChange={(e) => setForm({ ...form, group_name: e.target.value })} placeholder={tt.groupPlaceholder || 'e.g. Production, Staging...'} list="host-groups" /><datalist id="host-groups">{[...new Set(hosts.map((h) => h.group_name).filter(Boolean))].map((g) => <option key={g} value={g} />)}</datalist></div>
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_favorite} onChange={(e) => setForm({ ...form, is_favorite: e.target.checked })} className="w-4 h-4 rounded accent-cyan-500" /><span className="text-xs text-text-muted">{tt.favorite || 'Favorite'}</span></label>
             <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.save_password} onChange={(e) => setForm({ ...form, save_password: e.target.checked })} className="w-4 h-4 rounded accent-amber-500" /><span className="text-xs text-text-muted">{tt.savePassword || 'Save Password'}</span></label>

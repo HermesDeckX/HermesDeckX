@@ -13,6 +13,7 @@ export interface SSHHost {
   fingerprint: string;
   save_password: boolean;
   is_favorite: boolean;
+  group_name: string;
   last_connected_at: string | null;
   created_at: string;
   updated_at: string;
@@ -28,6 +29,7 @@ export interface SSHHostCreateRequest {
   private_key?: string;
   passphrase?: string;
   is_favorite?: boolean;
+  group_name?: string;
   save_password?: boolean;
 }
 
