@@ -455,6 +455,20 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!activeTab) return;
     if (activeTab.sftpOpen) { updateTab(activeTab.id, { sftpOpen: false }); refitActiveTerminal(); return; }
     if (!activeTab.sessionId) { toast('error', tt.sftpNeedSession || 'SFTP requires an active session'); return; }
+
+    // If we already have cached home data, show immediately and refresh in background
+    const hasCachedHome = activeTab.sftpPath && activeTab.treeCache[activeTab.sftpPath];
+    if (hasCachedHome) {
+      updateTab(activeTab.id, { sftpOpen: true, sftpLoading: false, sftpEntries: activeTab.treeCache[activeTab.sftpPath] });
+      refitActiveTerminal();
+      // Background refresh
+      sftpApi.list(activeTab.sessionId, activeTab.sftpPath).then((result) => {
+        const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
+        updateTab(activeTab.id, { sftpEntries: result.entries, treeCache: newCache });
+      }).catch(() => { /* silent */ });
+      return;
+    }
+
     updateTab(activeTab.id, { sftpOpen: true, sftpLoading: true });
     refitActiveTerminal();
     try {
