@@ -1169,7 +1169,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                         ) : (
                           <div className="divide-y divide-white/[.03] dark:divide-white/[.03]">
                             {activeTab.snippets.map((s) => (
-                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => execSnippet(s.command)}>
+                              <div key={s.id} className={`flex items-center gap-2 px-3 py-1 group cursor-pointer transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`} onClick={() => setCmdInput(s.command)} onDoubleClick={() => execSnippet(s.command)}>
                                 <span className={`material-symbols-outlined shrink-0 ${s.is_favorite ? 'text-amber-400' : isDark ? 'text-white/20' : 'text-black/15'}`} style={{ fontSize: '14px' }}>{s.is_favorite ? 'star' : 'chevron_right'}</span>
                                 <div className={`flex-1 min-w-0 text-xs font-mono truncate ${isDark ? 'text-white/70' : 'text-black/70'}`}>{s.command}</div>
                                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
