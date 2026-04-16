@@ -461,10 +461,13 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (hasCachedHome) {
       updateTab(activeTab.id, { sftpOpen: true, sftpLoading: false, sftpEntries: activeTab.treeCache[activeTab.sftpPath] });
       refitActiveTerminal();
-      // Background refresh
-      sftpApi.list(activeTab.sessionId, activeTab.sftpPath).then((result) => {
-        const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
-        updateTab(activeTab.id, { sftpEntries: result.entries, treeCache: newCache });
+      // Background refresh — use tabsRef for latest cache
+      const tabId = activeTab.id;
+      const refreshPath = activeTab.sftpPath;
+      sftpApi.list(activeTab.sessionId, refreshPath).then((result) => {
+        const latestTab = tabsRef.current.find((t) => t.id === tabId);
+        const latestCache = latestTab?.treeCache || {};
+        updateTab(tabId, { sftpEntries: result.entries, treeCache: { ...latestCache, [result.path]: result.entries } });
       }).catch(() => { /* silent */ });
       return;
     }
@@ -511,9 +514,12 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       // Show cache immediately, refresh in background
       const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(path);
       updateTab(activeTab.id, { sftpPath: path, sftpEntries: cached, sftpLoading: false, expandedDirs: newExpanded });
+      // Background refresh — use tabsRef for latest cache
+      const tabId = activeTab.id;
       sftpApi.list(activeTab.sessionId, path).then((result) => {
-        const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
-        updateTab(activeTab.id, { sftpEntries: result.entries, treeCache: newCache });
+        const latestTab = tabsRef.current.find((t) => t.id === tabId);
+        const latestCache = latestTab?.treeCache || {};
+        updateTab(tabId, { sftpEntries: result.entries, treeCache: { ...latestCache, [result.path]: result.entries } });
       }).catch(() => { /* silent background refresh */ });
     } else {
       updateTab(activeTab.id, { sftpLoading: true });
