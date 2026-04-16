@@ -258,6 +258,10 @@
     "sftpNewFile": "Nom du nouveau fichier :",
     "sftpFileCreated": "Créé : {name}",
     "sftpRename": "Renommer en :",
-    "sftpRenamed": "Renommé en {name}"
+    "sftpRenamed": "Renommé en {name}",
+    "sftpNameHelper": "Évitez les caractères invalides : \\ / : * ? \" < > |",
+    "sftpNameRequired": "Veuillez saisir un nom",
+    "sftpNameInvalid": "Ce nom n’est pas autorisé",
+    "sftpNameInvalidChars": "Contient des caractères invalides : \\ / : * ? \" < > |"
   }
 }

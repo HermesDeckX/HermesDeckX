@@ -258,6 +258,10 @@
     "sftpNewFile": "새 파일 이름:",
     "sftpFileCreated": "생성됨: {name}",
     "sftpRename": "이름 변경:",
-    "sftpRenamed": "{name}(으)로 변경됨"
+    "sftpRenamed": "{name}(으)로 변경됨",
+    "sftpNameHelper": "잘못된 문자를 피하세요: \\ / : * ? \" < > |",
+    "sftpNameRequired": "이름을 입력하세요",
+    "sftpNameInvalid": "이 이름은 사용할 수 없습니다",
+    "sftpNameInvalidChars": "잘못된 문자가 포함되어 있습니다: \\ / : * ? \" < > |"
   }
 }

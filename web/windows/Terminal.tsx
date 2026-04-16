@@ -135,11 +135,19 @@ const fmtUptime = (sec: number, tt: Record<string, string>) => {
   return parts.join(' ') || '0m';
 };
 
-const SFTP_PANEL_MIN = 120;
+const SFTP_PANEL_MIN = 260;
 const SFTP_PANEL_MAX = 500;
 const SFTP_PANEL_DEFAULT = 220;
 const SYSINFO_WIDTH = 220;
 let tabCounter = 0;
+
+function validateSftpEntryName(name: string, tt: Record<string, string>) {
+  const trimmed = name.trim();
+  if (!trimmed) return tt.sftpNameRequired || 'Please enter a name';
+  if (trimmed === '.' || trimmed === '..') return tt.sftpNameInvalid || 'This name is not allowed';
+  if (/[\\/:*?"<>|]/.test(trimmed)) return tt.sftpNameInvalidChars || 'Contains invalid characters: \\ / : * ? " < > |';
+  return null;
+}
 
 const TerminalPage: React.FC<Props> = ({ language }) => {
   const t = useMemo(() => getTranslation(language) as any, [language]);
@@ -596,15 +604,25 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpMkdir = useCallback(async () => {
     if (!activeTab?.sessionId) return;
-    const name = await promptDialog({ title: tt.sftpNewFolder || 'New folder name:', placeholder: 'my-folder' });
+    const name = await promptDialog({
+      title: tt.sftpNewFolder || 'New folder name:',
+      placeholder: 'my-folder',
+      helperText: tt.sftpNameHelper || 'Avoid invalid characters: \\ / : * ? " < > |',
+      validate: (value) => validateSftpEntryName(value, tt),
+    });
     if (!name) return;
     try { await sftpApi.mkdir(activeTab.sessionId, activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`); sftpNavigate(activeTab.sftpPath); }
     catch (e: any) { toast('error', e?.message || 'Mkdir failed'); }
-  }, [activeTab, toast, tt, sftpNavigate]);
+  }, [activeTab, toast, tt, sftpNavigate, promptDialog]);
 
   const sftpNewFile = useCallback(async () => {
     if (!activeTab?.sessionId) return;
-    const name = await promptDialog({ title: tt.sftpNewFile || 'New file name:', placeholder: 'file.txt' });
+    const name = await promptDialog({
+      title: tt.sftpNewFile || 'New file name:',
+      placeholder: 'file.txt',
+      helperText: tt.sftpNameHelper || 'Avoid invalid characters: \\ / : * ? " < > |',
+      validate: (value) => validateSftpEntryName(value, tt),
+    });
     if (!name) return;
     const filePath = activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`;
     try {
@@ -624,7 +642,12 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpRename = useCallback(async (entry: FileEntry) => {
     if (!activeTab?.sessionId) return;
-    const newName = await promptDialog({ title: tt.sftpRename || 'Rename to:', defaultValue: entry.name });
+    const newName = await promptDialog({
+      title: tt.sftpRename || 'Rename to:',
+      defaultValue: entry.name,
+      helperText: tt.sftpNameHelper || 'Avoid invalid characters: \\ / : * ? " < > |',
+      validate: (value) => validateSftpEntryName(value, tt),
+    });
     if (!newName || newName === entry.name) return;
     const parentDir = entry.path.substring(0, entry.path.lastIndexOf('/')) || '/';
     const newPath = parentDir === '/' ? `/${newName}` : `${parentDir}/${newName}`;
@@ -633,7 +656,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       toast('success', (tt.sftpRenamed || 'Renamed to {name}').replace('{name}', newName));
       sftpNavigate(activeTab.sftpPath);
     } catch (e: any) { toast('error', e?.message || 'Rename failed'); }
-  }, [activeTab, toast, tt, sftpNavigate]);
+  }, [activeTab, toast, tt, sftpNavigate, promptDialog]);
 
   const breadcrumbs = useMemo(() => {
     if (!activeTab) return [];

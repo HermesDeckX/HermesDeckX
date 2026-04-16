@@ -258,6 +258,10 @@
     "sftpNewFile": "Nama file baru:",
     "sftpFileCreated": "Dibuat: {name}",
     "sftpRename": "Ubah nama menjadi:",
-    "sftpRenamed": "Diubah namanya menjadi {name}"
+    "sftpRenamed": "Diubah namanya menjadi {name}",
+    "sftpNameHelper": "Hindari karakter tidak valid: \\ / : * ? \" < > |",
+    "sftpNameRequired": "Masukkan nama",
+    "sftpNameInvalid": "Nama ini tidak diizinkan",
+    "sftpNameInvalidChars": "Mengandung karakter tidak valid: \\ / : * ? \" < > |"
   }
 }

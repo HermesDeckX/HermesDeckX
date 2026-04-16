@@ -258,6 +258,10 @@
     "sftpNewFile": "Имя нового файла:",
     "sftpFileCreated": "Создано: {name}",
     "sftpRename": "Переименовать в:",
-    "sftpRenamed": "Переименовано в {name}"
+    "sftpRenamed": "Переименовано в {name}",
+    "sftpNameHelper": "Избегайте недопустимых символов: \\ / : * ? \" < > |",
+    "sftpNameRequired": "Введите имя",
+    "sftpNameInvalid": "Это имя недопустимо",
+    "sftpNameInvalidChars": "Содержит недопустимые символы: \\ / : * ? \" < > |"
   }
 }

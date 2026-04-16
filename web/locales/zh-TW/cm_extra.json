@@ -258,6 +258,10 @@
     "sftpNewFile": "新建檔案名稱：",
     "sftpFileCreated": "已建立：{name}",
     "sftpRename": "重新命名為：",
-    "sftpRenamed": "已重新命名為 {name}"
+    "sftpRenamed": "已重新命名為 {name}",
+    "sftpNameHelper": "請避免使用非法字元：\\ / : * ? \" < > |",
+    "sftpNameRequired": "請輸入名稱",
+    "sftpNameInvalid": "此名稱不可使用",
+    "sftpNameInvalidChars": "包含非法字元：\\ / : * ? \" < > |"
   }
 }

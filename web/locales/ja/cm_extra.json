@@ -258,6 +258,10 @@
     "sftpNewFile": "新規ファイル名：",
     "sftpFileCreated": "作成しました：{name}",
     "sftpRename": "名前の変更：",
-    "sftpRenamed": "{name} に変更しました"
+    "sftpRenamed": "{name} に変更しました",
+    "sftpNameHelper": "無効な文字は使用しないでください: \\ / : * ? \" < > |",
+    "sftpNameRequired": "名前を入力してください",
+    "sftpNameInvalid": "この名前は使用できません",
+    "sftpNameInvalidChars": "無効な文字が含まれています: \\ / : * ? \" < > |"
   }
 }

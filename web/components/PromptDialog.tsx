@@ -7,8 +7,11 @@ interface PromptOptions {
   message?: string;
   defaultValue?: string;
   placeholder?: string;
+  helperText?: string;
   confirmText?: string;
   cancelText?: string;
+  danger?: boolean;
+  validate?: (value: string) => string | null;
 }
 
 interface PromptContextValue {
@@ -23,12 +26,14 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [open, setOpen] = useState<boolean>(false);
   const [options, setOptions] = useState<PromptOptions>({ title: '' });
   const [value, setValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const resolveRef = useRef<((value: string | null) => void) | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const prompt = useCallback((opts: PromptOptions): Promise<string | null> => {
     setOptions(opts);
     setValue(opts.defaultValue || '');
+    setError(opts.validate ? opts.validate(opts.defaultValue || '') : null);
     setOpen(true);
     return new Promise<string | null>((resolve) => {
       resolveRef.current = resolve;
@@ -43,9 +48,14 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [open]);
 
   const handleConfirm = useCallback(() => {
+    const nextError = options.validate ? options.validate(value) : null;
+    if (nextError) {
+      setError(nextError);
+      return;
+    }
     setOpen(false);
-    resolveRef.current?.(value);
-  }, [value]);
+    resolveRef.current?.(value.trim());
+  }, [options, value]);
 
   const handleCancel = useCallback(() => {
     setOpen(false);
@@ -59,6 +69,7 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const lang = (localStorage.getItem('lang') as Language) || 'zh';
   const t = getTranslation(lang) as any;
+  const confirmDisabled = Boolean(error);
 
   return (
     <PromptContext.Provider value={{ prompt }}>
@@ -69,7 +80,7 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           <div className="relative mac-glass rounded-2xl shadow-2xl overflow-hidden animate-scale-in w-[360px] backdrop-blur-3xl">
             <div className="px-6 pt-6 pb-4">
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[28px] text-primary">edit</span>
+                <span className={`material-symbols-outlined text-[28px] ${options.danger ? 'text-mac-red' : 'text-primary'}`}>edit</span>
               </div>
               <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2 text-center">{options.title}</h3>
               {options.message && (
@@ -81,11 +92,20 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 ref={inputRef}
                 type="text"
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  setValue(nextValue);
+                  setError(options.validate ? options.validate(nextValue) : null);
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder={options.placeholder}
-                className="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-200/30 dark:border-white/15 bg-white/10 dark:bg-white/5 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+                className={`w-full px-3 py-2.5 text-sm rounded-lg border bg-white/10 dark:bg-white/5 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 outline-none focus:ring-2 transition-all ${error ? 'border-mac-red/50 focus:ring-mac-red/30' : 'border-slate-200/30 dark:border-white/15 focus:ring-primary/40'}`}
               />
+              {error ? (
+                <p className="mt-2 text-[12px] text-mac-red">{error}</p>
+              ) : options.helperText ? (
+                <p className="mt-2 text-[12px] text-slate-500 dark:text-white/45">{options.helperText}</p>
+              ) : null}
             </div>
             <div className="flex border-t border-slate-200/20 dark:border-white/10">
               <button
@@ -96,7 +116,8 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 py-3.5 text-[13px] font-bold text-primary hover:bg-primary/10 transition-colors"
+                disabled={confirmDisabled}
+                className={`flex-1 py-3.5 text-[13px] font-bold transition-colors ${options.danger ? 'text-mac-red hover:bg-mac-red/10' : 'text-primary hover:bg-primary/10'} disabled:opacity-40 disabled:hover:bg-transparent`}
               >
                 {options.confirmText || t.ok}
               </button>
