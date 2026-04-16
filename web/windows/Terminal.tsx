@@ -881,7 +881,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
             {tabs.map((tab) => (
               <div key={tab.id} className={`flex items-center gap-1.5 px-3 py-2 text-xs cursor-pointer transition-all shrink-0 rounded-t-lg mx-0.5 ${tab.id === activeTabId ? (isDark ? 'bg-[#1a1b26] text-white shadow-sm' : 'bg-white text-gray-800 shadow-sm') : (isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-black/5')}`} onClick={() => setActiveTabId(tab.id)}>
                 {tab.connecting ? (<span className="material-symbols-outlined text-[11px] text-amber-400 animate-spin">progress_activity</span>) : tab.sessionId ? (<span className="w-2 h-2 rounded-full bg-green-400 shrink-0 shadow-[0_0_4px_rgba(74,222,128,0.5)]" />) : (<span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />)}
-                <span className="truncate max-w-[120px] font-medium">{tab.hostName}</span>
+                <span className="truncate max-w-[120px] font-medium">{tab.hostName}{(() => { const sameHost = tabs.filter((t) => t.hostId === tab.hostId); return sameHost.length > 1 ? ` #${sameHost.indexOf(tab) + 1}` : ''; })()}</span>
                 <button onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }} className={`ms-1 p-0.5 rounded-full transition-colors ${isDark ? 'hover:bg-white/10 text-white/20 hover:text-white/60' : 'hover:bg-black/10 text-black/20 hover:text-black/60'}`}><span className="material-symbols-outlined" style={{ fontSize: '12px' }}>close</span></button>
               </div>
             ))}
@@ -1129,7 +1129,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                       <div className="flex flex-col items-center gap-3 text-center">
                         <span className={`material-symbols-outlined text-3xl ${isDark ? 'text-white/30' : 'text-black/20'}`}>link_off</span>
                         <p className={`text-sm ${isDark ? 'text-white/50' : 'text-black/40'}`}>{tt.sessionEnded || 'Session ended'}</p>
-                        <button onClick={() => { const h = hosts.find((x) => x.id === tab.hostId); if (h) { closeTab(tab.id); connectToHost(h); } }} className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-colors">
+                        <button onClick={() => reconnectTab(tab.id)} className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-colors">
                           <span className="material-symbols-outlined text-sm">refresh</span>{tt.reconnect || 'Reconnect'}
                         </button>
                       </div>
