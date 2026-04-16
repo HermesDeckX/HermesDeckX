@@ -1306,11 +1306,19 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
           )}
 
           {/* ── Right: terminal (top) + SFTP (bottom) ── */}
-          <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-            {/* Terminal area */}
-            <div className="flex-1 min-h-0 relative">
-              {tabs.map((tab) => (
-                <div key={tab.id} className="absolute inset-0" style={{ display: tab.id === activeTabId ? 'block' : 'none' }}>
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col"> 
+             {/* Terminal area */}
+             <div className="flex-1 min-h-0 relative">
+               {tabs.map((tab) => (
+                <div
+                  key={tab.id}
+                  className="absolute inset-0"
+                  style={{
+                    visibility: tab.id === activeTabId ? 'visible' : 'hidden',
+                    pointerEvents: tab.id === activeTabId ? 'auto' : 'none',
+                    zIndex: tab.id === activeTabId ? 1 : 0,
+                  }}
+                >
                   <div ref={(el) => { termContainerRefs.current[tab.id] = el; }} className="w-full h-full p-1" />
                   {!tab.sessionId && !tab.connecting && (
                     <div className={`absolute inset-0 flex items-center justify-center z-10 ${isDark ? 'bg-black/40' : 'bg-white/60'} backdrop-blur-sm`}>
