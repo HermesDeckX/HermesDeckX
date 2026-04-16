@@ -13,6 +13,7 @@ import type { FileEntry, ReadFileResult } from '../services/sftp';
 import { sysInfoApi } from '../services/sysinfo';
 import type { SysInfo } from '../services/sysinfo';
 import { snippetsApi } from '../services/snippets';
+import { copyToClipboard } from '../utils/clipboard';
 import type { SSHSnippet } from '../services/snippets';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
@@ -362,8 +363,12 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     });
   }, [updateTab, isDark]);
 
-  const closeTab = useCallback((tabId: string) => {
+  const closeTab = useCallback(async (tabId: string) => {
     const tab = tabsRef.current.find((tb) => tb.id === tabId);
+    if (tab?.sessionId) {
+      const ok = await confirm({ title: tt.closeTabTitle || 'Close Session', message: (tt.closeTabMsg || 'Disconnect from "{name}"?').replace('{name}', tab.hostName), danger: true });
+      if (!ok) return;
+    }
     if (tab) {
       if (tab.sessionId && tab.wsClient) tab.wsClient.closeSession(tab.sessionId);
       tab.wsClient?.disconnect(); tab.xterm?.dispose(); tab.resizeObserver?.disconnect();
@@ -376,7 +381,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       }
       return next;
     });
-  }, [activeTabId]);
+  }, [activeTabId, confirm, tt]);
 
   // Reconnect a disconnected tab to the same host
   const reconnectTab = useCallback(async (tabId: string) => {
@@ -1106,6 +1111,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                           <div key={d.mount} className={`group/disk relative px-1.5 py-1 rounded text-[9px] mb-1 ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
                             <div className="flex items-center justify-between mb-0.5">
                               <span className={`font-mono truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{d.mount}</span>
+                              <button onClick={() => copyToClipboard(d.mount).then(() => toast('success', tt.copied || 'Copied')).catch(() => {})} className={`shrink-0 opacity-0 group-hover/disk:opacity-100 transition-opacity p-0.5 rounded ${isDark ? 'hover:bg-white/10 text-white/25 hover:text-white/60' : 'hover:bg-black/5 text-black/20 hover:text-black/50'}`} title={tt.copyPath || 'Copy path'}><span className="material-symbols-outlined" style={{ fontSize: '11px' }}>content_copy</span></button>
                               <span className={`font-medium ${pctColor(d.use_pct)}`}>{d.use_pct}%</span>
                             </div>
                             {/* Full path tooltip */}
