@@ -229,15 +229,23 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       return;
     }
 
-    // First mount or re-mount (xterm DOM was lost)
-    activeTab.xterm.open(container);
-    if (activeTab.fitAddon) try { activeTab.fitAddon.fit(); } catch { /* */ }
+    // xterm DOM not in container — either first mount or container was re-created by React (view switch)
+    const existingEl = (activeTab.xterm as any).element as HTMLElement | undefined;
+    if (existingEl) {
+      // Re-attach: xterm was already open()'d before, just move its DOM to the new container
+      container.appendChild(existingEl);
+      requestAnimationFrame(() => { try { activeTab.fitAddon?.fit(); } catch { /* */ } });
+    } else {
+      // First mount
+      activeTab.xterm.open(container);
+      if (activeTab.fitAddon) try { activeTab.fitAddon.fit(); } catch { /* */ }
+    }
     if (activeTab.resizeObserver) activeTab.resizeObserver.disconnect();
     const ro = new ResizeObserver(() => { if (activeTab.fitAddon) try { activeTab.fitAddon.fit(); } catch { /* */ } });
     ro.observe(container);
     activeTab.resizeObserver = ro;
     activeTab.xterm.focus();
-  }, [activeTabId, activeTab?.xterm]);
+  }, [activeTabId, activeTab?.xterm, view]);
 
   // Theme + font sync — only touch the visible (active) tab.
   // Modifying xterm options on a display:none tab triggers an internal
