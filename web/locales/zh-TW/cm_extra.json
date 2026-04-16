@@ -279,6 +279,7 @@
     "errorNetworkUnreachable": "網路無法到達。請檢查網路與路由設定。",
     "errorHostKeyMismatch": "主機金鑰驗證失敗。請檢查伺服器指紋與 known_hosts 設定。",
     "errorPassphraseRequired": "此私鑰已加密，請輸入私鑰密碼。",
-    "errorInvalidPrivateKey": "私鑰無效。請檢查私鑰格式與內容。"
+    "errorInvalidPrivateKey": "私鑰無效。請檢查私鑰格式與內容。",
+    "testFailed": "測試失敗"
   }
 }

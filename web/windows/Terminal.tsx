@@ -959,8 +959,8 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     try {
       const result = await sshHostsApi.test({ name: form.name, host: form.host, port: form.port || 22, username: form.username, auth_type: form.auth_type, password: form.password, private_key: form.private_key, passphrase: form.passphrase });
       if (result.success) toast('success', tt.testSuccess || 'Connection successful');
-      else toast('error', result.error || 'Connection failed');
-    } catch (e: any) { toast('error', e?.message || 'Test failed'); } finally { setTesting(false); }
+      else toast('error', translateTerminalError(result.error || tt.testFailed || 'Connection failed', tt));
+    } catch (e: any) { toast('error', translateTerminalError(e?.message || tt.testFailed || 'Test failed', tt)); } finally { setTesting(false); }
   }, [form, toast, tt]);
 
   const handleDelete = useCallback(async (host: SSHHost) => {

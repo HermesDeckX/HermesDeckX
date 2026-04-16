@@ -279,6 +279,7 @@
     "errorNetworkUnreachable": "网络不可达。请检查网络和路由配置。",
     "errorHostKeyMismatch": "主机密钥校验失败。请检查服务器指纹和 known_hosts 配置。",
     "errorPassphraseRequired": "该私钥已加密，请输入私钥密码。",
-    "errorInvalidPrivateKey": "私钥无效。请检查私钥格式和内容。"
+    "errorInvalidPrivateKey": "私钥无效。请检查私钥格式和内容。",
+    "testFailed": "测试失败"
   }
 }

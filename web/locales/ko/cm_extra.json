@@ -279,6 +279,7 @@
     "errorNetworkUnreachable": "네트워크에 도달할 수 없습니다. 네트워크 및 라우팅 구성을 확인하세요.",
     "errorHostKeyMismatch": "호스트 키 확인에 실패했습니다. 서버 지문과 known_hosts 구성을 확인하세요.",
     "errorPassphraseRequired": "이 개인 키는 암호화되어 있습니다. 패스프레이즈를 입력하세요.",
-    "errorInvalidPrivateKey": "유효하지 않은 개인 키입니다. 키 형식과 내용을 확인하세요."
+    "errorInvalidPrivateKey": "유효하지 않은 개인 키입니다. 키 형식과 내용을 확인하세요.",
+    "testFailed": "테스트에 실패했습니다"
   }
 }

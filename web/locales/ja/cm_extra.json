@@ -279,6 +279,7 @@
     "errorNetworkUnreachable": "ネットワークに到達できません。ネットワークとルーティング設定を確認してください。",
     "errorHostKeyMismatch": "ホストキーの検証に失敗しました。サーバーフィンガープリントと known_hosts 設定を確認してください。",
     "errorPassphraseRequired": "この秘密鍵は暗号化されています。パスフレーズを入力してください。",
-    "errorInvalidPrivateKey": "秘密鍵が無効です。鍵の形式と内容を確認してください。"
+    "errorInvalidPrivateKey": "秘密鍵が無効です。鍵の形式と内容を確認してください。",
+    "testFailed": "テストに失敗しました"
   }
 }
