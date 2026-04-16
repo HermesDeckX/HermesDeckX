@@ -80,6 +80,10 @@ export default function SftpEditor({ content, filename, filePath, isDark, isDirt
   const onSaveRef = useRef(onSave);
   onSaveRef.current = onSave;
   const [lineCol, setLineCol] = useState({ line: 1, col: 1 });
+  const detectedLang = detectLanguage(filename);
+  const [overrideLang, setOverrideLang] = useState<string | null>(null);
+  const currentLang = overrideLang ?? detectedLang ?? 'plain';
+  const availableLangs = ['plain', ...Object.keys(langLoaders).sort()];
 
   // Initialize editor
   useEffect(() => {
@@ -156,6 +160,19 @@ export default function SftpEditor({ content, filename, filePath, isDark, isDirt
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Switch language when overrideLang changes
+  useEffect(() => {
+    if (!viewRef.current) return;
+    const lang = overrideLang ?? detectedLang;
+    if (lang && langLoaders[lang]) {
+      langLoaders[lang]().then((ext) => {
+        if (viewRef.current) viewRef.current.dispatch({ effects: langComp.current.reconfigure(ext) });
+      }).catch(() => {});
+    } else {
+      viewRef.current.dispatch({ effects: langComp.current.reconfigure([]) });
+    }
+  }, [overrideLang]);
+
   // Update theme when isDark changes
   useEffect(() => {
     if (viewRef.current) {
@@ -184,7 +201,8 @@ export default function SftpEditor({ content, filename, filePath, isDark, isDirt
           {isDirty && <span className="text-amber-400 text-sm">●</span>}
           <span className={`text-[10px] font-mono truncate flex-1 min-w-0 ${isDark ? 'text-white/25' : 'text-black/25'}`} title={filePath}>{filePath}</span>
           <span className={`text-[10px] font-mono shrink-0 ${isDark ? 'text-white/25' : 'text-black/25'}`}>
-            {lineEnding.toUpperCase()} | Ln {lineCol.line}, Col {lineCol.col} | {fmtSize(fileSize)}
+            <select value={currentLang} onChange={(e) => setOverrideLang(e.target.value === (detectedLang ?? 'plain') ? null : e.target.value)} className={`bg-transparent border-none outline-none cursor-pointer text-[10px] font-mono ${isDark ? 'text-white/40' : 'text-black/40'}`}>{availableLangs.map((l) => <option key={l} value={l}>{l}</option>)}</select>
+            | {lineEnding.toUpperCase()} | Ln {lineCol.line}, Col {lineCol.col} | {fmtSize(fileSize)}
           </span>
           <button
             onClick={onSave}
