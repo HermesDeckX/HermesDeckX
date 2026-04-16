@@ -268,6 +268,22 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     xterm.loadAddon(new WebLinksAddon());
     xterm.writeln(`\x1b[36m⟡ Connecting to ${host.name} (${host.username}@${host.host}:${host.port})...\x1b[0m`);
 
+    // Custom keyboard shortcuts
+    xterm.attachCustomKeyEventHandler((e: KeyboardEvent) => {
+      // Ctrl+Shift+C → copy selection
+      if (e.ctrlKey && e.shiftKey && e.key === 'C' && e.type === 'keydown') {
+        const sel = xterm.getSelection();
+        if (sel) navigator.clipboard.writeText(sel);
+        return false;
+      }
+      // Ctrl+Shift+V → paste from clipboard
+      if (e.ctrlKey && e.shiftKey && e.key === 'V' && e.type === 'keydown') {
+        navigator.clipboard.readText().then((text) => { if (text) xterm.paste(text); });
+        return false;
+      }
+      return true;
+    });
+
     const client = new TerminalWSClient();
     try { await client.connect(); } catch {
       xterm.writeln('\x1b[31m✗ WebSocket connection failed\x1b[0m');
