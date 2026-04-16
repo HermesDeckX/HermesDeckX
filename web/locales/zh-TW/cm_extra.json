@@ -254,6 +254,8 @@
     "groupPlaceholder": "例如：正式環境、測試環境...",
     "ungrouped": "未分組",
     "commandHistory": "命令歷史",
-    "commandTemplates": "命令範本"
+    "commandTemplates": "命令範本",
+    "sftpNewFile": "新建檔案名稱：",
+    "sftpFileCreated": "已建立：{name}"
   }
 }

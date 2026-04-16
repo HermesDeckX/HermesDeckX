@@ -254,6 +254,8 @@
     "groupPlaceholder": "例：本番、ステージング...",
     "ungrouped": "未分類",
     "commandHistory": "コマンド履歴",
-    "commandTemplates": "コマンドテンプレート"
+    "commandTemplates": "コマンドテンプレート",
+    "sftpNewFile": "新規ファイル名：",
+    "sftpFileCreated": "作成しました：{name}"
   }
 }

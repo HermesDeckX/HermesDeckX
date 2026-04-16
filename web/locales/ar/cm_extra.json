@@ -254,6 +254,8 @@
     "groupPlaceholder": "مثال: الإنتاج، التجريبي...",
     "ungrouped": "غير مصنف",
     "commandHistory": "سجل الأوامر",
-    "commandTemplates": "قوالب الأوامر"
+    "commandTemplates": "قوالب الأوامر",
+    "sftpNewFile": "اسم الملف الجديد:",
+    "sftpFileCreated": "تم الإنشاء: {name}"
   }
 }

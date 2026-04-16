@@ -254,6 +254,8 @@
     "groupPlaceholder": "उदा: प्रोडक्शन, स्टेजिंग...",
     "ungrouped": "असमूहित",
     "commandHistory": "कमांड इतिहास",
-    "commandTemplates": "कमांड टेम्पलेट"
+    "commandTemplates": "कमांड टेम्पलेट",
+    "sftpNewFile": "नई फ़ाइल का नाम:",
+    "sftpFileCreated": "बनाया गया: {name}"
   }
 }

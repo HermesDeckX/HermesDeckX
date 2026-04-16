@@ -254,6 +254,8 @@
     "groupPlaceholder": "Cth: Produksi, Staging...",
     "ungrouped": "Tidak dikelompokkan",
     "commandHistory": "Riwayat perintah",
-    "commandTemplates": "Template perintah"
+    "commandTemplates": "Template perintah",
+    "sftpNewFile": "Nama file baru:",
+    "sftpFileCreated": "Dibuat: {name}"
   }
 }

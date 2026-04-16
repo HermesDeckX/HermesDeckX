@@ -254,6 +254,8 @@
     "groupPlaceholder": "e.g. Production, Staging...",
     "ungrouped": "Ungrouped",
     "commandHistory": "Command History",
-    "commandTemplates": "Command Templates"
+    "commandTemplates": "Command Templates",
+    "sftpNewFile": "New file name:",
+    "sftpFileCreated": "Created: {name}"
   }
 }

@@ -569,6 +569,18 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     catch (e: any) { toast('error', e?.message || 'Mkdir failed'); }
   }, [activeTab, toast, tt, sftpNavigate]);
 
+  const sftpNewFile = useCallback(async () => {
+    if (!activeTab?.sessionId) return;
+    const name = prompt(tt.sftpNewFile || 'New file name:');
+    if (!name) return;
+    const filePath = activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`;
+    try {
+      await sftpApi.writeFile(activeTab.sessionId, filePath, '');
+      toast('success', (tt.sftpFileCreated || 'Created: {name}').replace('{name}', name));
+      sftpNavigate(activeTab.sftpPath);
+    } catch (e: any) { toast('error', e?.message || 'Create file failed'); }
+  }, [activeTab, toast, tt, sftpNavigate]);
+
   const sftpRemove = useCallback(async (entry: FileEntry) => {
     if (!activeTab?.sessionId) return;
     const ok = await confirm({ title: tt.sftpDeleteTitle || 'Delete', message: (tt.sftpDeleteMsg || 'Delete "{name}"?').replace('{name}', entry.name), danger: true });
@@ -1258,6 +1270,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                         <>
                           <button onClick={() => { const newCache = { ...activeTab.treeCache }; Object.keys(newCache).forEach((k) => { if (k === activeTab.sftpPath) delete newCache[k]; }); updateTab(activeTab.id, { treeCache: newCache }); sftpNavigate(activeTab.sftpPath); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpRefresh || 'Refresh'}><span className="material-symbols-outlined text-sm">refresh</span></button>
                           <button onClick={sftpMkdir} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFolder || 'New Folder'}><span className="material-symbols-outlined text-sm">create_new_folder</span></button>
+                          <button onClick={sftpNewFile} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpNewFile || 'New File'}><span className="material-symbols-outlined text-sm">note_add</span></button>
                           <button onClick={() => uploadInputRef.current?.click()} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.sftpUpload || 'Upload'}><span className="material-symbols-outlined text-sm">upload_file</span></button>
                           <input ref={uploadInputRef} type="file" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length === 1) sftpUpload(files[0]); else if (files.length > 1) sftpUploadMulti(files); e.target.value = ''; }} />
                         </>

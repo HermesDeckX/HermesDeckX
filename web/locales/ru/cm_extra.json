@@ -254,6 +254,8 @@
     "groupPlaceholder": "Напр.: Продакшн, Стейджинг...",
     "ungrouped": "Без группы",
     "commandHistory": "История команд",
-    "commandTemplates": "Шаблоны команд"
+    "commandTemplates": "Шаблоны команд",
+    "sftpNewFile": "Имя нового файла:",
+    "sftpFileCreated": "Создано: {name}"
   }
 }
