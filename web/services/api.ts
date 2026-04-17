@@ -156,13 +156,16 @@ export const gatewayApi = {
   log: (lines = 200, file?: string) => get<{ lines: string[] }>(`/api/v1/gateway/log?lines=${lines}${file ? `&file=${file}` : ''}`),
   logCached: (lines = 200, ttlMs = 5000, force = false, file?: string) =>
     getCached<{ lines: string[] }>(`/api/v1/gateway/log?lines=${lines}${file ? `&file=${file}` : ''}`, ttlMs, force),
-  logTail: (params?: { cursor?: number; limit?: number; maxBytes?: number; file?: string }) => {
+  logTail: (params?: { cursor?: number; limit?: number; maxBytes?: number; file?: string; level?: string; q?: string; scan?: number }) => {
     const qs = new URLSearchParams();
     if (params?.cursor != null) qs.set('cursor', String(params.cursor));
     if (params?.limit != null) qs.set('limit', String(params.limit));
     if (params?.maxBytes != null) qs.set('maxBytes', String(params.maxBytes));
     if (params?.file) qs.set('file', params.file);
-    return get<{ lines: string[]; cursor: number; size: number; truncated: boolean; reset: boolean; remote?: boolean; path?: string }>(
+    if (params?.level) qs.set('level', params.level);
+    if (params?.q) qs.set('q', params.q);
+    if (params?.scan != null) qs.set('scan', String(params.scan));
+    return get<{ lines: string[]; cursor: number; size: number; truncated: boolean; reset: boolean; remote?: boolean; path?: string; filtered?: boolean; scanned?: number }>(
       `/api/v1/gateway/log?${qs.toString()}`
     );
   },

@@ -53,6 +53,12 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
   const [autoFollow, setAutoFollow] = useState(true);
   const [levelFilters, setLevelFilters] = useState<Record<string, boolean>>({ trace: true, debug: true, info: true, warn: true, error: true, fatal: true });
   const [logLimit, setLogLimit] = useState(120);
+  // 服务端深度过滤：启用后把 level/q 推到后端，扫描更大窗口（默认 5000 行，最多 50000）
+  const [deepFilter, setDeepFilter] = useState(false);
+  const [deepScan, setDeepScan] = useState(5000);
+  const [lastScanned, setLastScanned] = useState<number | null>(null);
+  // 日志工具栏展开状态：默认折叠，点击 tab 栏上的搜索按钮才展开第二行
+  const [showLogToolbar, setShowLogToolbar] = useState(false);
   const [expandedExtras, setExpandedExtras] = useState<Set<number>>(new Set());
   const [logFile, setLogFile] = useState<string>('');
   const [availableLogFiles, setAvailableLogFiles] = useState<{ name: string; path: string; size: number }[]>([]);
@@ -245,21 +251,32 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
     if (logFetchInFlightRef.current) return;
     logFetchInFlightRef.current = true;
     const isInitial = !logInitializedRef.current;
-    const params: { cursor?: number; limit?: number; maxBytes?: number; file?: string } = {
+    const params: { cursor?: number; limit?: number; maxBytes?: number; file?: string; level?: string; q?: string; scan?: number } = {
       limit: logLimit,
     };
     if (logFile) params.file = logFile;
-    if (!isInitial && logCursorRef.current != null) {
+    // 深度过滤模式：服务端按 level/keyword 扫描 deepScan 行并返回最后 logLimit 行匹配。
+    // 不使用 cursor（服务端过滤后 cursor 语义无意义）；每次全量刷新。
+    if (deepFilter) {
+      const activeLevels = Object.entries(levelFilters).filter(([, on]) => on).map(([k]) => k);
+      if (activeLevels.length > 0 && activeLevels.length < 6) {
+        params.level = activeLevels.join(',');
+      }
+      const q = logSearch.trim();
+      if (q) params.q = q;
+      params.scan = deepScan;
+    } else if (!isInitial && logCursorRef.current != null) {
       params.cursor = logCursorRef.current;
     }
     gatewayApi.logTail(params).then((res) => {
       if (!res) return;
       const newLines = Array.isArray(res.lines) ? res.lines : [];
-      if (typeof res.cursor === 'number') {
+      if (typeof res.cursor === 'number' && !deepFilter) {
         logCursorRef.current = res.cursor;
       }
-      if (isInitial || res.reset) {
-        // First fetch or log file rotated: replace all lines
+      setLastScanned(res.filtered && typeof res.scanned === 'number' ? res.scanned : null);
+      if (deepFilter || isInitial || res.reset) {
+        // 深度过滤 / 首次加载 / 日志轮转：整体替换
         logInitializedRef.current = true;
         setLogs(newLines);
       } else if (newLines.length > 0) {
@@ -284,7 +301,7 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
     }).finally(() => {
       logFetchInFlightRef.current = false;
     });
-  }, [logLimit, logFile]);
+  }, [logLimit, logFile, deepFilter, deepScan, logSearch, levelFilters]);
 
   useEffect(() => {
     const running = !!status?.running;
@@ -1697,9 +1714,8 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
 
       {/* 日志 & 调试区 */}
       <div className="flex-1 flex flex-col theme-panel border-t border-slate-200 dark:border-white/10 overflow-hidden sci-card">
-        {/* Tab Bar + Search + Filters — 单行紧凑 */}
+        {/* Row 1: Tab Bar — 单行 tabs，不与日志工具栏竞争空间 */}
         <div className="shrink-0 min-h-9 flex items-center gap-1.5 px-3 theme-field border-b border-slate-200 dark:border-white/5 overflow-x-auto scrollbar-none">
-          {/* Tabs */}
           {(['logs', 'events', 'channels', 'service', 'debug'] as const).map(tab => {
             const icons: Record<string, string> = { logs: 'terminal', events: 'event_note', channels: 'cell_tower', service: 'settings_system_daydream', debug: 'bug_report' };
             const labels: Record<string, string> = { logs: gw.logs, events: eventsLabel, channels: gw.channels || 'Channels', service: gw.service || 'Service', debug: gw.debug };
@@ -1725,67 +1741,110 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
               </button>
             );
           })}
-
+          {/* Right-aligned log actions — 小屏保持可见，与 tabs 同行 */}
           {activeTab === 'logs' && (
-            <>
-              {/* Divider */}
-              <div className="w-px h-4 theme-divider mx-0.5" />
-              {/* Search */}
-              <div className="relative flex-1 min-w-[100px] max-w-[200px]">
-                <span className="material-symbols-outlined absolute start-1.5 top-1/2 -translate-y-1/2 theme-text-muted text-[12px]">search</span>
-                <input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder={gw.search}
-                  className="w-full h-6 ps-6 pe-2 theme-field rounded text-[11px] theme-text-secondary placeholder:theme-text-muted focus:ring-1 focus:ring-primary/50 outline-none sci-input" />
-              </div>
-              {/* Level Filters */}
-              <div className="flex items-center gap-px">
-                {['trace', 'debug', 'info', 'warn', 'error', 'fatal'].map(lvl => {
-                  const colors: Record<string, string> = { trace: 'bg-slate-500', debug: 'bg-slate-400', info: 'bg-blue-500', warn: 'bg-yellow-500', error: 'bg-red-500', fatal: 'bg-red-700' };
-                  return (
-                    <button key={lvl} onClick={() => setLevelFilters(f => ({ ...f, [lvl]: !f[lvl] }))}
-                      className={`px-1.5 py-0.5 rounded text-[11px] font-bold uppercase transition-all ${levelFilters[lvl] ? `${colors[lvl]}/20 theme-text-secondary` : 'theme-field theme-text-muted line-through'}`}>
-                      {lvl.slice(0, 3)}
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Log file switcher */}
-              {availableLogFiles.length > 1 && (
-                <>
-                  <div className="w-px h-4 theme-divider mx-0.5" />
-                  <div className="flex items-center gap-px">
-                    {availableLogFiles.map(f => (
-                      <button key={f.name} onClick={() => { setLogFile(prev => prev === f.name ? '' : f.name); logCursorRef.current = undefined; logInitializedRef.current = false; setLogs([]); }}
-                        title={`${f.name}.log (${f.size > 1024 ? `${(f.size / 1024).toFixed(0)}KB` : `${f.size}B`})`}
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${(logFile === f.name || (!logFile && f.name === availableLogFiles[0]?.name)) ? 'bg-primary/10 text-primary' : 'theme-field theme-text-muted hover:text-[var(--color-text-secondary)]'}`}>{f.name}</button>
-                    ))}
-                  </div>
-                </>
-              )}
-              {/* Log limit switcher */}
-              <div className="w-px h-4 theme-divider mx-0.5" />
-              <div className="flex items-center gap-px">
-                {[120, 500, 1000].map(n => (
-                  <button key={n} onClick={() => { setLogLimit(n); logCursorRef.current = undefined; logInitializedRef.current = false; fetchLogs(true); }}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${logLimit === n ? 'bg-primary/10 text-primary' : 'theme-field theme-text-muted hover:text-[var(--color-text-secondary)]'}`}>{n}</button>
-                ))}
-              </div>
-              {/* Spacer */}
-              <div className="flex-1" />
-              {/* Actions */}
-              <button onClick={handleClearLogs} className="theme-text-muted hover:text-[var(--color-text)] transition-colors" title={gw.clear}>
+            <div className="ms-auto flex items-center gap-0.5 shrink-0">
+              <button
+                onClick={() => setShowLogToolbar(v => !v)}
+                className={`p-1 rounded transition-all ${showLogToolbar || logSearch || deepFilter ? 'text-primary bg-primary/10' : 'theme-text-muted hover:text-[var(--color-text)]'}`}
+                title={gw.toggleLogToolbar || gw.search}
+              >
+                <span className="material-symbols-outlined text-[14px]">{showLogToolbar ? 'search_off' : 'search'}</span>
+              </button>
+              <button onClick={handleClearLogs} className="p-1 theme-text-muted hover:text-[var(--color-text)] transition-colors" title={gw.clear}>
                 <span className="material-symbols-outlined text-[14px]">delete_sweep</span>
               </button>
               <button onClick={() => { const blob = new Blob([filteredLogs.map(item => item.line).join('\n')], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `gateway-logs-${Date.now()}.txt`; a.click(); }}
-                className="theme-text-muted hover:text-[var(--color-text)] transition-colors" title={gw.export}>
+                className="p-1 theme-text-muted hover:text-[var(--color-text)] transition-colors" title={gw.export}>
                 <span className="material-symbols-outlined text-[14px]">download</span>
               </button>
               <button onClick={() => setAutoFollow(!autoFollow)}
-                className={`p-0.5 rounded transition-all ${autoFollow ? 'text-primary' : 'theme-text-muted hover:text-[var(--color-text)]'}`} title={gw.autoFollow}>
+                className={`p-1 rounded transition-all ${autoFollow ? 'text-primary' : 'theme-text-muted hover:text-[var(--color-text)]'}`} title={gw.autoFollow}>
                 <span className="material-symbols-outlined text-[14px]">{autoFollow ? 'vertical_align_bottom' : 'pause'}</span>
               </button>
-            </>
+            </div>
           )}
         </div>
+
+        {/* Row 2: Log Toolbar — 只在 logs tab 且用户展开时显示 */}
+        {activeTab === 'logs' && showLogToolbar && (
+          <div className="shrink-0 min-h-8 flex items-center gap-1.5 px-3 py-1 theme-field/50 border-b border-slate-200 dark:border-white/5 flex-wrap">
+            {/* Search */}
+            <div className="relative flex-1 min-w-[140px] max-w-[240px]">
+              <span className="material-symbols-outlined absolute start-1.5 top-1/2 -translate-y-1/2 theme-text-muted text-[12px]">search</span>
+              <input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder={gw.search}
+                className="w-full h-6 ps-6 pe-2 theme-field rounded text-[11px] theme-text-secondary placeholder:theme-text-muted focus:ring-1 focus:ring-primary/50 outline-none sci-input" />
+            </div>
+            {/* Level Filters */}
+            <div className="flex items-center gap-px">
+              {['trace', 'debug', 'info', 'warn', 'error', 'fatal'].map(lvl => {
+                const colors: Record<string, string> = { trace: 'bg-slate-500', debug: 'bg-slate-400', info: 'bg-blue-500', warn: 'bg-yellow-500', error: 'bg-red-500', fatal: 'bg-red-700' };
+                return (
+                  <button key={lvl} onClick={() => setLevelFilters(f => ({ ...f, [lvl]: !f[lvl] }))}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase transition-all ${levelFilters[lvl] ? `${colors[lvl]}/20 theme-text-secondary` : 'theme-field theme-text-muted line-through'}`}>
+                    {lvl.slice(0, 3)}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Log file selector — 下拉代替按钮组，节省空间 */}
+            {availableLogFiles.length > 1 && (
+              <>
+                <div className="w-px h-4 theme-divider" />
+                <CustomSelect
+                  value={logFile}
+                  onChange={(v) => { setLogFile(v); logCursorRef.current = undefined; logInitializedRef.current = false; setLogs([]); }}
+                  options={[
+                    { value: '', label: availableLogFiles[0]?.name || 'default' },
+                    ...availableLogFiles.map(f => ({
+                      value: f.name,
+                      label: `${f.name} (${f.size > 1024 ? `${(f.size / 1024).toFixed(0)}KB` : `${f.size}B`})`,
+                    })),
+                  ]}
+                  className="h-6 min-w-[110px] px-1.5 theme-field rounded text-[10px] font-bold theme-text-secondary"
+                />
+              </>
+            )}
+            {/* Log limit switcher */}
+            <div className="w-px h-4 theme-divider" />
+            <div className="flex items-center gap-px" title={gw.lines}>
+              {[120, 500, 1000].map(n => (
+                <button key={n} onClick={() => { setLogLimit(n); logCursorRef.current = undefined; logInitializedRef.current = false; fetchLogs(true); }}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${logLimit === n ? 'bg-primary/10 text-primary' : 'theme-field theme-text-muted hover:text-[var(--color-text-secondary)]'}`}>{n}</button>
+              ))}
+            </div>
+            {/* Deep filter toggle — server-side level/keyword filter across larger scan window */}
+            <div className="w-px h-4 theme-divider" />
+            <button
+              onClick={() => {
+                const next = !deepFilter;
+                setDeepFilter(next);
+                logCursorRef.current = undefined;
+                logInitializedRef.current = false;
+                setLogs([]);
+                setLastScanned(null);
+                setTimeout(() => fetchLogs(true), 0);
+              }}
+              title={gw.deepFilterTip || 'Deep filter'}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${deepFilter ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' : 'theme-field theme-text-muted hover:text-[var(--color-text-secondary)]'}`}
+            >
+              <span className="material-symbols-outlined text-[11px]">filter_alt</span>
+              {gw.deepFilter || 'Deep'}
+            </button>
+            {deepFilter && (
+              <div className="flex items-center gap-px">
+                {[1000, 5000, 20000].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => { setDeepScan(n); logInitializedRef.current = false; setLogs([]); setTimeout(() => fetchLogs(true), 0); }}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${deepScan === n ? 'bg-primary/10 text-primary' : 'theme-field theme-text-muted hover:text-[var(--color-text-secondary)]'}`}
+                    title={`${gw.deepScan || 'Scan'} ${n}`}
+                  >{n >= 1000 ? `${n / 1000}k` : n}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Content Area */}
         {activeTab === 'logs' ? (
@@ -1851,6 +1910,11 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
               <div className="flex gap-4">
                 <span>{filteredLogs.length}{filteredLogs.length !== visibleLogs.length ? `/${visibleLogs.length}` : ''} {gw.lines}</span>
                 {omittedLogCount > 0 && <span>+{omittedLogCount}</span>}
+                {deepFilter && lastScanned != null && (
+                  <span className="text-amber-500 dark:text-amber-400" title={gw.deepFilterTip}>
+                    {lastScanned} {gw.deepScanned || 'scanned'}
+                  </span>
+                )}
                 {logStats.errors > 0 && <span className="text-red-500 dark:text-red-400">{logStats.errors} ERR</span>}
                 {logStats.warns > 0 && <span className="text-amber-500 dark:text-yellow-400">{logStats.warns} WARN</span>}
                 {activeProfile && <span className="text-primary">{activeProfile.host}:{activeProfile.port}</span>}
