@@ -926,13 +926,23 @@ docker_install() {
     echo -e "  HermesAgent:   ${GREEN}${vol_base}/${vol_hermesagent}/_data${NC}"
     echo -e "  Runtime:    ${GREEN}${vol_base}/${vol_runtime}/_data${NC}"
     echo ""
-    echo -e "${YELLOW}🔐 First-time login / 首次登录：${NC}"
-    echo -e "  View initial admin credentials in container logs:"
-    echo -e "  查看容器日志中的初始管理员账户信息："
+    echo -e "${YELLOW}🔐 Initial Login Credentials / 初始登录凭据：${NC}"
     echo ""
-    echo "────────────────────────────────────────"
-    $compose_run logs --tail 50
-    echo "────────────────────────────────────────"
+    local _cred
+    _cred=$(docker exec "$instance_name" cat /data/hermesdeckx/bootstrap/credentials 2>/dev/null || true)
+    if [ -n "$_cred" ]; then
+        local _user _pass
+        _user=$(echo "$_cred" | sed -n '1p')
+        _pass=$(echo "$_cred" | sed -n '2p')
+        echo -e "    Username / 用户名:  ${BOLD}${_user}${NC}"
+        echo -e "    Password / 密码:    ${BOLD}${_pass}${NC}"
+        echo ""
+        echo -e "  ${YELLOW}⚠ Please change the default password after first login!${NC}"
+        echo -e "  ${YELLOW}⚠ 请在首次登录后修改默认密码！${NC}"
+    else
+        echo -e "  ${YELLOW}View credentials in container logs: / 查看容器日志获取凭据：${NC}"
+        echo -e "  ${GREEN}$compose_run logs --tail 50${NC}"
+    fi
     echo ""
     echo -e "${YELLOW}Docker management commands / Docker 管理命令：${NC}"
     echo -e "  ${GREEN}$compose_run ps${NC}              - Status / 状态"
