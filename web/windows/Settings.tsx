@@ -962,6 +962,15 @@ const Settings: React.FC<SettingsProps> = ({ language, onLogout, pendingTab, onT
                       </div>
                       <span className="material-symbols-outlined text-[14px] text-slate-300 dark:text-white/15 group-hover:text-primary">open_in_new</span>
                     </SmartLink>
+                    <SmartLink href="https://github.com/ClawDeckX/ClawDeckX"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors group">
+                      <span className="text-[20px]">🦞</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-slate-700 dark:text-white/70 group-hover:text-primary">ClawDeckX</p>
+                        <p className="text-[10px] text-slate-400 dark:text-white/20 truncate">github.com/ClawDeckX/ClawDeckX</p>
+                      </div>
+                      <span className="material-symbols-outlined text-[14px] text-slate-300 dark:text-white/15 group-hover:text-primary">open_in_new</span>
+                    </SmartLink>
                     <SmartLink href="https://x.com/knowhunters"
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors group">
                       <span className="text-[20px]">𝕏</span>
