@@ -5,7 +5,7 @@ package version
 //	go build -ldflags "-X HermesDeckX/internal/version.Version=0.0.3 -X HermesDeckX/internal/version.Build=42"
 //
 // Source of truth: web/package.json -> "version" field.
-var Version = "0.0.3"
+var Version = "0.0.4"
 
 // Build is the build number, injected at compile time.
 var Build = "dev"
