@@ -2,6 +2,7 @@
 
 ### ✨ New Features / 新功能
 
+- add ClawDeckX link in about section
 - add log toolbar with deep filter, log file selector and level filters
 - add SSH command templates and reauth credential prompt
 - add validation support and file name checks for sftp dialogs
