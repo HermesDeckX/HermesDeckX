@@ -493,8 +493,11 @@ func RunServe(args []string) int {
 	runtimeHandler := handlers.NewRuntimeHandler(runtimeMgr)
 
 	// SSH Terminal
-	if err := database.DB.AutoMigrate(&sshterm.SSHHost{}, &sshterm.SSHSnippet{}); err != nil {
+	if err := database.DB.AutoMigrate(&sshterm.SSHHost{}, &sshterm.SSHSnippet{}, &sshterm.CommandTemplate{}); err != nil {
 		logger.Log.Error().Err(err).Msg("failed to migrate SSH tables")
+	}
+	if err := sshterm.NewCommandTemplateRepo().SeedDefaults(); err != nil {
+		logger.Log.Warn().Err(err).Msg("failed to seed default command templates")
 	}
 	termManager := sshterm.NewManager()
 	defer termManager.CloseAll()
@@ -503,6 +506,7 @@ func RunServe(args []string) int {
 	sftpHandler := handlers.NewSFTPHandler(termManager)
 	sysInfoHandler := handlers.NewSysInfoHandler(termManager)
 	snippetHandler := handlers.NewSnippetHandler()
+	commandTemplateHandler := handlers.NewCommandTemplateHandler()
 
 	router := web.NewRouter()
 
@@ -867,6 +871,14 @@ func RunServe(args []string) int {
 	router.POST("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Record))
 	router.PUT("/api/v1/ssh/snippets/favorite", web.RequireAdmin(snippetHandler.ToggleFavorite))
 	router.DELETE("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Delete))
+
+	// Command Templates (reusable presets across hosts)
+	router.GET("/api/v1/ssh/command-templates", commandTemplateHandler.List)
+	router.POST("/api/v1/ssh/command-templates", web.RequireAdmin(commandTemplateHandler.Create))
+	router.PUT("/api/v1/ssh/command-templates", web.RequireAdmin(commandTemplateHandler.Update))
+	router.DELETE("/api/v1/ssh/command-templates", web.RequireAdmin(commandTemplateHandler.Delete))
+	router.POST("/api/v1/ssh/command-templates/reorder", web.RequireAdmin(commandTemplateHandler.Reorder))
+	router.POST("/api/v1/ssh/command-templates/import", web.RequireAdmin(commandTemplateHandler.Import))
 
 	// WebSocket
 	router.GET("/api/v1/ws", wsHub.HandleWS(cfg.Auth.JWTSecret))

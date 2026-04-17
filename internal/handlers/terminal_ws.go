@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -44,6 +45,15 @@ type termCreatePayload struct {
 	HostID uint `json:"hostId"`
 	Cols   int  `json:"cols"`
 	Rows   int  `json:"rows"`
+	// Optional credential overrides for this single session attempt.
+	// When provided, they take precedence over the stored host credentials
+	// for the connect call only; persistence is the frontend's responsibility
+	// via a separate update to the SSH host record.
+	AuthType   string `json:"authType,omitempty"`
+	Username   string `json:"username,omitempty"`
+	Password   string `json:"password,omitempty"`
+	PrivateKey string `json:"privateKey,omitempty"`
+	Passphrase string `json:"passphrase,omitempty"`
 }
 
 type termInputPayload struct {
@@ -211,14 +221,34 @@ func (h *TerminalWSHandler) handleCreate(
 		return
 	}
 
-	// Decrypt credentials
+	// Decrypt stored credentials; overrides (from the current request) win
+	// when non-empty. This lets the frontend retry failed auth with new
+	// credentials without persisting them unless the user explicitly opts in.
 	password, _ := decryptField(host.PasswordEncrypted)
 	privateKey, _ := decryptField(host.PrivateKeyEncrypted)
 	passphrase, _ := decryptField(host.PassphraseEncrypted)
 
-	authMethod, err := sshterm.BuildAuthMethod(host.AuthType, password, privateKey, passphrase)
+	authType := host.AuthType
+	if p.AuthType != "" {
+		authType = p.AuthType
+	}
+	username := host.Username
+	if p.Username != "" {
+		username = p.Username
+	}
+	if p.Password != "" {
+		password = p.Password
+	}
+	if p.PrivateKey != "" {
+		privateKey = p.PrivateKey
+	}
+	if p.Passphrase != "" {
+		passphrase = p.Passphrase
+	}
+
+	authMethod, err := sshterm.BuildAuthMethod(authType, password, privateKey, passphrase)
 	if err != nil {
-		sendJSON("terminal.error", map[string]string{"message": "auth failed: " + err.Error()})
+		sendJSON("terminal.error", map[string]string{"message": "AUTH_FAILED: " + err.Error()})
 		return
 	}
 
@@ -228,7 +258,7 @@ func (h *TerminalWSHandler) handleCreate(
 	cfg := sshterm.SessionConfig{
 		Host:       host.Host,
 		Port:       host.Port,
-		Username:   host.Username,
+		Username:   username,
 		AuthMethod: authMethod,
 		HostKey:    hostKeyCallback,
 		Cols:       p.Cols,
@@ -239,7 +269,20 @@ func (h *TerminalWSHandler) handleCreate(
 
 	sess, err := h.manager.CreateSession(cfg)
 	if err != nil {
-		sendJSON("terminal.error", map[string]string{"message": "connect failed: " + err.Error()})
+		msg := err.Error()
+		lower := strings.ToLower(msg)
+		// Tag auth-class failures so the frontend can open a reauth dialog
+		// instead of just writing a generic error to the terminal.
+		if strings.Contains(lower, "unable to authenticate") ||
+			strings.Contains(lower, "permission denied") ||
+			strings.Contains(lower, "handshake failed") ||
+			strings.Contains(lower, "no supported methods remain") ||
+			strings.Contains(lower, "passphrase") ||
+			strings.Contains(lower, "private key") {
+			sendJSON("terminal.error", map[string]string{"message": "AUTH_FAILED: " + msg})
+		} else {
+			sendJSON("terminal.error", map[string]string{"message": "connect failed: " + msg})
+		}
 		return
 	}
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 const SftpEditor = lazy(() => import('../components/SftpEditor'));
 import type { Language } from '../types';
 import { getTranslation } from '../locales';
@@ -8,7 +9,7 @@ import { usePromptDialog } from '../components/PromptDialog';
 import { sshHostsApi } from '../services/ssh-hosts';
 import type { SSHHost, SSHHostCreateRequest } from '../services/ssh-hosts';
 import { TerminalWSClient } from '../services/terminal-ws';
-import type { TerminalMessage, TerminalCreatedPayload, TerminalOutputPayload, TerminalExitPayload, TerminalErrorPayload } from '../services/terminal-ws';
+import type { TerminalMessage, TerminalCreatedPayload, TerminalOutputPayload, TerminalExitPayload, TerminalErrorPayload, TerminalCredentialOverride } from '../services/terminal-ws';
 import { sftpApi } from '../services/sftp';
 import type { FileEntry, ReadFileResult } from '../services/sftp';
 import { sysInfoApi } from '../services/sysinfo';
@@ -16,6 +17,16 @@ import type { SysInfo } from '../services/sysinfo';
 import { snippetsApi } from '../services/snippets';
 import { copyToClipboard } from '../utils/clipboard';
 import type { SSHSnippet } from '../services/snippets';
+import {
+  commandTemplatesApi,
+  buildCommandTemplateBundle,
+  parseCommandTemplateBundle,
+} from '../services/command-templates';
+import type {
+  CommandTemplate,
+  CommandTemplateImportItem,
+  CommandTemplateImportStrategy,
+} from '../services/command-templates';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
@@ -94,7 +105,6 @@ const TERM_THEMES: Record<string, { dark: Record<string, string>; light: Record<
 const TERM_THEME_NAMES = Object.keys(TERM_THEMES);
 const DEFAULT_TERM_THEME = 'Tokyo Night';
 const DEFAULT_TERM_FONT_SIZE = 14;
-const TERM_FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
 
 const fileIcon = (name: string, isDir: boolean): { icon: string; color: string } => {
   if (isDir) return { icon: 'folder', color: 'text-cyan-400' };
@@ -224,7 +234,47 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const [termTheme, setTermTheme] = useState(() => localStorage.getItem('hdx_term_theme') || DEFAULT_TERM_THEME);
   const [termFontSize, setTermFontSize] = useState(() => parseInt(localStorage.getItem('hdx_term_font_size') || '') || DEFAULT_TERM_FONT_SIZE);
   const [showTermSettings, setShowTermSettings] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'terminal' | 'templates'>('terminal');
   const termSettingsRef = useRef<HTMLDivElement>(null);
+  const [commandTemplates, setCommandTemplates] = useState<CommandTemplate[]>([]);
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<number | null>(null);
+  const [templateLabelInput, setTemplateLabelInput] = useState('');
+  const [templateCommandInput, setTemplateCommandInput] = useState('');
+  const [templateDescInput, setTemplateDescInput] = useState('');
+  const [templateSaving, setTemplateSaving] = useState(false);
+  const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
+  const [templateSearch, setTemplateSearch] = useState('');
+  const [templateHoverIndex, setTemplateHoverIndex] = useState(0);
+  const templatesDropdownRef = useRef<HTMLDivElement>(null);
+  const templatesButtonRef = useRef<HTMLButtonElement>(null);
+  const templateSearchInputRef = useRef<HTMLInputElement>(null);
+  const templateListRef = useRef<HTMLDivElement>(null);
+  const [templatesDropdownPos, setTemplatesDropdownPos] = useState<{ left: number; bottom: number } | null>(null);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  // ── Reauth (interactive credential prompt on SSH auth failure) ──
+  interface ReauthForm {
+    auth_type: 'password' | 'key';
+    username: string;
+    password: string;
+    private_key: string;
+    passphrase: string;
+    save_password: boolean;
+    show_password: boolean;
+  }
+  const defaultReauthForm: ReauthForm = { auth_type: 'password', username: '', password: '', private_key: '', passphrase: '', save_password: false, show_password: false };
+  const [reauthTabId, setReauthTabId] = useState<string | null>(null);
+  const [reauthHost, setReauthHost] = useState<SSHHost | null>(null);
+  const [reauthForm, setReauthForm] = useState<ReauthForm>(defaultReauthForm);
+  const [reauthSubmitting, setReauthSubmitting] = useState(false);
+  // Pending save-on-success: keyed by tabId, consumed in terminal.created handler
+  const pendingSaveRef = useRef<Record<string, { hostId: number; creds: ReauthForm }>>({});
+  const [importText, setImportText] = useState('');
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importPreview, setImportPreview] = useState<CommandTemplateImportItem[]>([]);
+  const [importStrategy, setImportStrategy] = useState<CommandTemplateImportStrategy>('skip_duplicates');
+  const [importRunning, setImportRunning] = useState(false);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -384,6 +434,22 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       updateTab(tabId, { sessionId: p.sessionId, connecting: false });
       xterm.writeln(`\x1b[32m✓ ${formatTerminalText(tt.termConnected || 'Connected (session: {sessionId})', { sessionId: p.sessionId })}\x1b[0m\r\n`);
       xterm.focus();
+      // If the user asked to save credentials during a reauth attempt, persist now
+      // that the server has accepted them.
+      const pend = pendingSaveRef.current[tabId];
+      if (pend && pend.creds.save_password) {
+        const body: Partial<SSHHostCreateRequest> = {
+          auth_type: pend.creds.auth_type,
+          username: pend.creds.username,
+          save_password: true,
+        };
+        if (pend.creds.auth_type === 'password') body.password = pend.creds.password;
+        else { body.private_key = pend.creds.private_key; body.passphrase = pend.creds.passphrase; }
+        sshHostsApi.update(pend.hostId, body)
+          .then(() => { toast('success', tt.credentialsSaved || 'Credentials saved'); loadHosts(); })
+          .catch((e: any) => toast('error', e?.message || (tt.credentialsSaveFailed || 'Failed to save credentials')));
+      }
+      delete pendingSaveRef.current[tabId];
     });
     client.on('terminal.output', (msg: TerminalMessage) => { xterm.write((msg.payload as TerminalOutputPayload).data); });
     client.on('terminal.exit', (msg: TerminalMessage) => {
@@ -391,8 +457,28 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       updateTab(tabId, { sessionId: null });
     });
     client.on('terminal.error', (msg: TerminalMessage) => {
-      xterm.writeln(`\r\n\x1b[31m✗ ${translateTerminalError((msg.payload as TerminalErrorPayload).message, tt)}\x1b[0m`);
+      const raw = (msg.payload as TerminalErrorPayload).message || '';
+      const isAuth = raw.startsWith('AUTH_FAILED:');
+      const clean = isAuth ? raw.replace(/^AUTH_FAILED:\s*/, '') : raw;
+      xterm.writeln(`\r\n\x1b[31m✗ ${translateTerminalError(clean, tt)}\x1b[0m`);
       updateTab(tabId, { connecting: false });
+      // Drop any pending save since this attempt failed.
+      delete pendingSaveRef.current[tabId];
+      if (isAuth) {
+        // Open the reauth dialog so the user can enter fresh credentials
+        // without having to close & re-open the host card.
+        setReauthTabId(tabId);
+        setReauthHost(host);
+        setReauthForm({
+          auth_type: host.auth_type,
+          username: host.username,
+          password: '',
+          private_key: '',
+          passphrase: '',
+          save_password: host.save_password,
+          show_password: false,
+        });
+      }
     });
     xterm.onData((data: string) => {
       if (sid) client.sendInput(sid, data);
@@ -809,6 +895,356 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     setCmdInput('');
   }, [cmdInput, execSnippet]);
 
+  // ── Command Templates (global, backend-persisted) ──
+  const loadCommandTemplates = useCallback(async () => {
+    try {
+      const list = await commandTemplatesApi.list();
+      setCommandTemplates(list || []);
+      setTemplatesLoaded(true);
+    } catch (e: any) {
+      toast('error', e?.message || 'Failed to load templates');
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (!templatesLoaded) loadCommandTemplates();
+  }, [templatesLoaded, loadCommandTemplates]);
+
+  const resetTemplateForm = useCallback(() => {
+    setEditingTemplateId(null);
+    setTemplateLabelInput('');
+    setTemplateCommandInput('');
+    setTemplateDescInput('');
+  }, []);
+
+  const startEditTemplate = useCallback((tpl: CommandTemplate) => {
+    setEditingTemplateId(tpl.id);
+    setTemplateLabelInput(tpl.label);
+    setTemplateCommandInput(tpl.command);
+    setTemplateDescInput(tpl.description || '');
+  }, []);
+
+  const saveTemplate = useCallback(async () => {
+    const label = templateLabelInput.trim();
+    const command = templateCommandInput.trim();
+    const description = templateDescInput.trim();
+    if (!label || !command) {
+      toast('error', tt.fieldsRequired || 'Name and command are required');
+      return;
+    }
+    setTemplateSaving(true);
+    try {
+      if (editingTemplateId) {
+        const existing = commandTemplates.find((x) => x.id === editingTemplateId);
+        await commandTemplatesApi.update(editingTemplateId, {
+          label, command, description,
+          sort_order: existing?.sort_order ?? 0,
+        });
+        toast('success', tt.save || 'Saved');
+      } else {
+        const nextSort = commandTemplates.reduce((m, t) => Math.max(m, t.sort_order ?? 0), -1) + 1;
+        await commandTemplatesApi.create({ label, command, description, sort_order: nextSort });
+        toast('success', tt.save || 'Saved');
+      }
+      resetTemplateForm();
+      await loadCommandTemplates();
+    } catch (e: any) {
+      toast('error', e?.message || 'Save failed');
+    } finally {
+      setTemplateSaving(false);
+    }
+  }, [templateLabelInput, templateCommandInput, templateDescInput, editingTemplateId, commandTemplates, resetTemplateForm, loadCommandTemplates, toast, tt]);
+
+  const deleteTemplate = useCallback(async (tpl: CommandTemplate) => {
+    const ok = await confirm({
+      title: tt.deleteConfirmTitle || 'Delete',
+      message: formatTerminalText(tt.deleteConfirmMsg || 'Delete "{name}"?', { name: tpl.label }),
+      confirmText: tt.delete || 'Delete',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await commandTemplatesApi.delete(tpl.id);
+      if (editingTemplateId === tpl.id) resetTemplateForm();
+      toast('success', tt.delete || 'Deleted');
+      await loadCommandTemplates();
+    } catch (e: any) {
+      toast('error', e?.message || 'Delete failed');
+    }
+  }, [confirm, editingTemplateId, resetTemplateForm, loadCommandTemplates, toast, tt]);
+
+  const moveTemplate = useCallback(async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= commandTemplates.length) return;
+    const next = commandTemplates.slice();
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    setCommandTemplates(next);
+    try {
+      await commandTemplatesApi.reorder(next.map((x) => x.id));
+    } catch (e: any) {
+      toast('error', e?.message || 'Reorder failed');
+      loadCommandTemplates();
+    }
+  }, [commandTemplates, loadCommandTemplates, toast]);
+
+  const openTemplateSettings = useCallback(() => {
+    setShowTermSettings(true);
+    setSettingsTab('templates');
+  }, []);
+
+  // ── Import / Export ──
+  const serializeBundle = useCallback(() => JSON.stringify(buildCommandTemplateBundle(commandTemplates), null, 2), [commandTemplates]);
+
+  const exportTemplates = useCallback(() => {
+    if (commandTemplates.length === 0) {
+      toast('warning', tt.nothingToExport || 'Nothing to export');
+      return;
+    }
+    const content = serializeBundle();
+    const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 13);
+    const filename = `hermesdeckx-command-templates-${stamp}.json`;
+    const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('success', formatTerminalText(tt.exportedCount || 'Exported {count} templates', { count: commandTemplates.length }));
+  }, [commandTemplates.length, serializeBundle, toast, tt]);
+
+  const copyExportToClipboard = useCallback(async () => {
+    if (commandTemplates.length === 0) {
+      toast('warning', tt.nothingToExport || 'Nothing to export');
+      return;
+    }
+    try {
+      await copyToClipboard(serializeBundle());
+      toast('success', tt.copiedToClipboard || 'Copied to clipboard');
+    } catch (e: any) {
+      toast('error', e?.message || 'Copy failed');
+    }
+  }, [commandTemplates.length, serializeBundle, toast, tt]);
+
+  const openImportDialog = useCallback(() => {
+    setImportText('');
+    setImportError(null);
+    setImportPreview([]);
+    setImportStrategy('skip_duplicates');
+    setShowImportDialog(true);
+  }, []);
+
+  const handleImportTextChange = useCallback((text: string) => {
+    setImportText(text);
+    if (!text.trim()) {
+      setImportError(null);
+      setImportPreview([]);
+      return;
+    }
+    try {
+      const items = parseCommandTemplateBundle(text);
+      setImportPreview(items);
+      setImportError(null);
+    } catch (e: any) {
+      setImportPreview([]);
+      setImportError(e?.message || (tt.importInvalidBundle || 'Invalid bundle'));
+    }
+  }, [tt]);
+
+  const handleImportFileSelected = useCallback((file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = typeof reader.result === 'string' ? reader.result : '';
+      handleImportTextChange(text);
+    };
+    reader.onerror = () => setImportError(reader.error?.message || 'Failed to read file');
+    reader.readAsText(file);
+  }, [handleImportTextChange]);
+
+  // ── Reauth submit: retry connect on the same WS with fresh credentials ──
+  const submitReauth = useCallback(async () => {
+    if (!reauthTabId || !reauthHost) return;
+    if (!reauthForm.username.trim()) {
+      toast('error', tt.fieldsRequired || 'Please fill required fields');
+      return;
+    }
+    if (reauthForm.auth_type === 'password' && !reauthForm.password) {
+      toast('error', tt.fieldsRequired || 'Please fill required fields');
+      return;
+    }
+    if (reauthForm.auth_type === 'key' && !reauthForm.private_key.trim()) {
+      toast('error', tt.fieldsRequired || 'Please fill required fields');
+      return;
+    }
+    const tab = tabsRef.current.find((t) => t.id === reauthTabId);
+    if (!tab || !tab.wsClient || !tab.xterm || !tab.fitAddon) {
+      toast('error', tt.errorUnknown || 'Session not ready');
+      return;
+    }
+    setReauthSubmitting(true);
+    try {
+      const override: TerminalCredentialOverride = {
+        authType: reauthForm.auth_type,
+        username: reauthForm.username.trim(),
+      };
+      if (reauthForm.auth_type === 'password') override.password = reauthForm.password;
+      else { override.privateKey = reauthForm.private_key; override.passphrase = reauthForm.passphrase; }
+
+      pendingSaveRef.current[reauthTabId] = { hostId: reauthHost.id, creds: reauthForm };
+      updateTab(reauthTabId, { connecting: true });
+      tab.xterm.writeln(`\r\n\x1b[36m⟡ ${tt.reauthRetrying || 'Retrying connection...'}\x1b[0m`);
+      const dims = tab.fitAddon.proposeDimensions();
+      tab.wsClient.createSession(reauthHost.id, dims?.cols || 120, dims?.rows || 30, override);
+      setReauthTabId(null);
+      setReauthHost(null);
+    } finally {
+      setReauthSubmitting(false);
+    }
+  }, [reauthTabId, reauthHost, reauthForm, toast, tt, updateTab]);
+
+  const cancelReauth = useCallback(() => {
+    setReauthTabId(null);
+    setReauthHost(null);
+    setReauthForm(defaultReauthForm);
+  }, [defaultReauthForm]);
+
+  const runImport = useCallback(async () => {
+    if (importPreview.length === 0) return;
+    if (importStrategy === 'replace') {
+      const ok = await confirm({
+        title: tt.importReplaceTitle || 'Replace all templates?',
+        message: tt.importReplaceMsg || 'All existing templates will be permanently deleted and replaced with the imported list. This cannot be undone.',
+        confirmText: tt.importReplace || tt.delete || 'Replace',
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    setImportRunning(true);
+    try {
+      const result = await commandTemplatesApi.import(importPreview, importStrategy);
+      const parts = [formatTerminalText(tt.importResult || '{inserted} imported', { inserted: result.inserted })];
+      if (result.skipped) parts.push(formatTerminalText(tt.importResultSkipped || '{skipped} skipped', { skipped: result.skipped }));
+      if (result.replaced) parts.push(tt.importResultReplaced || 'replaced');
+      toast('success', parts.join(' · '));
+      setShowImportDialog(false);
+      await loadCommandTemplates();
+    } catch (e: any) {
+      toast('error', e?.message || (tt.importFailed || 'Import failed'));
+    } finally {
+      setImportRunning(false);
+    }
+  }, [confirm, importPreview, importStrategy, loadCommandTemplates, toast, tt]);
+
+  // ── Templates dropdown: search + keyboard nav ──
+  const filteredTemplates = useMemo(() => {
+    const q = templateSearch.trim().toLowerCase();
+    if (!q) return commandTemplates;
+    return commandTemplates.filter((tpl) =>
+      tpl.label.toLowerCase().includes(q) ||
+      tpl.command.toLowerCase().includes(q) ||
+      (tpl.description || '').toLowerCase().includes(q)
+    );
+  }, [commandTemplates, templateSearch]);
+
+  useEffect(() => {
+    if (templateHoverIndex >= filteredTemplates.length) {
+      setTemplateHoverIndex(0);
+    }
+  }, [filteredTemplates.length, templateHoverIndex]);
+
+  useEffect(() => {
+    if (!showTemplatesDropdown) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (templatesButtonRef.current?.contains(target)) return;
+      if (templatesDropdownRef.current && !templatesDropdownRef.current.contains(target)) {
+        setShowTemplatesDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showTemplatesDropdown]);
+
+  // Anchor portal dropdown to button rect; re-measure on open and on resize/scroll.
+  useEffect(() => {
+    if (!showTemplatesDropdown) { setTemplatesDropdownPos(null); return; }
+    const update = () => {
+      const btn = templatesButtonRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      setTemplatesDropdownPos({ left: r.right, bottom: window.innerHeight - r.top + 4 });
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
+  }, [showTemplatesDropdown]);
+
+  useEffect(() => {
+    if (showTemplatesDropdown) {
+      setTimeout(() => templateSearchInputRef.current?.focus(), 10);
+    } else {
+      setTemplateSearch('');
+      setTemplateHoverIndex(0);
+    }
+  }, [showTemplatesDropdown]);
+
+  useEffect(() => {
+    if (!showTemplatesDropdown || !templateListRef.current) return;
+    const el = templateListRef.current.querySelector<HTMLButtonElement>(`[data-tpl-index="${templateHoverIndex}"]`);
+    if (el) el.scrollIntoView({ block: 'nearest' });
+  }, [templateHoverIndex, showTemplatesDropdown]);
+
+  const highlightMatch = useCallback((text: string, query: string) => {
+    if (!query) return text;
+    const q = query.toLowerCase();
+    const lower = text.toLowerCase();
+    const idx = lower.indexOf(q);
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span className={isDark ? 'text-amber-300 bg-amber-400/20 rounded px-0.5' : 'text-amber-700 bg-amber-300/40 rounded px-0.5'}>
+          {text.slice(idx, idx + q.length)}
+        </span>
+        {text.slice(idx + q.length)}
+      </>
+    );
+  }, [isDark]);
+
+  const handleTemplatePick = useCallback((tpl: CommandTemplate, runImmediately = false) => {
+    if (runImmediately) {
+      execSnippet(tpl.command);
+    } else {
+      setCmdInput(tpl.command);
+    }
+    setShowTemplatesDropdown(false);
+  }, [execSnippet]);
+
+  const handleTemplateSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setTemplateHoverIndex((i) => Math.min(i + 1, Math.max(filteredTemplates.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setTemplateHoverIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const tpl = filteredTemplates[templateHoverIndex];
+      if (tpl) handleTemplatePick(tpl, e.shiftKey);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setShowTemplatesDropdown(false);
+    }
+  }, [filteredTemplates, templateHoverIndex, handleTemplatePick]);
+
   // Load snippets when switching to commands tab or on connect
   useEffect(() => {
     if (activeTab && !activeTab.snippetsLoaded) { loadSnippets(); }
@@ -1123,26 +1559,152 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                   <span className="material-symbols-outlined text-sm">settings</span>
                 </button>
                 {showTermSettings && (
-                  <div className={`absolute end-0 top-full mt-1 z-50 w-52 rounded-xl shadow-lg p-3 space-y-3 ${isDark ? 'bg-[#1e1f2e] border border-white/10' : 'bg-white border border-black/10'}`}>
-                    <div>
-                      <div className={`text-[10px] font-medium mb-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tt.termFontSize || 'Font Size'}</div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setTermFontSize(Math.max(10, termFontSize - 1))} className={`w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${isDark ? 'bg-white/10 hover:bg-white/20 text-white/60' : 'bg-black/5 hover:bg-black/10 text-black/60'}`}>−</button>
-                        <span className={`text-xs font-mono flex-1 text-center ${isDark ? 'text-white/70' : 'text-black/70'}`}>{termFontSize}px</span>
-                        <button onClick={() => setTermFontSize(Math.min(24, termFontSize + 1))} className={`w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${isDark ? 'bg-white/10 hover:bg-white/20 text-white/60' : 'bg-black/5 hover:bg-black/10 text-black/60'}`}>+</button>
+                  <div className={`absolute end-0 top-full mt-1 z-50 w-[440px] max-w-[calc(100vw-32px)] rounded-xl shadow-xl overflow-hidden ${isDark ? 'bg-[#1e1f2e] border border-white/10' : 'bg-white border border-black/10'}`}>
+                    {/* Header with tabs */}
+                    <div className={`flex items-center justify-between px-3 py-2 border-b ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+                      <div className="flex items-center gap-0.5">
+                        <button onClick={() => setSettingsTab('terminal')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${settingsTab === 'terminal' ? (isDark ? 'bg-cyan-500/15 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>tune</span>
+                          {tt.termSettings || 'Terminal'}
+                        </button>
+                        <button onClick={() => setSettingsTab('templates')} className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${settingsTab === 'templates' ? (isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-500/10 text-amber-600') : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-black/5'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>terminal</span>
+                          {tt.commandTemplates || 'Templates'}
+                          <span className={`text-[10px] ms-0.5 ${isDark ? 'text-white/25' : 'text-black/25'}`}>{commandTemplates.length}</span>
+                        </button>
                       </div>
+                      <button onClick={() => { setShowTermSettings(false); resetTemplateForm(); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-black/5 text-gray-400'}`} title={tt.close || 'Close'}>
+                        <span className="material-symbols-outlined text-sm">close</span>
+                      </button>
                     </div>
-                    <div>
-                      <div className={`text-[10px] font-medium mb-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tt.termTheme || 'Theme'}</div>
-                      <div className="space-y-0.5">
-                        {TERM_THEME_NAMES.map((name) => (
-                          <button key={name} onClick={() => setTermTheme(name)} className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-xs transition-colors ${termTheme === name ? 'bg-cyan-500/20 text-cyan-400' : isDark ? 'text-white/50 hover:bg-white/5 hover:text-white/70' : 'text-black/50 hover:bg-black/5 hover:text-black/70'}`}>
-                            <span className="w-3 h-3 rounded-full border shrink-0" style={{ backgroundColor: TERM_THEMES[name].dark.background, borderColor: TERM_THEMES[name].dark.foreground + '40' }} />
-                            {name}
-                          </button>
-                        ))}
+
+                    {settingsTab === 'terminal' && (
+                      <div className="p-3 space-y-3">
+                        <div>
+                          <div className={`text-[11px] font-medium mb-1.5 ${isDark ? 'text-white/50' : 'text-black/50'}`}>{tt.termFontSize || 'Font Size'}</div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setTermFontSize(Math.max(10, termFontSize - 1))} className={`w-7 h-7 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${isDark ? 'bg-white/10 hover:bg-white/20 text-white/70' : 'bg-black/5 hover:bg-black/10 text-black/70'}`}>−</button>
+                            <span className={`text-xs font-mono flex-1 text-center ${isDark ? 'text-white/80' : 'text-black/80'}`}>{termFontSize}px</span>
+                            <button onClick={() => setTermFontSize(Math.min(24, termFontSize + 1))} className={`w-7 h-7 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${isDark ? 'bg-white/10 hover:bg-white/20 text-white/70' : 'bg-black/5 hover:bg-black/10 text-black/70'}`}>+</button>
+                          </div>
+                        </div>
+                        <div>
+                          <div className={`text-[11px] font-medium mb-1.5 ${isDark ? 'text-white/50' : 'text-black/50'}`}>{tt.termTheme || 'Theme'}</div>
+                          <div className="grid grid-cols-2 gap-1">
+                            {TERM_THEME_NAMES.map((name) => (
+                              <button key={name} onClick={() => setTermTheme(name)} className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors ${termTheme === name ? (isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-500/10 text-cyan-600') : isDark ? 'text-white/60 hover:bg-white/5' : 'text-black/60 hover:bg-black/5'}`}>
+                                <span className="w-3 h-3 rounded-full border shrink-0" style={{ backgroundColor: TERM_THEMES[name].dark.background, borderColor: TERM_THEMES[name].dark.foreground + '40' }} />
+                                {name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {settingsTab === 'templates' && (
+                      <div className="flex flex-col max-h-[460px]">
+                        {/* Toolbar: Import / Export / Copy */}
+                        <div className={`flex items-center justify-between gap-2 px-3 py-1.5 border-b ${isDark ? 'border-white/10 bg-white/[.02]' : 'border-black/10 bg-black/[.015]'}`}>
+                          <div className={`text-[10px] ${isDark ? 'text-white/40' : 'text-black/40'}`}>
+                            {commandTemplates.length} {tt.commandTemplates || 'templates'}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button onClick={openImportDialog} className={`flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-md transition-colors ${isDark ? 'text-cyan-400 hover:bg-cyan-500/10' : 'text-cyan-600 hover:bg-cyan-500/10'}`} title={tt.import || 'Import'}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>file_upload</span>
+                              {tt.import || 'Import'}
+                            </button>
+                            <button onClick={exportTemplates} disabled={commandTemplates.length === 0} className={`flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-md transition-colors disabled:opacity-40 ${isDark ? 'text-amber-400 hover:bg-amber-500/10' : 'text-amber-600 hover:bg-amber-500/10'}`} title={tt.export || 'Export'}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>file_download</span>
+                              {tt.export || 'Export'}
+                            </button>
+                            <button onClick={copyExportToClipboard} disabled={commandTemplates.length === 0} className={`p-1 rounded-md transition-colors disabled:opacity-40 ${isDark ? 'text-white/40 hover:bg-white/10 hover:text-white/70' : 'text-gray-400 hover:bg-black/5 hover:text-gray-600'}`} title={tt.copyJson || 'Copy JSON'}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>content_copy</span>
+                            </button>
+                          </div>
+                        </div>
+                        {/* Editor */}
+                        <div className={`p-3 space-y-2 border-b ${isDark ? 'border-white/10 bg-white/[.02]' : 'border-black/10 bg-black/[.015]'}`}>
+                          <div className="flex items-center justify-between">
+                            <div className={`text-[11px] font-semibold ${isDark ? 'text-white/70' : 'text-black/70'}`}>
+                              {editingTemplateId ? (tt.edit || 'Edit') : (tt.newTemplate || 'New Template')}
+                            </div>
+                            {editingTemplateId && (
+                              <button onClick={resetTemplateForm} className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${isDark ? 'text-white/40 hover:bg-white/10' : 'text-black/40 hover:bg-black/5'}`}>
+                                {tt.cancel || 'Cancel'}
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            value={templateLabelInput}
+                            onChange={(e) => setTemplateLabelInput(e.target.value)}
+                            placeholder={tt.templateLabel || 'Name'}
+                            className={`w-full px-2 py-1.5 rounded-md text-xs outline-none border ${isDark ? 'bg-white/5 text-white/80 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/80 border-black/10 focus:border-cyan-500/50'}`}
+                          />
+                          <textarea
+                            value={templateCommandInput}
+                            onChange={(e) => setTemplateCommandInput(e.target.value)}
+                            placeholder={tt.typeCommand || 'Command...'}
+                            rows={2}
+                            className={`w-full px-2 py-1.5 rounded-md text-xs font-mono outline-none border resize-none ${isDark ? 'bg-white/5 text-white/80 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/80 border-black/10 focus:border-cyan-500/50'}`}
+                          />
+                          <input
+                            value={templateDescInput}
+                            onChange={(e) => setTemplateDescInput(e.target.value)}
+                            placeholder={tt.templateDescription || 'Description (optional)'}
+                            className={`w-full px-2 py-1.5 rounded-md text-xs outline-none border ${isDark ? 'bg-white/5 text-white/70 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/70 border-black/10 focus:border-cyan-500/50'}`}
+                          />
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button onClick={saveTemplate} disabled={templateSaving || !templateLabelInput.trim() || !templateCommandInput.trim()} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-40 transition-colors">
+                              <span className="material-symbols-outlined text-sm">{editingTemplateId ? 'save' : 'add'}</span>
+                              {editingTemplateId ? (tt.save || 'Save') : (tt.add || 'Add')}
+                            </button>
+                          </div>
+                        </div>
+                        {/* List */}
+                        <div className="flex-1 overflow-y-auto neon-scrollbar">
+                          {commandTemplates.length === 0 ? (
+                            <div className={`flex flex-col items-center justify-center h-24 gap-1 ${isDark ? 'text-white/30' : 'text-black/20'}`}>
+                              <span className="material-symbols-outlined text-xl">terminal</span>
+                              <span className="text-[11px]">{tt.noCommands || 'No templates yet'}</span>
+                            </div>
+                          ) : (
+                            <div className={`divide-y ${isDark ? 'divide-white/[.05]' : 'divide-black/[.04]'}`}>
+                              {commandTemplates.map((tpl, idx) => (
+                                <div key={tpl.id} className={`flex items-center gap-1.5 px-2.5 py-1.5 group transition-colors ${editingTemplateId === tpl.id ? (isDark ? 'bg-cyan-500/5' : 'bg-cyan-500/5') : isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
+                                  <div className="flex flex-col gap-0 shrink-0">
+                                    <button onClick={() => moveTemplate(idx, -1)} disabled={idx === 0} className={`w-4 h-3 flex items-center justify-center rounded disabled:opacity-20 ${isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/10' : 'text-black/30 hover:text-black/60 hover:bg-black/5'}`}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_drop_up</span>
+                                    </button>
+                                    <button onClick={() => moveTemplate(idx, 1)} disabled={idx === commandTemplates.length - 1} className={`w-4 h-3 flex items-center justify-center rounded disabled:opacity-20 ${isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/10' : 'text-black/30 hover:text-black/60 hover:bg-black/5'}`}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_drop_down</span>
+                                    </button>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`text-[11px] font-semibold truncate ${isDark ? 'text-white/75' : 'text-black/75'}`}>{tpl.label}</div>
+                                    <div className={`text-[10px] font-mono truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tpl.command}</div>
+                                    {tpl.description && (
+                                      <div className={`text-[10px] truncate ${isDark ? 'text-white/30' : 'text-black/30'}`}>{tpl.description}</div>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => { setCmdInput(tpl.command); setShowTermSettings(false); }} className={`p-1 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/40 hover:text-cyan-400' : 'hover:bg-black/5 text-gray-400 hover:text-cyan-500'}`} title={tt.run || 'Use'}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>north_east</span>
+                                    </button>
+                                    <button onClick={() => startEditTemplate(tpl)} className={`p-1 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/40 hover:text-amber-400' : 'hover:bg-black/5 text-gray-400 hover:text-amber-500'}`} title={tt.edit || 'Edit'}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                                    </button>
+                                    <button onClick={() => deleteTemplate(tpl)} className={`p-1 rounded transition-colors ${isDark ? 'hover:bg-red-500/20 text-white/40 hover:text-red-400' : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'}`} title={tt.delete || 'Delete'}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1212,6 +1774,18 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                     <div className={`text-[10px] font-mono px-1.5 py-1 rounded ${isDark ? 'bg-white/5 text-white/50' : 'bg-black/[.03] text-black/50'}`}>
                       <div className="truncate">{activeTab.sysInfo.hostname}</div>
                       <div className="truncate">{activeTab.sysInfo.kernel}</div>
+                    </div>
+                    <div className={`group/address relative px-1.5 py-1 rounded ${isDark ? 'bg-white/5' : 'bg-black/[.03]'}`}>
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={`font-mono text-[10px] truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{hosts.find((h) => h.id === activeTab.hostId)?.host || '-'}</span>
+                        <button
+                          onClick={() => copyToClipboard(hosts.find((h) => h.id === activeTab.hostId)?.host || '').then(() => toast('success', tt.copied || 'Copied')).catch(() => {})}
+                          className={`shrink-0 opacity-0 group-hover/address:opacity-100 transition-opacity p-0.5 rounded ${isDark ? 'hover:bg-white/10 text-white/25 hover:text-white/60' : 'hover:bg-black/5 text-black/20 hover:text-black/50'}`}
+                          title={tt.copyPath || 'Copy path'}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>content_copy</span>
+                        </button>
+                      </div>
                     </div>
                     {/* Uptime + Load */}
                     <div className={`flex items-center gap-1 text-[10px] px-1.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
@@ -1557,29 +2131,116 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                           {tt.send || 'Send'}
                         </button>
                         {/* Command templates dropdown */}
-                        <div className="relative shrink-0 group/tpl">
-                          <button className={`flex items-center gap-0.5 px-2 py-1 text-[11px] font-medium rounded-md transition-colors shrink-0 ${isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70' : 'bg-black/[.03] text-black/40 hover:bg-black/[.06] hover:text-black/70'}`}>
+                        <div className="shrink-0">
+                          <button
+                            ref={templatesButtonRef}
+                            onClick={() => setShowTemplatesDropdown((v) => !v)}
+                            className={`flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md transition-all shrink-0 ${showTemplatesDropdown ? (isDark ? 'bg-amber-500/15 text-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.15)]' : 'bg-amber-500/10 text-amber-600') : isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70' : 'bg-black/[.03] text-black/40 hover:bg-black/[.06] hover:text-black/70'}`}
+                          >
                             <span className="material-symbols-outlined text-sm">terminal</span>
                             {tt.templates || 'Templates'}
-                            <span className="material-symbols-outlined text-sm">expand_more</span>
+                            <span className={`text-[10px] rounded-full px-1.5 py-px font-mono ${isDark ? 'bg-white/10 text-white/50' : 'bg-black/5 text-black/50'}`}>{commandTemplates.length}</span>
+                            <span className="material-symbols-outlined text-sm">{showTemplatesDropdown ? 'expand_less' : 'expand_more'}</span>
                           </button>
-                          <div className={`absolute end-0 top-full mt-1 z-50 hidden group-hover/tpl:block rounded-lg border shadow-xl py-1 min-w-[220px] ${isDark ? 'bg-[#1e2028] border-white/10 shadow-black/40' : 'bg-white border-black/10 shadow-black/10'}`}>
-                            {[
-                              { label: 'Top', cmd: 'top -bn1 | head -20' },
-                              { label: 'Disk', cmd: 'df -h' },
-                              { label: 'Memory', cmd: 'free -h' },
-                              { label: 'Ports', cmd: 'ss -tlnp' },
-                              { label: 'PS', cmd: 'ps aux --sort=-%mem | head -15' },
-                              { label: 'Uptime', cmd: 'uptime' },
-                              { label: 'IP', cmd: 'ip addr show' },
-                              { label: 'Logs', cmd: 'journalctl -n 50 --no-pager' },
-                            ].map((tpl) => (
-                              <button key={tpl.label} onClick={() => setCmdInput(tpl.cmd)} onDoubleClick={() => execSnippet(tpl.cmd)} className={`w-full flex items-center gap-2 px-3 py-1.5 text-start transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/[.03]'}`}>
-                                <span className={`text-[10px] font-semibold w-12 shrink-0 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>{tpl.label}</span>
-                                <span className={`text-[10px] font-mono truncate ${isDark ? 'text-white/50' : 'text-black/50'}`}>{tpl.cmd}</span>
-                              </button>
-                            ))}
-                          </div>
+                          {showTemplatesDropdown && templatesDropdownPos && createPortal(
+                            <div
+                              ref={templatesDropdownRef}
+                              className={`fixed z-[9998] rounded-xl border shadow-2xl overflow-hidden w-[360px] max-w-[calc(100vw-32px)] flex flex-col backdrop-blur-xl animate-[fade-in_.12s_ease-out] ${isDark ? 'bg-[#161824]/95 border-white/10 shadow-black/50' : 'bg-white/95 border-black/10 shadow-black/10'}`}
+                              style={{
+                                left: `min(${templatesDropdownPos.left}px, calc(100vw - 16px))`,
+                                bottom: `${templatesDropdownPos.bottom}px`,
+                                transform: 'translateX(-100%)',
+                                maxHeight: '380px',
+                              }}
+                            >
+                              {/* Search bar */}
+                              <div className={`flex items-center gap-2 px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/[.06] bg-white/[.02]' : 'border-black/[.05] bg-black/[.015]'}`}>
+                                <span className={`material-symbols-outlined text-sm shrink-0 ${isDark ? 'text-white/40' : 'text-black/40'}`}>search</span>
+                                <input
+                                  ref={templateSearchInputRef}
+                                  value={templateSearch}
+                                  onChange={(e) => { setTemplateSearch(e.target.value); setTemplateHoverIndex(0); }}
+                                  onKeyDown={handleTemplateSearchKeyDown}
+                                  placeholder={tt.searchTemplates || 'Search templates...'}
+                                  className={`flex-1 bg-transparent outline-none text-xs placeholder:text-xs ${isDark ? 'text-white/80 placeholder:text-white/25' : 'text-black/80 placeholder:text-black/30'}`}
+                                />
+                                {templateSearch && (
+                                  <button onClick={() => { setTemplateSearch(''); templateSearchInputRef.current?.focus(); }} className={`p-0.5 rounded transition-colors ${isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/10' : 'text-black/30 hover:text-black/60 hover:bg-black/5'}`} title={tt.clear || 'Clear'}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                                  </button>
+                                )}
+                                <span className={`text-[10px] font-mono shrink-0 ${isDark ? 'text-white/25' : 'text-black/30'}`}>{filteredTemplates.length}/{commandTemplates.length}</span>
+                              </div>
+
+                              {/* List */}
+                              <div ref={templateListRef} className="flex-1 overflow-y-auto neon-scrollbar py-1">
+                                {filteredTemplates.length === 0 ? (
+                                  <div className={`flex flex-col items-center justify-center py-6 gap-1 ${isDark ? 'text-white/30' : 'text-black/25'}`}>
+                                    <span className="material-symbols-outlined text-2xl">search_off</span>
+                                    <span className="text-[11px]">{templateSearch ? (tt.noResults || 'No matching templates') : (tt.noCommands || 'No templates yet')}</span>
+                                    {!templateSearch && commandTemplates.length === 0 && (
+                                      <button onClick={openTemplateSettings} className={`mt-1 text-[11px] px-2.5 py-1 rounded-md transition-colors ${isDark ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' : 'bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20'}`}>
+                                        <span className="material-symbols-outlined text-sm align-middle me-1">add</span>
+                                        {tt.add || 'Add'}
+                                      </button>
+                                    )}
+                                  </div>
+                                ) : (
+                                  filteredTemplates.map((tpl, idx) => {
+                                    const active = idx === templateHoverIndex;
+                                    return (
+                                      <button
+                                        key={tpl.id}
+                                        data-tpl-index={idx}
+                                        onMouseEnter={() => setTemplateHoverIndex(idx)}
+                                        onClick={() => handleTemplatePick(tpl, false)}
+                                        onDoubleClick={() => handleTemplatePick(tpl, true)}
+                                        className={`group w-full flex items-center gap-2 px-3 py-1.5 text-start transition-colors ${active ? (isDark ? 'bg-amber-500/10' : 'bg-amber-500/[.08]') : ''} ${isDark ? 'hover:bg-white/[.04]' : 'hover:bg-black/[.025]'}`}
+                                        title={tpl.description || tpl.command}
+                                      >
+                                        <span className={`material-symbols-outlined shrink-0 transition-colors ${active ? 'text-amber-400' : isDark ? 'text-white/25' : 'text-black/25'}`} style={{ fontSize: '14px' }}>terminal</span>
+                                        <div className="flex-1 min-w-0">
+                                          <div className={`text-[11px] font-semibold truncate ${isDark ? 'text-white/80' : 'text-black/80'}`}>
+                                            {highlightMatch(tpl.label, templateSearch)}
+                                          </div>
+                                          <div className={`text-[10px] font-mono truncate ${isDark ? 'text-white/40' : 'text-black/45'}`}>
+                                            {highlightMatch(tpl.command, templateSearch)}
+                                          </div>
+                                          {tpl.description && (
+                                            <div className={`text-[10px] truncate ${isDark ? 'text-white/25' : 'text-black/30'}`}>
+                                              {highlightMatch(tpl.description, templateSearch)}
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className={`flex items-center gap-1 shrink-0 transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                          <button onClick={(e) => { e.stopPropagation(); handleTemplatePick(tpl, true); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-green-500/20 text-white/40 hover:text-green-400' : 'hover:bg-green-500/10 text-gray-400 hover:text-green-500'}`} title={tt.run || 'Run'}>
+                                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>play_arrow</span>
+                                          </button>
+                                          <button onClick={(e) => { e.stopPropagation(); startEditTemplate(tpl); setShowTemplatesDropdown(false); openTemplateSettings(); }} className={`p-1 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/40 hover:text-amber-400' : 'hover:bg-black/5 text-gray-400 hover:text-amber-500'}`} title={tt.edit || 'Edit'}>
+                                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                                          </button>
+                                        </div>
+                                      </button>
+                                    );
+                                  })
+                                )}
+                              </div>
+
+                              {/* Footer */}
+                              <div className={`flex items-center justify-between gap-2 px-3 py-1.5 border-t shrink-0 ${isDark ? 'border-white/[.06] bg-white/[.02]' : 'border-black/[.05] bg-black/[.015]'}`}>
+                                <div className={`flex items-center gap-2 text-[10px] ${isDark ? 'text-white/35' : 'text-black/35'}`}>
+                                  <span className="flex items-center gap-0.5"><kbd className={`px-1 py-px rounded text-[9px] font-mono ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>↑↓</kbd></span>
+                                  <span className="flex items-center gap-0.5"><kbd className={`px-1 py-px rounded text-[9px] font-mono ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>↵</kbd>{tt.importHintFill || 'fill'}</span>
+                                  <span className="flex items-center gap-0.5"><kbd className={`px-1 py-px rounded text-[9px] font-mono ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>⇧↵</kbd>{tt.importHintRun || 'run'}</span>
+                                </div>
+                                <button onClick={openTemplateSettings} className={`flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-md transition-colors ${isDark ? 'text-amber-400 hover:bg-amber-500/10' : 'text-amber-600 hover:bg-amber-500/10'}`}>
+                                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>settings</span>
+                                  {tt.manageTemplates || 'Manage'}
+                                </button>
+                              </div>
+                            </div>,
+                            document.body
+                          )}
                         </div>
                       </div>
                       {/* Command history list */}
@@ -1630,6 +2291,267 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
           <div className={`relative flex flex-col items-center gap-3 px-8 py-6 rounded-xl shadow-xl ${isDark ? 'bg-[#1e1e2e] border border-white/10' : 'bg-white border border-black/10'}`}>
             <span className="material-symbols-outlined text-3xl text-cyan-400 animate-spin">progress_activity</span>
             <span className={`text-sm font-medium ${isDark ? 'text-white/70' : 'text-black/70'}`}>{tt.loadingFile || 'Loading file...'}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Import Templates Dialog ── */}
+      {showImportDialog && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onKeyDown={(e) => { if (e.key === 'Escape') setShowImportDialog(false); }}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !importRunning && setShowImportDialog(false)} />
+          <div className={`relative w-[640px] max-w-full max-h-[80vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden ${isDark ? 'bg-[#161824] border border-white/10' : 'bg-white border border-black/10'}`}>
+            {/* Header */}
+            <div className={`flex items-center justify-between gap-3 px-4 py-3 border-b ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+              <div className="flex items-center gap-2">
+                <span className={`material-symbols-outlined ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>file_upload</span>
+                <div>
+                  <div className={`text-sm font-semibold ${isDark ? 'text-white/85' : 'text-black/85'}`}>{tt.importTitle || 'Import Command Templates'}</div>
+                  <div className={`text-[11px] ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tt.importSubtitle || 'Paste exported JSON or upload a .json file'}</div>
+                </div>
+              </div>
+              <button onClick={() => !importRunning && setShowImportDialog(false)} className={`p-1.5 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-black/5 text-gray-500'}`} title={tt.close || 'Close'}>
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Upload button */}
+              <div className="flex items-center gap-2">
+                <button onClick={() => importFileInputRef.current?.click()} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-colors ${isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-black/[.04] text-black/70 hover:bg-black/[.08]'}`}>
+                  <span className="material-symbols-outlined text-sm">attach_file</span>
+                  {tt.importChooseFile || 'Choose file'}
+                </button>
+                <input ref={importFileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => { handleImportFileSelected(e.target.files?.[0] || null); e.target.value = ''; }} />
+                <span className={`text-[11px] ${isDark ? 'text-white/35' : 'text-black/35'}`}>{tt.importOr || 'or paste JSON below'}</span>
+              </div>
+
+              {/* Textarea */}
+              <textarea
+                value={importText}
+                onChange={(e) => handleImportTextChange(e.target.value)}
+                placeholder={'{\n  "type": "hermesdeckx.command-templates",\n  "templates": [ { "label": "Top", "command": "top -bn1" } ]\n}'}
+                rows={8}
+                spellCheck={false}
+                className={`w-full px-3 py-2 rounded-lg text-xs font-mono outline-none border resize-y ${importError ? (isDark ? 'border-red-400/50 bg-red-500/5' : 'border-red-400/60 bg-red-50') : isDark ? 'bg-white/5 text-white/85 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/85 border-black/15 focus:border-cyan-500/50'}`}
+              />
+
+              {/* Error */}
+              {importError && (
+                <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] ${isDark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-600'}`}>
+                  <span className="material-symbols-outlined text-sm shrink-0">error</span>
+                  <span className="font-mono">{importError}</span>
+                </div>
+              )}
+
+              {/* Preview */}
+              {importPreview.length > 0 && !importError && (
+                <div className={`rounded-lg border overflow-hidden ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+                  <div className={`flex items-center justify-between px-3 py-1.5 text-[11px] font-medium ${isDark ? 'bg-white/[.02] text-white/60' : 'bg-black/[.02] text-black/60'}`}>
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-sm text-green-400">check_circle</span>
+                      {importPreview.length} {tt.commandTemplates || 'templates'}
+                    </span>
+                    <span className={isDark ? 'text-white/35' : 'text-black/35'}>{tt.importPreview || 'Preview'}</span>
+                  </div>
+                  <div className={`max-h-40 overflow-y-auto neon-scrollbar divide-y ${isDark ? 'divide-white/[.04]' : 'divide-black/[.04]'}`}>
+                    {importPreview.slice(0, 100).map((it, idx) => (
+                      <div key={idx} className={`flex items-center gap-2 px-3 py-1 ${isDark ? 'hover:bg-white/[.03]' : 'hover:bg-black/[.02]'}`}>
+                        <span className={`text-[10px] font-mono w-6 shrink-0 text-end ${isDark ? 'text-white/25' : 'text-black/25'}`}>{idx + 1}</span>
+                        <span className={`text-[11px] font-semibold w-24 shrink-0 truncate ${isDark ? 'text-white/75' : 'text-black/75'}`}>{it.label}</span>
+                        <span className={`text-[10px] font-mono truncate flex-1 ${isDark ? 'text-white/45' : 'text-black/45'}`}>{it.command}</span>
+                      </div>
+                    ))}
+                    {importPreview.length > 100 && (
+                      <div className={`px-3 py-1 text-[10px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>… +{importPreview.length - 100}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Strategy */}
+              <div>
+                <div className={`text-[11px] font-medium mb-1.5 ${isDark ? 'text-white/55' : 'text-black/55'}`}>{tt.importStrategy || 'On duplicate'}</div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {([
+                    { value: 'skip_duplicates', icon: 'filter_alt', label: tt.importSkip || 'Skip duplicates', desc: tt.importSkipDesc || 'Match by name + command' },
+                    { value: 'append', icon: 'add', label: tt.importAppend || 'Append all', desc: tt.importAppendDesc || 'Add every item' },
+                    { value: 'replace', icon: 'delete_sweep', label: tt.importReplace || 'Replace all', desc: tt.importReplaceDesc || 'Wipe and import' },
+                  ] as const).map((opt) => {
+                    const active = importStrategy === opt.value;
+                    const danger = opt.value === 'replace';
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => setImportStrategy(opt.value as CommandTemplateImportStrategy)}
+                        className={`flex flex-col items-start gap-1 px-2.5 py-2 rounded-lg text-start transition-all border ${active ? (danger ? (isDark ? 'bg-red-500/10 border-red-400/40 text-red-300' : 'bg-red-50 border-red-300 text-red-600') : isDark ? 'bg-cyan-500/10 border-cyan-400/40 text-cyan-300' : 'bg-cyan-50 border-cyan-300 text-cyan-700') : isDark ? 'bg-white/[.02] border-white/10 text-white/60 hover:bg-white/[.05]' : 'bg-white border-black/10 text-black/60 hover:bg-black/[.02]'}`}
+                      >
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">{opt.icon}</span>
+                          <span className="text-[11px] font-semibold">{opt.label}</span>
+                        </span>
+                        <span className={`text-[10px] ${active ? '' : isDark ? 'text-white/35' : 'text-black/35'}`}>{opt.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className={`flex items-center justify-between gap-2 px-4 py-3 border-t ${isDark ? 'border-white/10 bg-white/[.02]' : 'border-black/10 bg-black/[.015]'}`}>
+              <div className={`text-[11px] ${isDark ? 'text-white/35' : 'text-black/35'}`}>
+                {importPreview.length > 0 ? formatTerminalText(tt.importReadyHint || '{count} ready to import', { count: importPreview.length }) : ''}
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowImportDialog(false)} disabled={importRunning} className={`px-3 py-1.5 text-xs rounded-md transition-colors ${isDark ? 'text-white/60 hover:bg-white/10' : 'text-black/60 hover:bg-black/5'}`}>
+                  {tt.cancel || 'Cancel'}
+                </button>
+                <button onClick={runImport} disabled={importRunning || importPreview.length === 0 || !!importError} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-40 ${importStrategy === 'replace' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'}`}>
+                  {importRunning ? (
+                    <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-sm">{importStrategy === 'replace' ? 'delete_sweep' : 'download'}</span>
+                  )}
+                  {tt.import || 'Import'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Reauth Dialog (SSH credential prompt on auth failure) ── */}
+      {reauthTabId && reauthHost && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onKeyDown={(e) => { if (e.key === 'Escape') cancelReauth(); }}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !reauthSubmitting && cancelReauth()} />
+          <div className={`relative w-[480px] max-w-full flex flex-col rounded-2xl shadow-2xl overflow-hidden ${isDark ? 'bg-[#161824] border border-white/10' : 'bg-white border border-black/10'}`}>
+            {/* Header */}
+            <div className={`flex items-center justify-between gap-3 px-4 py-3 border-b ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`material-symbols-outlined ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>lock_reset</span>
+                <div className="min-w-0">
+                  <div className={`text-sm font-semibold truncate ${isDark ? 'text-white/85' : 'text-black/85'}`}>{tt.reauthTitle || 'Authentication required'}</div>
+                  <div className={`text-[11px] truncate ${isDark ? 'text-white/40' : 'text-black/40'}`}>{reauthHost.username}@{reauthHost.host}:{reauthHost.port}</div>
+                </div>
+              </div>
+              <button onClick={cancelReauth} disabled={reauthSubmitting} className={`p-1.5 rounded-md transition-colors ${isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-black/5 text-gray-500'}`} title={tt.close || 'Close'}>
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 space-y-3">
+              <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] ${isDark ? 'bg-amber-500/10 text-amber-300' : 'bg-amber-50 text-amber-700'}`}>
+                <span className="material-symbols-outlined text-sm shrink-0 mt-0.5">info</span>
+                <span>{tt.reauthHint || 'The saved credentials did not work. Enter fresh credentials to retry.'}</span>
+              </div>
+
+              {/* Auth type toggle */}
+              <div className="grid grid-cols-2 gap-1.5">
+                {(['password', 'key'] as const).map((t) => {
+                  const active = reauthForm.auth_type === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setReauthForm((f) => ({ ...f, auth_type: t }))}
+                      className={`flex items-center justify-center gap-1 px-2 py-1.5 text-xs rounded-md transition-colors border ${active ? (isDark ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-300' : 'bg-cyan-50 border-cyan-300 text-cyan-700') : isDark ? 'bg-white/[.02] border-white/10 text-white/55 hover:bg-white/[.05]' : 'bg-white border-black/10 text-black/55 hover:bg-black/[.02]'}`}
+                    >
+                      <span className="material-symbols-outlined text-sm">{t === 'password' ? 'password' : 'key'}</span>
+                      {t === 'password' ? (tt.password || 'Password') : (tt.privateKey || 'Private Key')}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Username */}
+              <div>
+                <label className={`block text-[11px] font-medium mb-1 ${isDark ? 'text-white/55' : 'text-black/55'}`}>{tt.username || 'Username'}</label>
+                <input
+                  value={reauthForm.username}
+                  onChange={(e) => setReauthForm((f) => ({ ...f, username: e.target.value }))}
+                  autoFocus={!reauthForm.username}
+                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none border ${isDark ? 'bg-white/5 text-white/85 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/85 border-black/15 focus:border-cyan-500/50'}`}
+                />
+              </div>
+
+              {reauthForm.auth_type === 'password' ? (
+                <div>
+                  <label className={`block text-[11px] font-medium mb-1 ${isDark ? 'text-white/55' : 'text-black/55'}`}>{tt.password || 'Password'}</label>
+                  <div className="relative">
+                    <input
+                      type={reauthForm.show_password ? 'text' : 'password'}
+                      value={reauthForm.password}
+                      onChange={(e) => setReauthForm((f) => ({ ...f, password: e.target.value }))}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && !reauthSubmitting) submitReauth(); }}
+                      autoFocus={!!reauthForm.username}
+                      className={`w-full px-3 py-2 pr-10 rounded-lg text-sm outline-none border font-mono ${isDark ? 'bg-white/5 text-white/85 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/85 border-black/15 focus:border-cyan-500/50'}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setReauthForm((f) => ({ ...f, show_password: !f.show_password }))}
+                      className={`absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded transition-colors ${isDark ? 'text-white/40 hover:bg-white/10 hover:text-white/70' : 'text-gray-400 hover:bg-black/5 hover:text-gray-600'}`}
+                      title={reauthForm.show_password ? (tt.hide || 'Hide') : (tt.show || 'Show')}
+                    >
+                      <span className="material-symbols-outlined text-sm">{reauthForm.show_password ? 'visibility_off' : 'visibility'}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className={`block text-[11px] font-medium mb-1 ${isDark ? 'text-white/55' : 'text-black/55'}`}>{tt.privateKey || 'Private Key'}</label>
+                    <textarea
+                      value={reauthForm.private_key}
+                      onChange={(e) => setReauthForm((f) => ({ ...f, private_key: e.target.value }))}
+                      placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;..."
+                      rows={5}
+                      spellCheck={false}
+                      className={`w-full px-3 py-2 rounded-lg text-xs font-mono outline-none border resize-y ${isDark ? 'bg-white/5 text-white/85 border-white/10 focus:border-cyan-400/50 placeholder:text-white/20' : 'bg-white text-black/85 border-black/15 focus:border-cyan-500/50 placeholder:text-black/25'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-[11px] font-medium mb-1 ${isDark ? 'text-white/55' : 'text-black/55'}`}>{tt.passphrase || 'Passphrase'} <span className={isDark ? 'text-white/25' : 'text-black/30'}>({tt.leaveBlank || 'leave blank if none'})</span></label>
+                    <input
+                      type="password"
+                      value={reauthForm.passphrase}
+                      onChange={(e) => setReauthForm((f) => ({ ...f, passphrase: e.target.value }))}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && !reauthSubmitting) submitReauth(); }}
+                      className={`w-full px-3 py-2 rounded-lg text-sm outline-none border font-mono ${isDark ? 'bg-white/5 text-white/85 border-white/10 focus:border-cyan-400/50' : 'bg-white text-black/85 border-black/15 focus:border-cyan-500/50'}`}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Save credentials */}
+              <label className={`flex items-center gap-2 cursor-pointer select-none px-3 py-2 rounded-lg transition-colors ${reauthForm.save_password ? (isDark ? 'bg-cyan-500/10' : 'bg-cyan-50') : isDark ? 'bg-white/[.02] hover:bg-white/[.04]' : 'bg-black/[.015] hover:bg-black/[.03]'}`}>
+                <input
+                  type="checkbox"
+                  checked={reauthForm.save_password}
+                  onChange={(e) => setReauthForm((f) => ({ ...f, save_password: e.target.checked }))}
+                  className="w-4 h-4 accent-cyan-500"
+                />
+                <div className="flex-1">
+                  <div className={`text-[12px] font-medium ${isDark ? 'text-white/80' : 'text-black/80'}`}>{tt.reauthSave || 'Save these credentials'}</div>
+                  <div className={`text-[10px] ${isDark ? 'text-white/40' : 'text-black/40'}`}>{tt.reauthSaveHint || 'Update the host record after a successful connection'}</div>
+                </div>
+              </label>
+            </div>
+
+            {/* Footer */}
+            <div className={`flex items-center justify-end gap-2 px-4 py-3 border-t ${isDark ? 'border-white/10 bg-white/[.02]' : 'border-black/10 bg-black/[.015]'}`}>
+              <button onClick={cancelReauth} disabled={reauthSubmitting} className={`px-3 py-1.5 text-xs rounded-md transition-colors ${isDark ? 'text-white/60 hover:bg-white/10' : 'text-black/60 hover:bg-black/5'}`}>
+                {tt.cancel || 'Cancel'}
+              </button>
+              <button onClick={submitReauth} disabled={reauthSubmitting} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-40 transition-colors">
+                {reauthSubmitting ? (
+                  <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                ) : (
+                  <span className="material-symbols-outlined text-sm">login</span>
+                )}
+                {tt.reauthConnect || tt.connect || 'Connect'}
+              </button>
+            </div>
           </div>
         </div>
       )}
