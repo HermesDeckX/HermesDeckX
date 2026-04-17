@@ -315,7 +315,7 @@ stop_service() {
 DOCKER_COMPOSE_URL="https://raw.githubusercontent.com/HermesDeckX/HermesDeckX/main/docker-compose.yml"
 DOCKER_COMPOSE_URL_CN="https://ghfast.top/https://raw.githubusercontent.com/HermesDeckX/HermesDeckX/main/docker-compose.yml"
 DOCKER_IMAGE="knowhunters/hermesdeckx:latest"
-DOCKER_COMPOSE_FILE="docker-compose.yml"
+DOCKER_COMPOSE_FILE="docker-compose-hermesdeckx.yml"
 NEED_MIRROR=false
 DOCKER_MIRROR=""
 
@@ -660,7 +660,7 @@ install_docker_engine() {
 docker_install_new() {
     # Auto-detect next available instance name
     local default_name="hermesdeckx"
-    if [ -f "docker-compose.yml" ] && grep -q "knowhunters/hermesdeckx" "docker-compose.yml" 2>/dev/null; then
+    if [ -f "docker-compose-hermesdeckx.yml" ] || { [ -f "docker-compose.yml" ] && grep -q "knowhunters/hermesdeckx" "docker-compose.yml" 2>/dev/null; }; then
         # Default instance exists, find next available number
         local n=2
         while [ -f "docker-compose-hermesdeckx-${n}.yml" ]; do
@@ -686,7 +686,7 @@ docker_install_new() {
     fi
 
     # Check if this instance name is already in use
-    local check_file="docker-compose.yml"
+    local check_file="docker-compose-hermesdeckx.yml"
     if [ "$INSTANCE_NAME" != "hermesdeckx" ]; then
         check_file="docker-compose-${INSTANCE_NAME}.yml"
     fi
@@ -711,8 +711,11 @@ docker_install_new() {
 #   with unique container name and volume names for isolation.
 docker_install() {
     local instance_name="${1:-hermesdeckx}"
-    local compose_file="docker-compose.yml"
-    if [ "$instance_name" != "hermesdeckx" ]; then
+    local compose_file="docker-compose-hermesdeckx.yml"
+    # Backward compat: if old docker-compose.yml has our image, use it
+    if [ "$instance_name" = "hermesdeckx" ] && [ ! -f "docker-compose-hermesdeckx.yml" ] && [ -f "docker-compose.yml" ] && grep -q "knowhunters/hermesdeckx" "docker-compose.yml" 2>/dev/null; then
+        compose_file="docker-compose.yml"
+    elif [ "$instance_name" != "hermesdeckx" ]; then
         compose_file="docker-compose-${instance_name}.yml"
     fi
 
@@ -780,8 +783,8 @@ docker_install() {
         echo ""
     fi
 
-    # Step 3: Download docker-compose.yml
-    echo -e "${CYAN}Downloading docker-compose.yml... / 正在下载 docker-compose.yml...${NC}"
+    # Step 3: Download docker-compose file
+    echo -e "${CYAN}Downloading ${compose_file}... / 正在下载 ${compose_file}...${NC}"
     download_with_fallback "$DOCKER_COMPOSE_URL" "$DOCKER_COMPOSE_URL_CN" "$compose_file"
     echo -e "${GREEN}✓ Downloaded / 已下载${NC}"
 
@@ -803,7 +806,7 @@ docker_install() {
     echo -e "${CYAN}Detecting available port... / 正在检测可用端口...${NC}"
     local start_port=$DEFAULT_HOST_PORT
     local assigned_ports=()
-    for _cf in docker-compose.yml docker-compose-*.yml; do
+    for _cf in docker-compose-hermesdeckx.yml docker-compose.yml docker-compose-*.yml; do
         [ -f "$_cf" ] || continue
         [ "$_cf" = "$compose_file" ] && continue  # Skip our own file
         local _ap
@@ -1313,12 +1316,16 @@ fi
 
 if [ "$IS_CONTAINER" = false ] && check_docker && check_docker_compose; then
     # Scan for all compose files that reference our image
-    for cf in docker-compose.yml docker-compose-*.yml; do
+    for cf in docker-compose-hermesdeckx.yml docker-compose.yml docker-compose-*.yml; do
         [ -f "$cf" ] || continue
         if grep -q "knowhunters/hermesdeckx" "$cf" 2>/dev/null; then
+            # Skip duplicates (glob may re-match explicit entries)
+            local _dup=false
+            for _ei in "${DOCKER_INSTANCES[@]}"; do [ "$_ei" = "$cf" ] && _dup=true; done
+            [ "$_dup" = true ] && continue
             DOCKER_INSTANCES+=("$cf")
             # Extract instance name from filename
-            if [ "$cf" = "docker-compose.yml" ]; then
+            if [ "$cf" = "docker-compose-hermesdeckx.yml" ] || [ "$cf" = "docker-compose.yml" ]; then
                 DOCKER_INSTANCE_NAMES+=("hermesdeckx")
             else
                 local_name="${cf#docker-compose-}"
