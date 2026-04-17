@@ -20,6 +20,7 @@ export interface SSHHost {
 }
 
 export interface SSHHostCreateRequest {
+  id?: number;
   name: string;
   host: string;
   port: number;

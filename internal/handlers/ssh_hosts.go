@@ -28,6 +28,7 @@ func NewSSHHostsHandler() *SSHHostsHandler {
 }
 
 type sshHostRequest struct {
+	ID           uint   `json:"id,omitempty"`
 	Name         string `json:"name"`
 	Host         string `json:"host"`
 	Port         int    `json:"port"`
@@ -247,7 +248,34 @@ func (h *SSHHostsHandler) TestConnection(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	authMethod, err := sshterm.BuildAuthMethod(req.AuthType, req.Password, req.PrivateKey, req.Passphrase)
+	password := req.Password
+	privateKey := req.PrivateKey
+	passphrase := req.Passphrase
+
+	// If editing an existing host and a credential field is left blank,
+	// fall back to the encrypted value stored in the database so the
+	// "leave blank to keep current value" UX also works for Test Connection.
+	if req.ID != 0 {
+		if existing, err := h.repo.GetByID(req.ID); err == nil {
+			if password == "" && existing.PasswordEncrypted != "" {
+				if dec, derr := decryptField(existing.PasswordEncrypted); derr == nil {
+					password = dec
+				}
+			}
+			if privateKey == "" && existing.PrivateKeyEncrypted != "" {
+				if dec, derr := decryptField(existing.PrivateKeyEncrypted); derr == nil {
+					privateKey = dec
+				}
+			}
+			if passphrase == "" && existing.PassphraseEncrypted != "" {
+				if dec, derr := decryptField(existing.PassphraseEncrypted); derr == nil {
+					passphrase = dec
+				}
+			}
+		}
+	}
+
+	authMethod, err := sshterm.BuildAuthMethod(req.AuthType, password, privateKey, passphrase)
 	if err != nil {
 		web.OK(w, r, map[string]interface{}{"success": false, "error": err.Error()})
 		return
