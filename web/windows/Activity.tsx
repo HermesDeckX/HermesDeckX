@@ -259,6 +259,20 @@ const Activity: React.FC<ActivityProps> = ({ language, onNavigateToSession }) =>
     });
   }, []);
 
+  const batchSelectAll = useCallback(() => {
+    setBatchSelected(new Set(filtered.map((s: any) => s.key)));
+  }, [filtered]);
+
+  const batchInvertSelection = useCallback(() => {
+    setBatchSelected(prev => {
+      const next = new Set<string>();
+      for (const s of filtered) {
+        if (!prev.has(s.key)) next.add(s.key);
+      }
+      return next;
+    });
+  }, [filtered]);
+
   // Export CSV
   const exportCSV = useCallback(() => {
     const header = 'key,kind,label,model,provider,totalTokens,inputTokens,outputTokens,updatedAt,lastChannel\n';
@@ -349,6 +363,10 @@ const Activity: React.FC<ActivityProps> = ({ language, onNavigateToSession }) =>
         {batchMode && (
           <div className="flex items-center gap-2 mt-2 px-1">
             <span className="text-[10px] text-slate-400 dark:text-white/30">{batchSelected.size} {a.selected || 'selected'}</span>
+            <button onClick={batchSelectAll} disabled={busy}
+              className="text-[10px] px-2 py-0.5 rounded theme-field theme-text-muted hover:text-primary disabled:opacity-30">{a.selectAll || 'Select All'}</button>
+            <button onClick={batchInvertSelection} disabled={busy}
+              className="text-[10px] px-2 py-0.5 rounded theme-field theme-text-muted hover:text-primary disabled:opacity-30">{a.invertSelection || 'Invert'}</button>
             <div className="flex-1" />
             <button onClick={batchReset} disabled={busy || batchSelected.size === 0}
               className="text-[10px] px-2 py-0.5 rounded theme-field theme-text-muted hover:text-primary disabled:opacity-30">{a.reset}</button>

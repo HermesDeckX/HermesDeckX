@@ -76,6 +76,8 @@
     "confirmBatchDelete": "削除",
     "confirmBatchReset": "リセット",
     "selected": "選択済み",
+    "selectAll": "すべて選択",
+    "invertSelection": "選択反転",
     "exportCsv": "CSV エクスポート",
     "lastRefresh": "最終更新",
     "totalTokens": "総トークン",

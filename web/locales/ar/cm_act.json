@@ -76,6 +76,8 @@
     "confirmBatchDelete": "حذف",
     "confirmBatchReset": "إعادة تعيين",
     "selected": "محدد",
+    "selectAll": "تحديد الكل",
+    "invertSelection": "عكس التحديد",
     "exportCsv": "تصدير CSV",
     "lastRefresh": "آخر تحديث",
     "totalTokens": "إجمالي الرموز",

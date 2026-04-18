@@ -76,6 +76,8 @@
     "confirmBatchDelete": "Удалить",
     "confirmBatchReset": "Сбросить",
     "selected": "выбрано",
+    "selectAll": "Выбрать все",
+    "invertSelection": "Инвертировать",
     "exportCsv": "Экспорт CSV",
     "lastRefresh": "Посл. обновление",
     "totalTokens": "Всего токенов",

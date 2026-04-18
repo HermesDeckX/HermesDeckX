@@ -76,6 +76,8 @@
     "confirmBatchDelete": "Hapus",
     "confirmBatchReset": "Reset",
     "selected": "dipilih",
+    "selectAll": "Pilih Semua",
+    "invertSelection": "Balik Pilihan",
     "exportCsv": "Ekspor CSV",
     "lastRefresh": "Terakhir disegarkan",
     "totalTokens": "Total Token",

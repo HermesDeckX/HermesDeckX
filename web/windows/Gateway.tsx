@@ -51,7 +51,7 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
   // 日志增强
   const [logSearch, setLogSearch] = useState('');
   const [autoFollow, setAutoFollow] = useState(true);
-  const [levelFilters, setLevelFilters] = useState<Record<string, boolean>>({ trace: true, debug: true, info: true, warn: true, error: true, fatal: true });
+  const [levelFilters, setLevelFilters] = useState<Set<string>>(new Set());
   const [logLimit, setLogLimit] = useState(120);
   // 服务端深度过滤：启用后把 level/q 推到后端，扫描更大窗口（默认 5000 行，最多 50000）
   const [deepFilter, setDeepFilter] = useState(false);
@@ -896,13 +896,13 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
     return visibleLogs.map((line) => ({ line, parsed: parseLogLine(line) }));
   }, [visibleLogs, parseLogLine]);
 
-  // 日志过滤
+  // 日志过滤（包含模式：空集合=全部显示，非空=只显示选中级别）
   const filteredLogs = useMemo(() => {
     const needle = logSearch.trim().toLowerCase();
+    const hasLevelFilter = levelFilters.size > 0;
     return parsedLogEntries.filter(({ line, parsed }) => {
-      if (parsed && parsed.level) {
-        const lvl = parsed.level.toLowerCase();
-        if (lvl in levelFilters && !levelFilters[lvl]) return false;
+      if (hasLevelFilter && parsed && parsed.level) {
+        if (!levelFilters.has(parsed.level.toLowerCase())) return false;
       }
       if (needle && !line.toLowerCase().includes(needle)) return false;
       return true;
@@ -1775,13 +1775,23 @@ const Gateway: React.FC<GatewayProps> = ({ language }) => {
               <input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder={gw.search}
                 className="w-full h-6 ps-6 pe-2 theme-field rounded text-[11px] theme-text-secondary placeholder:theme-text-muted focus:ring-1 focus:ring-primary/50 outline-none sci-input" />
             </div>
-            {/* Level Filters */}
+            {/* Level Filters — 包含模式：空=全显示，单击独选，Ctrl/Cmd+点击多选 */}
             <div className="flex items-center gap-px">
               {['trace', 'debug', 'info', 'warn', 'error', 'fatal'].map(lvl => {
                 const colors: Record<string, string> = { trace: 'bg-slate-500', debug: 'bg-slate-400', info: 'bg-blue-500', warn: 'bg-yellow-500', error: 'bg-red-500', fatal: 'bg-red-700' };
+                const isActive = levelFilters.has(lvl);
+                const hasFilter = levelFilters.size > 0;
                 return (
-                  <button key={lvl} onClick={() => setLevelFilters(f => ({ ...f, [lvl]: !f[lvl] }))}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase transition-all ${levelFilters[lvl] ? `${colors[lvl]}/20 theme-text-secondary` : 'theme-field theme-text-muted line-through'}`}>
+                  <button key={lvl} onClick={(e) => setLevelFilters(prev => {
+                    if (e.ctrlKey || e.metaKey) {
+                      const next = new Set(prev);
+                      if (next.has(lvl)) next.delete(lvl); else next.add(lvl);
+                      return next;
+                    }
+                    if (prev.size === 1 && prev.has(lvl)) return new Set();
+                    return new Set([lvl]);
+                  })}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase transition-all ${!hasFilter ? `${colors[lvl]}/20 theme-text-secondary` : isActive ? `${colors[lvl]}/20 theme-text-secondary ring-1 ring-current` : 'theme-field theme-text-muted opacity-40'}`}>
                     {lvl.slice(0, 3)}
                   </button>
                 );

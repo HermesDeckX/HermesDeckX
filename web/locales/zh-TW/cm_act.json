@@ -76,6 +76,8 @@
     "confirmBatchDelete": "確定刪除",
     "confirmBatchReset": "確定重置",
     "selected": "已選",
+    "selectAll": "全選",
+    "invertSelection": "反選",
     "exportCsv": "匯出 CSV",
     "lastRefresh": "上次重新整理",
     "totalTokens": "總Token",

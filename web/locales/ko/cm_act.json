@@ -76,6 +76,8 @@
     "confirmBatchDelete": "삭제",
     "confirmBatchReset": "초기화",
     "selected": "선택됨",
+    "selectAll": "모두 선택",
+    "invertSelection": "선택 반전",
     "exportCsv": "CSV 내보내기",
     "lastRefresh": "최근 새로고침",
     "totalTokens": "총 토큰",

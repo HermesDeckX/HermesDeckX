@@ -76,6 +76,8 @@
     "confirmBatchDelete": "हटाएं",
     "confirmBatchReset": "रीसेट",
     "selected": "चयनित",
+    "selectAll": "सभी चुनें",
+    "invertSelection": "चयन उलटें",
     "exportCsv": "CSV निर्यात",
     "lastRefresh": "अंतिम रिफ्रेश",
     "totalTokens": "कुल टोकन",

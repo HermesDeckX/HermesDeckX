@@ -76,6 +76,8 @@
     "confirmBatchDelete": "Excluir",
     "confirmBatchReset": "Redefinir",
     "selected": "selecionado(s)",
+    "selectAll": "Selecionar tudo",
+    "invertSelection": "Inverter",
     "exportCsv": "Exportar CSV",
     "lastRefresh": "Última atualização",
     "totalTokens": "Total de Tokens",
