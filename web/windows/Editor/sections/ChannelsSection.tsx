@@ -5,6 +5,8 @@ import { getTranslation } from '../../../locales';
 import { schemaTooltip } from '../schemaTooltip';
 import { get, post } from '../../../services/request';
 import { channelApi, gatewayApi, pairingApi } from '../../../services/api';
+import { useToast } from '../../../components/Toast';
+import { copyToClipboard } from '../../../utils/clipboard';
 
 // ============================================================================
 // hermes-agent Channel Wizard — 5-step guided configuration
@@ -395,6 +397,7 @@ export const ChannelsSection: React.FC<SectionProps> = ({ config, schema, setFie
   const es = useMemo(() => (getTranslation(language) as any).es || {}, [language]);
   const cw = useMemo(() => (getTranslation(language) as any).cw || {}, [language]);
   const tip = (key: string) => schemaTooltip(key, language, schema);
+  const { toast } = useToast();
 
   // Env vars from backend (for detecting configured channels)
   const [envVars, setEnvVars] = useState<Record<string, string>>({});
@@ -1228,20 +1231,49 @@ export const ChannelsSection: React.FC<SectionProps> = ({ config, schema, setFie
                 )}
 
                 {/* ── Standard prep steps for other channels ── */}
-                {!isQrChannel && (
-                  <>
-                    {chInfo.prepStepsKey && (cw as any)[chInfo.prepStepsKey] ? (
-                      ((cw as any)[chInfo.prepStepsKey] as string[]).map((s: string, i: number) => (
+                {!isQrChannel && (() => {
+                  // Dynamic access pattern matching ClawDeckX: xxxPrep / xxxPitfall.
+                  // The scan-dynamic-usage.mjs script detects these patterns so
+                  // they are protected against blanket i18n cleanup tools.
+                  const prepSteps: string[] = (addingChannel && (cw as any)[`${addingChannel}Prep`]) || [];
+                  const pitfall: string = (addingChannel && (cw as any)[`${addingChannel}Pitfall`]) || '';
+                  return (
+                    <>
+                      {prepSteps.length > 0 ? prepSteps.map((s: string, i: number) => (
                         <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.04]">
                           <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
                           <p className="text-[11px] text-slate-700 dark:text-white/70 leading-relaxed">{s}</p>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-[11px] text-slate-400 dark:text-white/40 py-2">{cw.noPrepNeeded || 'No preparation needed, proceed to next step'}</p>
-                    )}
-                  </>
-                )}
+                      )) : (
+                        <p className="text-[11px] text-slate-400 dark:text-white/40 py-2">{cw.noPrepNeeded || 'No preparation needed, proceed to next step'}</p>
+                      )}
+                      {/* Feishu permission JSON quick-copy */}
+                      {addingChannel === 'feishu' && cw.feishuPermJson && (
+                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.04]">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold text-slate-600 dark:text-white/50">{cw.copyPermJson || 'Copy Permission JSON'}</span>
+                            <button onClick={() => {
+                              copyToClipboard(cw.feishuPermJson).then(() => {
+                                toast('success', cw.copied || 'Copied!');
+                              }).catch(() => {});
+                            }}
+                              className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold text-primary hover:bg-primary/10 transition-colors">
+                              <span className="material-symbols-outlined text-[12px]">content_copy</span>
+                              {cw.copyPermJson || 'Copy Permission JSON'}
+                            </button>
+                          </div>
+                          <pre className="text-[11px] text-slate-500 dark:text-white/40 bg-slate-100 dark:bg-black/20 p-2 rounded overflow-x-auto max-h-20 overflow-y-auto custom-scrollbar neon-scrollbar font-mono leading-relaxed select-text">{cw.feishuPermJson}</pre>
+                        </div>
+                      )}
+                      {pitfall && (
+                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20">
+                          <span className="material-symbols-outlined text-[14px] text-amber-500 mt-0.5">warning</span>
+                          <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed">{pitfall}</p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 <div className="flex justify-end">
                   <button onClick={() => setWizardStep(2)}

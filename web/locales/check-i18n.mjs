@@ -76,6 +76,21 @@ if (totalMissing === 0 && totalExtra === 0) {
   console.log('All locales complete!');
 }
 
+// Reminder: this checker only verifies cross-locale consistency against the
+// en/ baseline. It cannot catch dynamic-access keys (e.g. `(cw as any)[`
+// `${chId}Prep`]`) that get incorrectly flagged as "unused" by pruning
+// tools. Before any mass i18n cleanup, run:
+//
+//   node web/locales/scan-dynamic-usage.mjs --verify
+//
+// to enumerate protected key families (xxxPrep / xxxPitfall / xxxHelpUrl …).
+console.log('\nDynamic-access key families (do not prune blindly):');
+try {
+  const { execFileSync } = await import('child_process');
+  const out = execFileSync(process.execPath, [join(__dirname, 'scan-dynamic-usage.mjs')], { encoding: 'utf8' });
+  process.stdout.write(out.split('\n').slice(1).join('\n'));
+} catch { /* scanner is optional; ignore if not present */ }
+
 if (strict && hasErrors) {
   process.exit(1);
 }

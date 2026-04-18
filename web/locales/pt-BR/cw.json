@@ -161,5 +161,171 @@
   "threadSessionsPerUser": "Isolamento de sessões de thread",
   "threadSessionsPerUserDesc": "Isolar sessões de thread por participante",
   "streamingEnabled": "Saída em streaming",
-  "streamingEnabledDesc": "Transmitir respostas para canais em tempo real"
+  "streamingEnabledDesc": "Transmitir respostas para canais em tempo real",
+  "telegramPrep": [
+    "Abra o Telegram, pesquise @BotFather (ou clique no link acima)",
+    "Envie /newbot, siga as instruções para nome e username",
+    "Copie o Bot Token gerado (formato: dígitos:alfanumérico, ex. 123456789:ABCdef-GHI)",
+    "Para grupos: /setprivacy → Disable (desativar modo privacidade)",
+    "⚠️ Após desativar o modo privacidade, você DEVE remover e readicionar o Bot ao grupo para que tenha efeito",
+    "Para recursos de admin (fixar/deletar mensagens): defina o Bot como admin do grupo"
+  ],
+  "telegramPitfall": "⚠️ Erros comuns: 1) Após desativar Privacy Mode, remova e readicione o Bot ao grupo; 2) Formato do token: número:alfanumérico; 3) Máx 20 msgs/min em grupo, erro 429; 4) Se tinha Webhook, chame deleteWebhook antes de polling",
+  "telegramHelpUrl": "https://t.me/BotFather",
+  "discordPrep": [
+    "Abra o Discord Developer Portal → New Application (ou clique no link acima)",
+    "Bot → Add Bot → Reset Token → Copie o Bot Token (nota: NÃO é o OAuth2 Client Secret)",
+    "⚠️ DEVE habilitar Message Content Intent (senão o Bot conecta mas lê conteúdo vazio)",
+    "Habilite também Server Members Intent (se precisar de listas de membros)",
+    "OAuth2 URL Generator → Marque bot + applications.commands",
+    "Selecione permissões: View Channels, Send Messages, Read Message History, Embed Links, Attach Files (use Permission Calculator)",
+    "Gere a URL de convite e adicione o Bot ao servidor",
+    "Nota: Bots em 75+ servidores requerem aprovação adicional de Privileged Intent"
+  ],
+  "discordPitfall": "⚠️ Erros comuns: 1) Sem Message Content Intent o conteúdo fica vazio (obrigatório desde ago/2022); 2) Bot Token ≠ OAuth2 Client Secret; 3) requireMention dentro de guilds; 4) Bots em 75+ servidores precisam de aprovação; 5) Sem permissão falha silenciosamente",
+  "discordHelpUrl": "https://discord.com/developers/applications",
+  "slackPrep": [
+    "Crie o App em api.slack.com/apps (From scratch, ou clique no link acima)",
+    "Socket Mode → Enable → Gere App-Level Token (xapp-..., requer scope connections:write)",
+    "OAuth & Permissions → Adicione Bot Token Scopes → Install to Workspace → Copie o Bot Token (xoxb-...)",
+    "⚠️ Três tokens diferentes: App Token (xapp-) para Socket Mode, Bot Token (xoxb-) para chamadas API, User Token (xoxp-) opcional",
+    "Event Subscriptions → Inscreva-se em message.channels, message.groups, message.im, message.mpim, app_mention",
+    "App Home → Habilite Messages Tab (senão usuários não podem enviar DM ao Bot)",
+    "Use /invite @botname para adicionar o Bot aos canais desejados",
+    "Após modificar Scopes, você deve Reinstalar no Workspace para que as alterações tenham efeito"
+  ],
+  "slackPitfall": "⚠️ Erros comuns: 1) Três tokens: App (xapp-) Socket Mode, Bot (xoxb-) API, User (xoxp-) opcional; 2) Sem Messages Tab não envia DM; 3) Bot precisa de /invite no canal; 4) Reinstale após mudar Scope; 5) missing_scope = permissão insuficiente",
+  "slackHelpUrl": "https://api.slack.com/apps",
+  "whatsappPrep": [
+    "⚠️ Gateway DEVE rodar em Node.js (WhatsApp/Baileys é instável no Bun, causa desconexões frequentes)",
+    "Prepare um número de telefone dedicado (fortemente recomendado — protocolo não oficial tem risco de ban)",
+    "Certifique-se de que o número está registrado no WhatsApp e pode enviar/receber mensagens",
+    "Verifique a contagem de dispositivos vinculados (máx 4 — não pode conectar se o limite for atingido)",
+    "Você escaneará um QR code no seu celular depois (QR expira em ~20 segundos, esteja pronto)",
+    "Se a conexão falhar, delete os arquivos de sessão em ~/.hermes/sessions/ e escaneie novamente"
+  ],
+  "whatsappPitfall": "⚠️ Erros comuns: 1) Gateway DEVE rodar em Node.js; 2) Risco de ban com protocolo não oficial; 3) QR válido ~20s; 4) Session corrompida: delete ~/.hermes/sessions/; 5) Máx 4 dispositivos",
+  "signalPrep": [
+    "Instale Java 21+ runtime (requerido pelo signal-cli — causa mais comum de falha)",
+    "Instale signal-cli (clique no link abaixo para a versão mais recente e instruções)",
+    "Usuários ARM Linux podem precisar compilar manualmente a biblioteca nativa libsignal-client",
+    "Prepare um número de telefone dedicado (recomendado — Bot ignora suas próprias mensagens para evitar loops)",
+    "Execute signal-cli link, depois escaneie o QR code no celular Signal → Configurações → Dispositivos Vinculados",
+    "Se signal-cli não estiver no PATH do sistema, especifique o caminho completo na config",
+    "Nota: Signal tem limites de frequência rigorosos — envio em massa pode acionar throttling"
+  ],
+  "signalPitfall": "⚠️ Erros comuns: 1) Java 21+ ausente é causa #1; 2) ARM Linux pode precisar compilar libsignal-client; 3) Use signal-cli link, não register; 4) QR no terminal precisa de Unicode; 5) Signal limita frequência",
+  "signalHelpUrl": "https://github.com/AsamK/signal-cli",
+  "mattermostPrep": [
+    "Crie uma conta Bot no console admin do Mattermost",
+    "Copie o Bot Token",
+    "Certifique-se de que o Bot foi adicionado aos canais/equipes desejados",
+    "Configure a Base URL do servidor Mattermost"
+  ],
+  "mattermostPitfall": "⚠️ Nota: 1) Bot deve ser adicionado ao canal; 2) Base URL com protocolo e porta",
+  "mattermostHelpUrl": "https://developers.mattermost.com",
+  "matrixPrep": [
+    "Registre ou implante um Matrix Homeserver (ex. matrix.org ou Synapse auto-hospedado)",
+    "Crie uma conta Bot e obtenha o Access Token (via API /_matrix/client/r0/login)",
+    "URL do Homeserver deve incluir protocolo (ex. https://matrix.org)",
+    "Salas E2EE podem requerer configuração adicional"
+  ],
+  "matrixPitfall": "⚠️ Nota: 1) URL precisa https://; 2) Access Token via API; 3) E2EE pode requerer config extra",
+  "matrixHelpUrl": "https://matrix.org",
+  "dingtalkPrep": [
+    "No DingTalk, toque em \"Criar ou Entrar em Organização\" → Crie uma (sem documentos necessários, 5 minutos)",
+    "Faça login na DingTalk Open Platform open-dev.dingtalk.com → Mude para a nova org → Crie um app",
+    "Adicione a capacidade Bot em App Capabilities, modo de recepção de mensagens DEVE ser Stream (sem IP público necessário)",
+    "Obtenha Client ID (AppKey) e Client Secret (AppSecret) da página de Credenciais",
+    "Crie e publique uma versão em Gerenciamento de Versões (bot aparece na busca do DingTalk somente após publicar)",
+    "(Opcional) Para streaming de AI Card, habilite permissões Card.Instance.Write e Card.Streaming.Write"
+  ],
+  "dingtalkPitfall": "⚠️ Erros comuns: 1) Modo recepção deve ser Stream; 2) Publicar versão após criar app; 3) API tem limites de frequência; 4) Sem AI Card usa mensagens normais",
+  "dingtalkHelpUrl": "https://open-dev.dingtalk.com",
+  "feishuPrep": [
+    "Faça login na Feishu Open Platform open.feishu.cn → Crie um app empresarial",
+    "Copie App Key e App Secret da página de Credenciais",
+    "Adicione a capacidade Bot em App Capabilities, defina o nome do bot",
+    "Adicione permissões necessárias: im:message, im:message.p2p_msg:readonly, im:message.group_at_msg:readonly, im:message:send_as_bot, im:resource (use \"Copiar JSON de Permissões\" abaixo para importação em lote)",
+    "Em Events & Callbacks, selecione \"Receber eventos via conexão longa\" (recomendado, sem IP público necessário), adicione eventos: im.message.receive_v1, im.message.message_read_v1, im.chat.member.bot.added_v1, im.chat.member.bot.deleted_v1",
+    "Crie e publique uma versão em Gerenciamento de Versões (necessário após cada alteração de config)",
+    "⚠️ Bot só pode ser encontrado na busca do Feishu após publicar"
+  ],
+  "feishuPitfall": "⚠️ Erros comuns: 1) Sem im.message.receive_v1 o Bot envia mas não recebe; 2) Modo evento deve coincidir com connectionMode; 3) Publicar nova versão após cada alteração; 4) Bot não tem diretório raiz na nuvem",
+  "feishuHelpUrl": "https://open.feishu.cn/app",
+  "wecomPrep": [
+    "Visite work.weixin.qq.com para registrar e fazer login no console admin do WeCom",
+    "Em Gerenciamento de Apps → Smart Bot, crie um bot",
+    "Defina a URL de callback: http://<seu-ip-ou-domínio>:18789/wecom (certifique-se de que a porta 18789 está acessível)",
+    "Anote o Token e EncodingAESKey gerados (clique em \"Gerar Aleatório\")",
+    "⚠️ Configure o HermesAgent e inicie o gateway PRIMEIRO, depois volte ao console WeCom e clique em \"Criar\" — senão a verificação de callback falhará",
+    "Após a criação, escaneie o QR code para adicionar o bot e comece a conversar"
+  ],
+  "wecomPitfall": "⚠️ Erros comuns: 1) URL callback deve ser acessível: http://IP:18789/wecom; 2) Configure HermesAgent primeiro; 3) encodingAESKey = 43 caracteres; 4) Libere porta 18789",
+  "wecomHelpUrl": "https://open.work.weixin.qq.com/help/wap/detail?docid=21657",
+  "bluebubblesPrep": [
+    "Requer um Mac sempre ligado executando BlueBubbles Server",
+    "Baixe e instale o BlueBubbles Server (veja link abaixo)",
+    "Faça login com Apple ID e certifique-se de que o iMessage funciona",
+    "Configure o método de conexão e senha da API no BlueBubbles",
+    "Recursos de Private API requerem desativar SIP"
+  ],
+  "bluebubblesPitfall": "⚠️ BlueBubbles requer Mac sempre ligado",
+  "bluebubblesHelpUrl": "https://docs.bluebubbles.app",
+  "feishuPermJson": "{\"scopes\":{\"tenant\":[\"aily:file:read\",\"aily:file:write\",\"application:application.app_message_stats.overview:readonly\",\"application:application:self_manage\",\"application:bot.menu:write\",\"cardkit:card:read\",\"cardkit:card:write\",\"contact:user.employee_id:readonly\",\"corehr:file:download\",\"event:ip_list\",\"im:chat.access_event.bot_p2p_chat:read\",\"im:chat.members:bot_access\",\"im:message\",\"im:message.group_at_msg:readonly\",\"im:message.p2p_msg:readonly\",\"im:message:readonly\",\"im:message:send_as_bot\",\"im:resource\"],\"user\":[\"aily:file:read\",\"aily:file:write\",\"im:chat.access_event.bot_p2p_chat:read\"]}}",
+  "copyPermJson": "Copiar JSON de permissões",
+  "wecom_callbackHelpUrl": "https://work.weixin.qq.com",
+  "wecom_callbackPrep": [
+    "Log in to the WeCom admin console at work.weixin.qq.com",
+    "Go to App Management → Self-built → Create Application",
+    "Copy the AgentId and Secret (corpSecret) from the application detail page",
+    "Copy the Corp ID (corpId) from the My Company page",
+    "Under \"Receive Messages\" → \"Set API Receive\", fill in the callback URL (http://YOUR_IP:18789/wecom-app), Token, and EncodingAESKey",
+    "Add your server's public IP to \"Enterprise Trusted IP\"",
+    "⚠️ Start HermesAgent first, THEN click Save in the WeCom console — otherwise callback verification fails"
+  ],
+  "wecom_callbackPitfall": "⚠️ Common pitfalls: 1) Must start the gateway before clicking Save in WeCom console — callback verification will fail otherwise; 2) Must add server IP to \"Enterprise Trusted IP\" or outbound messages fail; 3) Token and EncodingAESKey must match exactly between HermesAgent config and WeCom console; 4) Members can use the Bot through the WeCom Workspace entry in personal WeChat.",
+  "weixinHelpUrl": "https://ilink.cc",
+  "weixinPrep": [
+    "Prepare a dedicated WeChat account (use a secondary number — automation carries a ban risk)",
+    "Ensure the account can send and receive messages normally in the official WeChat app",
+    "Leave the QR code ready — you will scan it with that WeChat account to link the session",
+    "After linking, sessions are persisted; do not link the same account to more than one HermesAgent instance"
+  ],
+  "weixinPitfall": "⚠️ Common pitfalls: 1) Uses an unofficial protocol (iLink) — there is a non-zero ban risk, use a dedicated account; 2) QR codes expire quickly (~10 minutes); refresh if needed; 3) Do not run two HermesAgent instances linked to the same WeChat account; 4) On failure, clear the session file and re-scan.",
+  "smsHelpUrl": "https://www.twilio.com/docs/messaging",
+  "smsPrep": [
+    "Create a Twilio account at twilio.com and verify your phone number",
+    "Buy an SMS-capable phone number in the Twilio Console",
+    "Copy the Account SID and Auth Token from the Twilio Console dashboard",
+    "Configure a Messaging Webhook pointing to HermesAgent if you want inbound SMS",
+    "Alternatively, configure another SMS provider and map its credentials to the same env vars"
+  ],
+  "smsPitfall": "⚠️ Common pitfalls: 1) SMS costs per-message fees — monitor usage; 2) Country-specific regulations may apply (A2P 10DLC in the US, etc.); 3) For inbound SMS, the Twilio number must have an SMS-enabled capability and a reachable webhook URL; 4) Rate limits apply — bulk sending may be throttled.",
+  "emailHelpUrl": "https://hermes-agent.docs/channels/email",
+  "emailPrep": [
+    "Identify your SMTP / IMAP provider (Gmail, Outlook, self-hosted, etc.)",
+    "For Gmail: enable 2FA and create an App Password (do NOT use your account password)",
+    "For inbound email, prefer IMAP IDLE (real-time) over polling; enable IMAP in the provider settings",
+    "Collect: email address, App Password, IMAP host+port (default 993), SMTP host+port (default 587)",
+    "Test credentials locally (e.g. with openssl s_client or Thunderbird) before pasting into HermesAgent"
+  ],
+  "emailPitfall": "⚠️ Common pitfalls: 1) Gmail/Outlook refuse plain-password logins — you MUST create an App Password; 2) \"Less secure apps\" is deprecated on most providers; 3) IMAP IDLE connections need to be refreshed every ~29 minutes (handled automatically); 4) Self-hosted mail servers often need a correct SPF/DKIM/DMARC to avoid being rate-limited or silently dropped.",
+  "homeassistantHelpUrl": "https://www.home-assistant.io/docs/authentication",
+  "homeassistantPrep": [
+    "Install Home Assistant and confirm you can reach its web UI (e.g. http://homeassistant.local:8123)",
+    "Create a Long-Lived Access Token: Profile → Security → Long-Lived Access Tokens → Create Token",
+    "Copy the token — it is shown ONLY once",
+    "Note the Home Assistant URL HermesAgent should reach (local IP or external HTTPS)",
+    "Optional: enable the Conversation and Assist integrations if you want voice-style commands"
+  ],
+  "homeassistantPitfall": "⚠️ Common pitfalls: 1) Long-Lived Tokens are displayed once — store them immediately; 2) If HermesAgent is not on the same LAN, the URL must be HTTPS and resolvable; 3) Some integrations (e.g. locks) require additional per-device authorization; 4) Rate limits apply on public-exposed instances, consider Nabu Casa or a reverse proxy.",
+  "api_serverPrep": [
+    "Decide whether clients will authenticate with an API key (recommended) or operate unauthenticated on localhost only",
+    "If enabling API-key auth, generate a random key (32+ bytes) and distribute it securely",
+    "Choose the listen host and port — default is 127.0.0.1:8765; use 0.0.0.0 only behind a reverse proxy",
+    "If exposing to the internet, front with a reverse proxy (nginx/Caddy/Cloudflare) terminating TLS",
+    "Review rate limiting and allow-lists before opening the port publicly"
+  ],
+  "api_serverPitfall": "⚠️ Common pitfalls: 1) Do NOT bind to 0.0.0.0 without a reverse proxy + TLS + API key — the agent can execute tools; 2) API keys in query strings leak into logs; send them as `Authorization: Bearer …` headers; 3) Long-running requests may need higher timeouts on both sides; 4) Streaming responses require HTTP/1.1 keep-alive or HTTP/2 — old proxies may buffer and break streaming."
 }

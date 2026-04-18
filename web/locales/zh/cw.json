@@ -161,5 +161,172 @@
   "threadSessionsPerUser": "线程会话隔离",
   "threadSessionsPerUserDesc": "按参与者隔离线程会话",
   "streamingEnabled": "流式输出",
-  "streamingEnabledDesc": "实时流式发送回复到频道"
+  "streamingEnabledDesc": "实时流式发送回复到频道",
+  "telegramPrep": [
+    "打开 Telegram，搜索 @BotFather（或点击上方链接直达）",
+    "发送 /newbot，按提示设置名称和用户名",
+    "复制生成的 Bot Token（格式：数字:字母数字混合，如 123456789:ABCdef-GHI）",
+    "如需群组功能：/setprivacy → Disable（关闭隐私模式）",
+    "⚠️ 关闭隐私模式后，必须将 Bot 移出群组再重新添加才能生效",
+    "如需管理功能（pin/删除消息）：将 Bot 设为群组管理员"
+  ],
+  "telegramPitfall": "⚠️ 常见踩坑：1) 关闭 Privacy Mode 后必须将 Bot 移出群组再重新添加才能生效（官方文档明确说明）；2) Bot Token 格式为 数字:字母数字混合，复制时注意不要多带空格或换行；3) 群组内 Bot 每分钟最多发 20 条消息，超出返回 429 错误；4) 如果之前设置过 Webhook，需要先调用 deleteWebhook 才能切换到 polling 模式",
+  "telegramHelpUrl": "https://t.me/BotFather",
+  "discordPrep": [
+    "打开 Discord Developer Portal → New Application（或点击上方链接直达）",
+    "Bot → Add Bot → Reset Token → 复制 Bot Token（注意：不是 OAuth2 Client Secret）",
+    "⚠️ 必须开启 Message Content Intent（否则 Bot 能连接但读不到任何消息内容）",
+    "同时开启 Server Members Intent（如需获取成员列表）",
+    "OAuth2 URL Generator → 勾选 bot + applications.commands",
+    "选择权限：View Channels, Send Messages, Read Message History, Embed Links, Attach Files（推荐使用 Permission Calculator）",
+    "生成邀请链接并添加 Bot 到服务器",
+    "注意：超过 75 个服务器的 Bot 需要额外申请 Privileged Intent 审批"
+  ],
+  "discordPitfall": "⚠️ 常见踩坑：1) 必须开启 Message Content Intent，否则 Bot 能连接但消息内容为空字符串（2022 年 8 月后强制要求）；2) Bot Token 和 OAuth2 Client Secret 是不同的东西，不要混淆；3) requireMention 必须放在 guilds 配置下，放在顶层会被忽略；4) 超过 75 个服务器的 Bot 需要额外申请 Privileged Intent 审批；5) 权限不足时 Bot 不会报错，只是静默失败",
+  "discordHelpUrl": "https://discord.com/developers/applications",
+  "slackPrep": [
+    "在 api.slack.com/apps 创建 App（From scratch，或点击上方链接直达）",
+    "Socket Mode → 开启 → 生成 App-Level Token（xapp-...，需要 connections:write scope）",
+    "OAuth & Permissions → 添加 Bot Token Scopes → Install to Workspace → 复制 Bot Token（xoxb-...）",
+    "⚠️ 注意区分三种 Token：App Token (xapp-) 用于 Socket Mode，Bot Token (xoxb-) 用于 API 调用，User Token (xoxp-) 可选",
+    "Event Subscriptions → 订阅 message.channels, message.groups, message.im, message.mpim, app_mention",
+    "App Home → 开启 Messages Tab（否则用户无法给 Bot 发私信）",
+    "使用 /invite @botname 邀请 Bot 到目标频道",
+    "修改 Scope 后需要重新 Reinstall to Workspace 才能生效"
+  ],
+  "slackPitfall": "⚠️ 常见踩坑：1) 三种 Token 用途不同：App Token (xapp-) 用于 Socket Mode，Bot Token (xoxb-) 用于 API，User Token (xoxp-) 可选增强权限；2) App Home → Messages Tab 未开启会导致用户无法给 Bot 发私信；3) Bot 必须被 /invite 到频道才能接收消息；4) 修改 Scope 后必须重新 Reinstall to Workspace；5) missing_scope 错误说明权限不足，需要添加对应 scope",
+  "slackHelpUrl": "https://api.slack.com/apps",
+  "whatsappPrep": [
+    "⚠️ 必须使用 Node.js 运行网关（WhatsApp/Baileys 在 Bun 下不稳定，会频繁断连）",
+    "准备一个独立手机号码（强烈建议，使用非官方协议存在封号风险）",
+    "确保该号码已注册 WhatsApp 且能正常收发消息",
+    "检查 WhatsApp 已关联设备数量（最多 4 个，超出无法连接）",
+    "稍后需要在手机上扫描 QR 码关联设备（QR 码有效期约 20 秒，请提前准备）",
+    "如连接异常，可删除 ~/.hermes/sessions/ 下对应文件后重新扫码"
+  ],
+  "whatsappPitfall": "⚠️ 常见踩坑：1) 必须使用 Node.js 运行网关，WhatsApp (Baileys) 在 Bun 下不稳定会频繁断连；2) 使用非官方协议存在封号风险，强烈建议使用独立号码；3) QR 码有效期约 20 秒，超时需等待新码生成；4) Session 损坏时删除 ~/.hermes/sessions/ 下对应文件重新扫码；5) WhatsApp 最多关联 4 个设备，超出无法连接",
+  "signalPrep": [
+    "安装 Java 21+ 运行环境（signal-cli 强制依赖，最常见的失败原因）",
+    "安装 signal-cli（点击下方链接查看最新版本和安装方法）",
+    "ARM Linux 用户可能需要手动编译 libsignal-client native library",
+    "准备一个独立手机号码（推荐，Bot 会忽略自己发送的消息以防循环）",
+    "稍后运行 signal-cli link 并在手机 Signal → 设置 → 已关联设备 中扫描 QR 码",
+    "如果 signal-cli 不在系统 PATH 中，需要在配置中指定完整路径",
+    "注意：Signal 对消息频率有严格限制，批量发送容易触发限流"
+  ],
+  "signalPitfall": "⚠️ 常见踩坑：1) 未安装 Java 21+ 是最常见的失败原因；2) ARM Linux 可能需要手动编译 libsignal-client native library；3) 使用 signal-cli link（关联设备模式），不是 register（注册新号码）；4) QR 码在终端显示需要 Unicode 支持，SSH 远程操作可能显示异常；5) Signal 对消息频率有严格限制，批量发送容易触发限流",
+  "signalHelpUrl": "https://github.com/AsamK/signal-cli",
+  "mattermostPrep": [
+    "在 Mattermost 管理后台创建 Bot Account",
+    "复制 Bot Token",
+    "确认 Bot 已被添加到目标频道/团队",
+    "配置 Mattermost 服务器的 Base URL"
+  ],
+  "mattermostPitfall": "⚠️ 注意：1) Bot 需要被添加到目标频道才能收发消息；2) 确保 Base URL 包含协议和端口（如 https://mattermost.example.com:8065）",
+  "mattermostHelpUrl": "https://developers.mattermost.com",
+  "matrixPrep": [
+    "注册或部署 Matrix Homeserver（如 matrix.org 或自建 Synapse）",
+    "创建 Bot 账号并获取 Access Token（通过 /_matrix/client/r0/login API）",
+    "Homeserver URL 必须包含协议（如 https://matrix.org）",
+    "如需加入加密房间，可能需要额外 E2EE 配置"
+  ],
+  "matrixPitfall": "⚠️ 注意：1) Homeserver URL 必须包含 https:// 前缀；2) Access Token 通过 API 获取，不是密码；3) 端到端加密房间可能需要额外配置",
+  "matrixHelpUrl": "https://matrix.org",
+  "dingtalkPrep": [
+    "在钉钉右上角「创建或加入企业」→ 创建企业（无需任何材料，5 分钟完成）",
+    "登录钉钉开放平台 open-dev.dingtalk.com → 切换到刚创建的企业 → 创建应用",
+    "在「应用能力」中添加「机器人」能力，消息接收模式必须选择 Stream 模式（无需公网 IP）",
+    "在「凭证与基础信息」页获取 Client ID (AppKey) 和 Client Secret (AppSecret)",
+    "在「版本管理与发布」中创建版本并发布（发布后才能在钉钉中搜索到机器人）",
+    "（可选）如需 AI Card 流式输出，在权限中开通 Card.Instance.Write 和 Card.Streaming.Write"
+  ],
+  "dingtalkPitfall": "⚠️ 常见踩坑：1) 消息接收模式必须选 Stream 模式，否则需要公网 IP；2) 创建应用后必须「发布版本」才能在钉钉中搜索到机器人；3) 钉钉 API 有频率限制，流式更新容易触发限流；4) 未开通 AI Card 权限也不影响正常对话，系统会回退到普通消息",
+  "dingtalkHelpUrl": "https://open-dev.dingtalk.com",
+  "feishuPrep": [
+    "登录飞书开放平台 open.feishu.cn → 创建企业自建应用",
+    "在「凭证与基础信息」页复制 App Key 和 App Secret",
+    "在「应用能力」中添加「机器人」能力，设置机器人名称",
+    "在「权限管理」页添加必需权限：im:message、im:message.p2p_msg:readonly、im:message.group_at_msg:readonly、im:message:send_as_bot、im:resource（可点击下方「复制权限 JSON」批量导入）",
+    "在「事件与回调」中选择「使用长连接接收事件」（推荐，无需公网 IP），添加事件：im.message.receive_v1、im.message.message_read_v1、im.chat.member.bot.added_v1、im.chat.member.bot.deleted_v1",
+    "在「版本管理与发布」中创建版本并发布（每次改配置后都需重新发布）",
+    "⚠️ 发布后才能在飞书中搜索到机器人"
+  ],
+  "feishuHelpUrl": "https://open.feishu.cn/app",
+  "wecomPrep": [
+    "访问 work.weixin.qq.com 注册并登录企业微信管理后台",
+    "在企微客户端 → 工作台 → 智能机器人 → 创建机器人「手动创建」 → 拉到底选择「API 模式」→「使用长连接」方式",
+    "系统自动生成 Bot ID 和 Secret，复制保存",
+    "在下方 HermesAgent 配置中填写 Bot ID 和 Secret",
+    "保存机器人后，发送消息给机器人获取配对密钥",
+    "复制配对密钥，在配置界面中完成配对",
+    "配对成功后即可开始对话"
+  ],
+  "wecomPitfall": "⚠️ 常见踩坑：1) 必须选择「长连接」创建方式，不要选 Webhook；2) Bot ID 和 Secret 由系统自动生成，不要手动修改；3) 配对密钥直接复制粘贴即可；4) 长连接模式无需公网地址和端口配置",
+  "wecomHelpUrl": "https://open.work.weixin.qq.com/help/wap/detail?docid=21657",
+  "bluebubblesPrep": [
+    "需要一台始终在线的 Mac 运行 BlueBubbles Server",
+    "下载并安装 BlueBubbles Server（见下方链接）",
+    "登录 Apple ID 并确保 iMessage 正常工作",
+    "在 BlueBubbles 中配置连接方式和 API 密码",
+    "如需 Private API 功能需要禁用 SIP"
+  ],
+  "bluebubblesPitfall": "⚠️ 注意：BlueBubbles 需要 Mac 始终在线运行，断电或休眠会导致消息中断",
+  "bluebubblesHelpUrl": "https://docs.bluebubbles.app",
+  "feishuPermJson": "{\"scopes\":{\"tenant\":[\"aily:file:read\",\"aily:file:write\",\"application:application.app_message_stats.overview:readonly\",\"application:application:self_manage\",\"application:bot.menu:write\",\"cardkit:card:read\",\"cardkit:card:write\",\"contact:contact.base:readonly\",\"contact:contact.access_as_app\",\"contact:contact:readonly\",\"contact:contact:readonly_as_app\",\"contact:user.employee_id:readonly\",\"corehr:file:download\",\"event:ip_list\",\"im:chat.access_event.bot_p2p_chat:read\",\"im:chat.members:bot_access\",\"im:message\",\"im:message.group_at_msg:readonly\",\"im:message.p2p_msg:readonly\",\"im:message:readonly\",\"im:message:send_as_bot\",\"im:resource\"],\"user\":[\"aily:file:read\",\"aily:file:write\",\"im:chat.access_event.bot_p2p_chat:read\"]}}",
+  "copyPermJson": "复制权限 JSON",
+  "wecom_callbackHelpUrl": "https://work.weixin.qq.com",
+  "wecom_callbackPrep": [
+    "登录企业微信管理后台 work.weixin.qq.com",
+    "进入「应用管理」→「自建」→ 创建应用",
+    "在应用详情页复制 AgentId 和 Secret（即 corpSecret）",
+    "在「我的企业」页复制企业 ID（corpId）",
+    "在「接收消息」→「设置 API 接收」填写回调 URL（http://你的IP:18789/wecom-app）、Token、EncodingAESKey",
+    "在「企业可信 IP」中添加服务器公网 IP",
+    "⚠️ 先启动 HermesAgent 网关，再回企微后台点「保存」，否则回调校验会失败"
+  ],
+  "wecom_callbackPitfall": "⚠️ 常见踩坑：1) 必须先启动网关再在企微后台点保存，否则回调校验失败；2) 必须在「企业可信 IP」中添加服务器 IP，否则发送消息失败；3) Token 和 EncodingAESKey 必须与企微后台完全一致；4) 可在个人微信的「工作台」入口使用该 Bot。",
+  "weixinHelpUrl": "https://ilink.cc",
+  "weixinPrep": [
+    "准备一个独立的微信账号（推荐使用小号，存在一定封号风险）",
+    "确保该账号在微信 App 中可正常收发消息",
+    "保持 QR 码就绪 —— 稍后使用该微信账号扫码关联会话",
+    "关联后会话会持久化保存，同一账号不要同时关联到多个 HermesAgent 实例"
+  ],
+  "weixinPitfall": "⚠️ 常见踩坑：1) 使用非官方协议（iLink），存在封号风险，强烈建议小号；2) QR 码有效期较短（约 10 分钟），过期需刷新；3) 同一微信账号不可同时关联多个 HermesAgent 实例；4) 关联失败时删除会话文件后重新扫码。",
+  "smsHelpUrl": "https://www.twilio.com/docs/messaging",
+  "smsPrep": [
+    "在 twilio.com 注册账号并完成手机号验证",
+    "在 Twilio 控制台购买一个支持 SMS 的号码",
+    "在控制台首页复制 Account SID 和 Auth Token",
+    "如需接收短信，配置消息 Webhook 指向 HermesAgent",
+    "如使用其他短信服务商，将凭证映射到同样的环境变量即可"
+  ],
+  "smsPitfall": "⚠️ 常见踩坑：1) 短信按条计费，请留意用量；2) 各国监管要求不同（美国 A2P 10DLC 等），请先确认合规；3) 接收短信需 Twilio 号码具备 SMS 能力且 Webhook 可公网访问；4) 存在频率限制，批量发送可能被限流。",
+  "emailHelpUrl": "https://hermes-agent.docs/channels/email",
+  "emailPrep": [
+    "确认你的 SMTP / IMAP 服务商（Gmail、Outlook、自建邮件服务器等）",
+    "Gmail 用户需开启两步验证并生成「应用专用密码」（不要使用账户密码）",
+    "如需接收邮件，优先使用 IMAP IDLE（实时推送），并在服务商设置中启用 IMAP",
+    "收集好：邮箱地址、App Password、IMAP 主机+端口（默认 993）、SMTP 主机+端口（默认 587）",
+    "建议用本地工具（openssl s_client 或 Thunderbird）先测试凭证再填入 HermesAgent"
+  ],
+  "emailPitfall": "⚠️ 常见踩坑：1) Gmail / Outlook 拒绝纯密码登录，必须创建应用专用密码；2) 各大厂商「不安全应用」选项已下线；3) IMAP IDLE 连接需约每 29 分钟刷新（框架已自动处理）；4) 自建邮件服务器需配置好 SPF/DKIM/DMARC，否则容易被限流或直接丢弃。",
+  "homeassistantHelpUrl": "https://www.home-assistant.io/docs/authentication",
+  "homeassistantPrep": [
+    "安装 Home Assistant 并确认能访问其 Web 界面（如 http://homeassistant.local:8123）",
+    "创建长期访问令牌：个人资料 → 安全 → 长期访问令牌 → 创建令牌",
+    "立即复制令牌 —— 它只显示一次",
+    "确认 HermesAgent 访问 Home Assistant 的 URL（局域网 IP 或外网 HTTPS）",
+    "可选：如需语音风格指令，启用 Conversation 和 Assist 集成"
+  ],
+  "homeassistantPitfall": "⚠️ 常见踩坑：1) 长期访问令牌只显示一次，必须立即保存；2) HermesAgent 不在同局域网时，URL 必须是可解析的 HTTPS；3) 部分集成（如门锁）需要额外的设备级授权；4) 公网暴露的实例建议通过 Nabu Casa 或反向代理，以免触发限流。",
+  "api_serverPrep": [
+    "决定客户端使用 API Key 认证（推荐）还是仅 localhost 无认证",
+    "启用 API Key 时，生成 32 字节以上的随机密钥并通过安全渠道分发",
+    "选择监听地址和端口（默认 127.0.0.1:8765）；只有在反向代理后才使用 0.0.0.0",
+    "如需公网访问，前置反向代理（nginx / Caddy / Cloudflare）并启用 TLS",
+    "开放公网端口前，请先审视限流策略和访问白名单"
+  ],
+  "api_serverPitfall": "⚠️ 常见踩坑：1) 没有反向代理 + TLS + API Key 就绑定 0.0.0.0 极危险 —— Agent 可执行工具；2) 把 API Key 放在 query 里会写进日志，应使用 `Authorization: Bearer …` 请求头；3) 长耗时请求需双向调大超时；4) 流式响应依赖 HTTP/1.1 keep-alive 或 HTTP/2，老旧代理可能缓冲导致流式中断。",
+  "feishuPitfall": "⚠️ 常见踩坑：1) 必须在「事件与回调」添加 im.message.receive_v1 事件，否则机器人能发消息但收不到消息；2) 事件订阅方式必须与 connectionMode 匹配：长连接 → websocket（推荐），请求地址 → webhook；3) 每次修改权限/配置后必须重新「创建版本并发布」才能生效；4) 机器人没有自己的云空间根目录，需手动分享文件夹给机器人才能使用云空间工具。"
 }
