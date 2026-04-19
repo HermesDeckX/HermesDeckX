@@ -2192,3 +2192,16 @@ export const knowledgeApi = {
   stats: () => get<KnowledgeStats>('/api/v1/knowledge/stats'),
   statsCached: (ttlMs = 30000) => getCached<KnowledgeStats>('/api/v1/knowledge/stats', ttlMs),
 };
+
+// ==================== Local / Container PTY shell ====================
+export interface LocalTerminalAvailability {
+  available: boolean;
+  reason?: string;
+  inDocker: boolean;
+  shell?: string;
+  label?: string;
+}
+export const localTerminalApi = {
+  available: () => get<LocalTerminalAvailability>('/api/v1/terminal/local/available'),
+};
+

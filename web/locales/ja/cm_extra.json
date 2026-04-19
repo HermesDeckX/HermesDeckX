@@ -323,6 +323,14 @@
     "credentialsSaved": "資格情報を保存しました",
     "credentialsSaveFailed": "資格情報の保存に失敗しました",
     "show": "表示",
-    "hide": "非表示"
+    "hide": "非表示",
+    "localShell": "ローカルシェル",
+    "containerShell": "コンテナシェル",
+    "noSshRequired": "SSH 不要",
+    "containerShellHint": "この Docker コンテナに直接 PTY シェルで接続 — パスワード不要、root 権限。",
+    "localShellHint": "このホストで直接 PTY シェルを開きます。",
+    "localShellOpening": "{name} を開いています...",
+    "localShellUnavailable": "このホストではローカルシェルを利用できません",
+    "localHistoryShared": "履歴はすべてのローカル／コンテナシェルタブで共有されます。"
   }
 }

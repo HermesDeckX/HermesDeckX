@@ -323,6 +323,14 @@
     "credentialsSaved": "憑證已儲存",
     "credentialsSaveFailed": "憑證儲存失敗",
     "show": "顯示",
-    "hide": "隱藏"
+    "hide": "隱藏",
+    "localShell": "本機 Shell",
+    "containerShell": "容器 Shell",
+    "noSshRequired": "無需 SSH",
+    "containerShellHint": "直接進入 Docker 容器的 PTY Shell — 無需密碼，root 權限。",
+    "localShellHint": "直接在本機開啟 PTY Shell。",
+    "localShellOpening": "正在開啟 {name}...",
+    "localShellUnavailable": "此主機不支援本機 Shell",
+    "localHistoryShared": "歷史記錄在所有本機/容器 Shell 分頁間共用。"
   }
 }

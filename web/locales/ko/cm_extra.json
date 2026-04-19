@@ -323,6 +323,14 @@
     "credentialsSaved": "자격 증명이 저장되었습니다",
     "credentialsSaveFailed": "자격 증명 저장 실패",
     "show": "표시",
-    "hide": "숨기기"
+    "hide": "숨기기",
+    "localShell": "로컬 셸",
+    "containerShell": "컨테이너 셸",
+    "noSshRequired": "SSH 불필요",
+    "containerShellHint": "이 Docker 컨테이너에 직접 PTY 셸로 접속 — 비밀번호 없이 root 권한.",
+    "localShellHint": "이 호스트에서 PTY 셸을 바로 엽니다.",
+    "localShellOpening": "{name} 여는 중...",
+    "localShellUnavailable": "이 호스트에서는 로컬 셸을 사용할 수 없습니다",
+    "localHistoryShared": "기록은 모든 로컬/컨테이너 셸 탭에서 공유됩니다."
   }
 }

@@ -62,4 +62,8 @@ export interface SysInfo {
 export const sysInfoApi = {
   get: (sessionId: string) =>
     get<SysInfo>(`/api/v1/ssh/sysinfo?sessionId=${encodeURIComponent(sessionId)}`),
+  // Local / container sysinfo — reads /proc directly on the HermesDeckX host.
+  // Used by the Terminal window's Status panel for local shell tabs.
+  getLocal: () =>
+    get<SysInfo>('/api/v1/terminal/local/sysinfo'),
 };

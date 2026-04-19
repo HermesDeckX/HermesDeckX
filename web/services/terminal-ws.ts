@@ -41,6 +41,9 @@ export interface TerminalErrorPayload {
   message: string;
 }
 
+// Optional credential overrides for a single terminal.create attempt.
+// Used when the user re-enters credentials after an AUTH_FAILED error
+// without persisting them to the host record.
 export interface TerminalCredentialOverride {
   authType?: 'password' | 'key';
   username?: string;
@@ -51,12 +54,22 @@ export interface TerminalCredentialOverride {
 
 type MessageHandler = (msg: TerminalMessage) => void;
 
+// Which backend endpoint the WS client talks to. `ssh` is the legacy
+// authenticated-per-host terminal; `local` is the in-process / in-container
+// PTY shell exposed at /api/v1/terminal/local/ws.
+export type TerminalWSMode = 'ssh' | 'local';
+
 export class TerminalWSClient {
   private ws: WebSocket | null = null;
   private handlers = new Map<string, Set<MessageHandler>>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private _closed = false;
+  private mode: TerminalWSMode;
+
+  constructor(mode: TerminalWSMode = 'ssh') {
+    this.mode = mode;
+  }
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -68,7 +81,8 @@ export class TerminalWSClient {
       this._closed = false;
       const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
       const token = getToken() || '';
-      const url = `${proto}//${location.host}/api/v1/terminal/ws?token=${encodeURIComponent(token)}`;
+      const path = this.mode === 'local' ? '/api/v1/terminal/local/ws' : '/api/v1/terminal/ws';
+      const url = `${proto}//${location.host}${path}?token=${encodeURIComponent(token)}`;
 
       const ws = new WebSocket(url);
       this.ws = ws;
@@ -107,6 +121,12 @@ export class TerminalWSClient {
 
   createSession(hostId: number, cols: number, rows: number, override?: TerminalCredentialOverride): void {
     this.send('terminal.create', { hostId, cols, rows, ...(override || {}) });
+  }
+
+  // Local PTY session — no hostId, just geometry and optional cwd.
+  // Must be called on a client constructed with mode='local'.
+  createLocalSession(cols: number, rows: number, cwd?: string): void {
+    this.send('terminal.create', { cols, rows, ...(cwd ? { cwd } : {}) });
   }
 
   sendInput(sessionId: string, data: string): void {

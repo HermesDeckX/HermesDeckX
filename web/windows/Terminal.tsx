@@ -10,8 +10,15 @@ import { sshHostsApi } from '../services/ssh-hosts';
 import type { SSHHost, SSHHostCreateRequest } from '../services/ssh-hosts';
 import { TerminalWSClient } from '../services/terminal-ws';
 import type { TerminalMessage, TerminalCreatedPayload, TerminalOutputPayload, TerminalExitPayload, TerminalErrorPayload, TerminalCredentialOverride } from '../services/terminal-ws';
-import { sftpApi } from '../services/sftp';
+import { localTerminalApi, type LocalTerminalAvailability } from '../services/api';
+import { sftpApi, localFilesApi } from '../services/sftp';
 import type { FileEntry, ReadFileResult } from '../services/sftp';
+
+// Route file operations through /api/v1/sftp/* for SSH tabs and through
+// /api/v1/local-files/* for local/container tabs. The two APIs share an
+// identical TypeScript shape (see services/sftp.ts).
+const filesApiFor = (tab: { isLocal?: boolean } | null | undefined) =>
+  tab?.isLocal ? localFilesApi : sftpApi;
 import { sysInfoApi } from '../services/sysinfo';
 import type { SysInfo } from '../services/sysinfo';
 import { snippetsApi } from '../services/snippets';
@@ -49,6 +56,10 @@ const emptyForm: HostFormData = {
 
 interface TabState {
   id: string; hostName: string; hostId: number;
+  // When true, this tab is a local/container PTY shell (no SSH host record).
+  // hostId is a reserved sentinel (0) in that case; SSH-only features (reauth,
+  // SysInfo via SSH exec) are disabled, but snippets persist under hostId=0.
+  isLocal?: boolean;
   sessionId: string | null; connecting: boolean; sftpOpen: boolean;
   xterm: XTerm | null; fitAddon: FitAddon | null;
   wsClient: TerminalWSClient | null; resizeObserver: ResizeObserver | null;
@@ -211,6 +222,8 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const [view, setView] = useState<View>('hosts');
   const [hosts, setHosts] = useState<SSHHost[]>([]);
   const [loading, setLoading] = useState(true);
+  // Local / container PTY shell availability (auto-on in Docker, opt-in elsewhere).
+  const [localTerm, setLocalTerm] = useState<LocalTerminalAvailability | null>(null);
   const [form, setForm] = useState<HostFormData>({ ...emptyForm });
   const [editId, setEditId] = useState<number | null>(null);
   const [testing, setTesting] = useState(false);
@@ -292,6 +305,12 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   }, [toast, tt]);
 
   useEffect(() => { loadHosts(); }, [loadHosts]);
+
+  useEffect(() => {
+    localTerminalApi.available()
+      .then((res) => setLocalTerm(res))
+      .catch(() => setLocalTerm(null));
+  }, []);
 
   useEffect(() => {
     return () => { tabsRef.current.forEach((tab) => { tab.wsClient?.disconnect(); tab.xterm?.dispose(); tab.resizeObserver?.disconnect(); }); };
@@ -520,6 +539,128 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     });
   }, [updateTab, isDark]);
 
+  // Open a local / container PTY shell in a new tab. Uses the dedicated
+  // /api/v1/terminal/local/ws endpoint; no SSH host is involved.
+  const connectToLocalShell = useCallback(async () => {
+    if (!localTerm?.available) {
+      toast('error', tt.localShellUnavailable || 'Local shell is not available on this host');
+      return;
+    }
+    const tabId = `tab-${++tabCounter}`;
+    const displayName = localTerm.label || (localTerm.inDocker ? 'Container Shell' : 'Local Shell');
+    const newTab: TabState = {
+      id: tabId, hostName: displayName, hostId: 0, isLocal: true,
+      sessionId: null, connecting: true, sftpOpen: false,
+      xterm: null, fitAddon: null, wsClient: null, resizeObserver: null,
+      sftpPath: '/', sftpEntries: [], sftpLoading: false,
+      treeCache: {}, expandedDirs: new Set(), treeLoading: new Set(),
+      sysInfo: null, sysInfoOpen: true, netHistory: [],
+      snippets: [], snippetsLoaded: false, collapsedSections: new Set(),
+      editorFile: null, editorDirty: false, editorSaving: false, editorLoading: false,
+    };
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(tabId);
+    setView('sessions');
+
+    const themeColors = TERM_THEMES[termTheme] || TERM_THEMES[DEFAULT_TERM_THEME];
+    const xterm = new XTerm({
+      cursorBlink: true, fontSize: termFontSize,
+      fontFamily: 'JetBrains Mono, Consolas, monospace',
+      theme: isDark ? themeColors.dark : themeColors.light, allowProposedApi: true,
+    });
+    const fitAddon = new FitAddon();
+    xterm.loadAddon(fitAddon);
+    xterm.loadAddon(new WebLinksAddon());
+    xterm.writeln(`\x1b[36m⟡ ${formatTerminalText(tt.localShellOpening || 'Opening {name}...', { name: displayName })}\x1b[0m`);
+
+    xterm.attachCustomKeyEventHandler((e: KeyboardEvent) => {
+      if (e.type !== 'keydown') return true;
+      if (e.ctrlKey && !e.shiftKey && e.key === 'c') {
+        const sel = xterm.getSelection();
+        if (sel) { navigator.clipboard.writeText(sel); xterm.clearSelection(); return false; }
+        return true;
+      }
+      if (e.ctrlKey && !e.shiftKey && e.key === 'v') {
+        navigator.clipboard.readText().then((text) => { if (text) xterm.paste(text); });
+        return false;
+      }
+      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        const sel = xterm.getSelection();
+        if (sel) { navigator.clipboard.writeText(sel); xterm.clearSelection(); }
+        return false;
+      }
+      if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+        navigator.clipboard.readText().then((text) => { if (text) xterm.paste(text); });
+        return false;
+      }
+      return true;
+    });
+
+    const client = new TerminalWSClient('local');
+    try { await client.connect(); } catch {
+      xterm.writeln(`\x1b[31m✗ ${tt.termWebsocketFailed || 'WebSocket connection failed'}\x1b[0m`);
+      updateTab(tabId, { connecting: false, xterm, fitAddon, wsClient: client });
+      return;
+    }
+
+    let sid = '';
+    client.on('terminal.created', (msg: TerminalMessage) => {
+      const p = msg.payload as TerminalCreatedPayload; sid = p.sessionId;
+      updateTab(tabId, { sessionId: p.sessionId, connecting: false });
+      xterm.writeln(`\x1b[32m✓ ${formatTerminalText(tt.termConnected || 'Connected (session: {sessionId})', { sessionId: p.sessionId })}\x1b[0m\r\n`);
+      xterm.focus();
+    });
+    client.on('terminal.output', (msg: TerminalMessage) => { xterm.write((msg.payload as TerminalOutputPayload).data); });
+    client.on('terminal.exit', (msg: TerminalMessage) => {
+      xterm.writeln(`\r\n\x1b[33m⟡ ${formatTerminalText(tt.termSessionEndedWithReason || 'Session ended: {reason}', { reason: (msg.payload as TerminalExitPayload).reason })}\x1b[0m`);
+      updateTab(tabId, { sessionId: null });
+    });
+    client.on('terminal.error', (msg: TerminalMessage) => {
+      const raw = (msg.payload as TerminalErrorPayload).message || '';
+      xterm.writeln(`\r\n\x1b[31m✗ ${translateTerminalError(raw, tt)}\x1b[0m`);
+      updateTab(tabId, { connecting: false });
+    });
+
+    xterm.onData((data: string) => {
+      if (sid) client.sendInput(sid, data);
+      // Capture Enter-terminated commands into the persistent snippets store
+      // under the hostId=0 sentinel (shared across all local/container tabs).
+      const buf = inputBufRef.current;
+      if (!buf[tabId]) buf[tabId] = '';
+      if (data === '\r' || data === '\n') {
+        const cmd = buf[tabId].trim();
+        if (cmd) {
+          snippetsApi.record(0, cmd).then(() => {
+            snippetsApi.list(0).then((list) => {
+              updateTab(tabId, { snippets: list || [], snippetsLoaded: true });
+            }).catch(() => {});
+          }).catch(() => {});
+        }
+        buf[tabId] = '';
+      } else if (data === '\x7f' || data === '\b') {
+        buf[tabId] = buf[tabId].slice(0, -1);
+      } else if (data.length === 1 && data >= ' ') {
+        buf[tabId] += data;
+      } else if (data.length > 1 && !data.startsWith('\x1b')) {
+        buf[tabId] += data;
+      }
+    });
+    xterm.onResize(({ cols, rows }) => { if (sid) client.resizeSession(sid, cols, rows); });
+
+    updateTab(tabId, { xterm, fitAddon, wsClient: client });
+    requestAnimationFrame(() => {
+      const container = termContainerRefs.current[tabId];
+      if (container) {
+        xterm.open(container); fitAddon.fit();
+        const ro = new ResizeObserver(() => { try { fitAddon.fit(); } catch { /* */ } });
+        ro.observe(container);
+        updateTab(tabId, { resizeObserver: ro });
+      }
+      const dims = fitAddon.proposeDimensions();
+      client.createLocalSession(dims?.cols || 120, dims?.rows || 30);
+    });
+  }, [localTerm, updateTab, isDark, termTheme, termFontSize, tt, toast]);
+
   const closeTab = useCallback(async (tabId: string) => {
     const tab = tabsRef.current.find((tb) => tb.id === tabId);
     if (tab?.sessionId) {
@@ -540,10 +681,46 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     });
   }, [activeTabId, confirm, tt]);
 
-  // Reconnect a disconnected tab to the same host
+  // Reconnect a disconnected tab to the same host (or local shell).
   const reconnectTab = useCallback(async (tabId: string) => {
     const tab = tabsRef.current.find((tb) => tb.id === tabId);
     if (!tab || !tab.xterm) return;
+
+    // Local tabs: reopen against the local PTY endpoint; no host record needed.
+    if (tab.isLocal) {
+      tab.wsClient?.disconnect();
+      updateTab(tabId, { connecting: true, sessionId: null });
+      tab.xterm.writeln(`\r\n\x1b[36m⟡ ${tt.termReconnecting?.replace('{name}', tab.hostName) || 'Reconnecting...'}\x1b[0m`);
+      const client = new TerminalWSClient('local');
+      try { await client.connect(); } catch {
+        tab.xterm.writeln(`\x1b[31m✗ ${tt.termWebsocketFailed || 'WebSocket connection failed'}\x1b[0m`);
+        updateTab(tabId, { connecting: false, wsClient: client });
+        return;
+      }
+      let lsid = '';
+      client.on('terminal.created', (msg: TerminalMessage) => {
+        const p = msg.payload as TerminalCreatedPayload; lsid = p.sessionId;
+        updateTab(tabId, { sessionId: p.sessionId, connecting: false });
+        tab.xterm!.writeln(`\x1b[32m✓ ${formatTerminalText(tt.termReconnected || 'Reconnected (session: {sessionId})', { sessionId: p.sessionId })}\x1b[0m\r\n`);
+        tab.xterm!.focus();
+      });
+      client.on('terminal.output', (msg: TerminalMessage) => { tab.xterm!.write((msg.payload as TerminalOutputPayload).data); });
+      client.on('terminal.exit', (msg: TerminalMessage) => {
+        tab.xterm!.writeln(`\r\n\x1b[33m⟡ ${formatTerminalText(tt.termSessionEndedWithReason || 'Session ended: {reason}', { reason: (msg.payload as TerminalExitPayload).reason })}\x1b[0m`);
+        updateTab(tabId, { sessionId: null });
+      });
+      client.on('terminal.error', (msg: TerminalMessage) => {
+        tab.xterm!.writeln(`\r\n\x1b[31m✗ ${translateTerminalError((msg.payload as TerminalErrorPayload).message, tt)}\x1b[0m`);
+        updateTab(tabId, { connecting: false });
+      });
+      tab.xterm.onData((data: string) => { if (lsid) client.sendInput(lsid, data); });
+      tab.xterm.onResize(({ cols, rows }) => { if (lsid) client.resizeSession(lsid, cols, rows); });
+      updateTab(tabId, { wsClient: client });
+      const dims = tab.fitAddon?.proposeDimensions();
+      client.createLocalSession(dims?.cols || 120, dims?.rows || 30);
+      return;
+    }
+
     const host = hosts.find((h) => h.id === tab.hostId);
     if (!host) return;
 
@@ -621,7 +798,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       // Background refresh — use tabsRef for latest cache
       const tabId = activeTab.id;
       const refreshPath = activeTab.sftpPath;
-      sftpApi.list(activeTab.sessionId, refreshPath).then((result) => {
+      filesApiFor(activeTab).list(activeTab.sessionId, refreshPath).then((result) => {
         const latestTab = tabsRef.current.find((t) => t.id === tabId);
         const latestCache = latestTab?.treeCache || {};
         updateTab(tabId, { sftpEntries: result.entries, treeCache: { ...latestCache, [result.path]: result.entries } });
@@ -633,7 +810,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     refitActiveTerminal();
     try {
       // 1. Get home directory listing (backend defaults to $HOME when no path)
-      const homeResult = await sftpApi.list(activeTab.sessionId);
+      const homeResult = await filesApiFor(activeTab).list(activeTab.sessionId);
       const homePath = homeResult.path; // e.g. "/root" or "/home/user"
       const newCache: Record<string, FileEntry[]> = { ...activeTab.treeCache, [homePath]: homeResult.entries };
       const newExpanded = new Set(activeTab.expandedDirs);
@@ -649,7 +826,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       // 3. Load each ancestor directory in parallel for the tree
       const ancestorLoads = ancestorPaths
         .filter((p) => p !== homePath && !newCache[p])
-        .map((p) => sftpApi.list(activeTab.sessionId!, p).then((r) => ({ path: r.path, entries: r.entries })).catch(() => null));
+        .map((p) => filesApiFor(activeTab).list(activeTab.sessionId!, p).then((r) => ({ path: r.path, entries: r.entries })).catch(() => null));
       const results = await Promise.all(ancestorLoads);
       for (const r of results) {
         if (r) { newCache[r.path] = r.entries; newExpanded.add(r.path); }
@@ -673,7 +850,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       updateTab(activeTab.id, { sftpPath: path, sftpEntries: cached, sftpLoading: false, expandedDirs: newExpanded });
       // Background refresh — use tabsRef for latest cache
       const tabId = activeTab.id;
-      sftpApi.list(activeTab.sessionId, path).then((result) => {
+      filesApiFor(activeTab).list(activeTab.sessionId, path).then((result) => {
         const latestTab = tabsRef.current.find((t) => t.id === tabId);
         const latestCache = latestTab?.treeCache || {};
         updateTab(tabId, { sftpEntries: result.entries, treeCache: { ...latestCache, [result.path]: result.entries } });
@@ -681,7 +858,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     } else {
       updateTab(activeTab.id, { sftpLoading: true });
       try {
-        const result = await sftpApi.list(activeTab.sessionId, path);
+        const result = await filesApiFor(activeTab).list(activeTab.sessionId, path);
         const newCache = { ...activeTab.treeCache, [result.path]: result.entries };
         const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(result.path);
         updateTab(activeTab.id, { sftpPath: result.path, sftpEntries: result.entries, sftpLoading: false, treeCache: newCache, expandedDirs: newExpanded });
@@ -708,7 +885,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     const newLoading = new Set(activeTab.treeLoading); newLoading.add(dirPath);
     updateTab(activeTab.id, { treeLoading: newLoading });
     try {
-      const result = await sftpApi.list(activeTab.sessionId, dirPath);
+      const result = await filesApiFor(activeTab).list(activeTab.sessionId, dirPath);
       const newCache = { ...activeTab.treeCache, [dirPath]: result.entries };
       const newExpanded = new Set(activeTab.expandedDirs); newExpanded.add(dirPath);
       const doneLoading = new Set(activeTab.treeLoading); doneLoading.delete(dirPath);
@@ -722,12 +899,12 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
 
   const sftpDownload = useCallback((entry: FileEntry) => {
     if (!activeTab?.sessionId || entry.is_dir) return;
-    const a = document.createElement('a'); a.href = sftpApi.downloadUrl(activeTab.sessionId, entry.path); a.download = entry.name; a.click();
+    const a = document.createElement('a'); a.href = filesApiFor(activeTab).downloadUrl(activeTab.sessionId, entry.path); a.download = entry.name; a.click();
   }, [activeTab]);
 
   const sftpUpload = useCallback(async (file: File) => {
     if (!activeTab?.sessionId) return;
-    try { await sftpApi.upload(activeTab.sessionId, activeTab.sftpPath + '/', file); toast('success', (tt.sftpUploaded || 'Uploaded: {name}').replace('{name}', file.name)); sftpNavigate(activeTab.sftpPath); }
+    try { await filesApiFor(activeTab).upload(activeTab.sessionId, activeTab.sftpPath + '/', file); toast('success', (tt.sftpUploaded || 'Uploaded: {name}').replace('{name}', file.name)); sftpNavigate(activeTab.sftpPath); }
     catch (e: any) { toast('error', e?.message || 'Upload failed'); }
   }, [activeTab, toast, tt, sftpNavigate]);
 
@@ -736,7 +913,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     let ok = 0, fail = 0;
     for (let i = 0; i < files.length; i++) {
       setUploadProgress({ current: i + 1, total: files.length, name: files[i].name });
-      try { await sftpApi.upload(activeTab.sessionId, activeTab.sftpPath + '/', files[i]); ok++; } catch { fail++; }
+      try { await filesApiFor(activeTab).upload(activeTab.sessionId, activeTab.sftpPath + '/', files[i]); ok++; } catch { fail++; }
     }
     setUploadProgress(null);
     if (ok > 0) toast('success', (tt.sftpUploadedCount || '{n} file(s) uploaded').replace('{n}', String(ok)));
@@ -758,7 +935,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
       validate: (value) => validateSftpEntryName(value, tt),
     });
     if (!name) return;
-    try { await sftpApi.mkdir(activeTab.sessionId, activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`); sftpNavigate(activeTab.sftpPath); }
+    try { await filesApiFor(activeTab).mkdir(activeTab.sessionId, activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`); sftpNavigate(activeTab.sftpPath); }
     catch (e: any) { toast('error', e?.message || 'Mkdir failed'); }
   }, [activeTab, toast, tt, sftpNavigate, promptDialog]);
 
@@ -773,7 +950,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!name) return;
     const filePath = activeTab.sftpPath === '/' ? `/${name}` : `${activeTab.sftpPath}/${name}`;
     try {
-      await sftpApi.writeFile(activeTab.sessionId, filePath, '');
+      await filesApiFor(activeTab).writeFile(activeTab.sessionId, filePath, '');
       toast('success', (tt.sftpFileCreated || 'Created: {name}').replace('{name}', name));
       sftpNavigate(activeTab.sftpPath);
     } catch (e: any) { toast('error', e?.message || 'Create file failed'); }
@@ -783,7 +960,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!activeTab?.sessionId) return;
     const ok = await confirm({ title: tt.sftpDeleteTitle || 'Delete', message: (tt.sftpDeleteMsg || 'Delete "{name}"?').replace('{name}', entry.name), danger: true });
     if (!ok) return;
-    try { await sftpApi.remove(activeTab.sessionId, entry.path); toast('success', (tt.sftpDeleted || 'Deleted: {name}').replace('{name}', entry.name)); sftpNavigate(activeTab.sftpPath); }
+    try { await filesApiFor(activeTab).remove(activeTab.sessionId, entry.path); toast('success', (tt.sftpDeleted || 'Deleted: {name}').replace('{name}', entry.name)); sftpNavigate(activeTab.sftpPath); }
     catch (e: any) { toast('error', e?.message || 'Delete failed'); }
   }, [activeTab, confirm, toast, tt, sftpNavigate]);
 
@@ -799,7 +976,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     const parentDir = entry.path.substring(0, entry.path.lastIndexOf('/')) || '/';
     const newPath = parentDir === '/' ? `/${newName}` : `${parentDir}/${newName}`;
     try {
-      await sftpApi.rename(activeTab.sessionId, entry.path, newPath);
+      await filesApiFor(activeTab).rename(activeTab.sessionId, entry.path, newPath);
       toast('success', (tt.sftpRenamed || 'Renamed to {name}').replace('{name}', newName));
       sftpNavigate(activeTab.sftpPath);
     } catch (e: any) { toast('error', e?.message || 'Rename failed'); }
@@ -824,12 +1001,16 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   }, [sftpHeight, refitActiveTerminal]);
 
-  // Server status
+  // Server status. Local/container tabs read /proc on the HermesDeckX host;
+  // SSH tabs run the same collector script over the existing SSH session.
   const NET_HISTORY_MAX = 30;
   const fetchSysInfo = useCallback(async () => {
-    if (!activeTab?.sessionId) return;
+    if (!activeTab) return;
+    if (!activeTab.isLocal && !activeTab.sessionId) return;
     try {
-      const info = await sysInfoApi.get(activeTab.sessionId);
+      const info = activeTab.isLocal
+        ? await sysInfoApi.getLocal()
+        : await sysInfoApi.get(activeTab.sessionId!);
       // Accumulate total RX/TX for sparkline
       const totalRx = info.network.reduce((s, n) => s + n.rx_bytes, 0);
       const totalTx = info.network.reduce((s, n) => s + n.tx_bytes, 0);
@@ -842,19 +1023,25 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
   const toggleSysInfo = useCallback(() => {
     if (!activeTab) return;
     if (activeTab.sysInfoOpen) { updateTab(activeTab.id, { sysInfoOpen: false }); return; }
-    if (!activeTab.sessionId) { toast('error', tt.sysInfoNeedSession || 'Requires an active session'); return; }
+    if (!activeTab.isLocal && !activeTab.sessionId) {
+      toast('error', tt.sysInfoNeedSession || 'Requires an active session');
+      return;
+    }
     updateTab(activeTab.id, { sysInfoOpen: true, netHistory: [] });
     fetchSysInfo();
   }, [activeTab, updateTab, toast, tt, fetchSysInfo]);
 
   // Auto-refresh sysinfo every 5s when open
   useEffect(() => {
-    if (!activeTab?.sysInfoOpen || !activeTab?.sessionId) return;
+    if (!activeTab?.sysInfoOpen) return;
+    if (!activeTab.isLocal && !activeTab.sessionId) return;
     const iv = setInterval(fetchSysInfo, 5000);
     return () => clearInterval(iv);
-  }, [activeTab?.sysInfoOpen, activeTab?.sessionId, fetchSysInfo]);
+  }, [activeTab?.sysInfoOpen, activeTab?.sessionId, activeTab?.isLocal, fetchSysInfo]);
 
   // Snippets / Command History
+  // Local/container tabs use hostId=0 as a reserved sentinel (see backend
+  // SSHSnippetRepo). All tabs — SSH and local — share the same code path.
   const loadSnippets = useCallback(async () => {
     if (!activeTab) return;
     try {
@@ -1272,7 +1459,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     }
     updateTab(activeTab.id, { editorLoading: true });
     try {
-      const result = await sftpApi.readFile(activeTab.sessionId, entry.path);
+      const result = await filesApiFor(activeTab).readFile(activeTab.sessionId, entry.path);
       updateTab(activeTab.id, {
         editorFile: {
           path: result.path,
@@ -1313,7 +1500,7 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
     if (!activeTab?.sessionId || !activeTab.editorFile) return;
     updateTab(activeTab.id, { editorSaving: true });
     try {
-      const result = await sftpApi.writeFile(
+      const result = await filesApiFor(activeTab).writeFile(
         activeTab.sessionId,
         activeTab.editorFile.path,
         activeTab.editorFile.content,
@@ -1445,20 +1632,69 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-4 neon-scrollbar">
+          {/* Local / Container shell — auto-enabled inside Docker. Shown above
+              SSH hosts so users deploying via Docker have an obvious "how do
+              I get a shell into the container?" entry point. */}
+          {localTerm?.available && (
+            <div
+              onClick={connectToLocalShell}
+              className="sci-card mb-4 p-4 flex items-center gap-4 cursor-pointer hover:border-emerald-500/40 transition-all active:scale-[0.99] group"
+              style={{ animation: 'card-enter 0.3s ease-out' }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-2xl text-emerald-400">
+                  {localTerm.inDocker ? 'deployed_code' : 'computer'}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">
+                    {localTerm.label || (localTerm.inDocker ? (tt.containerShell || 'Container Shell') : (tt.localShell || 'Local Shell'))}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-500/15 text-emerald-500 font-medium">
+                    <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                    {tt.noSshRequired || 'No SSH required'}
+                  </span>
+                </div>
+                <p className="text-xs text-text-muted mt-0.5 truncate">
+                  {localTerm.inDocker
+                    ? (tt.containerShellHint || 'Direct PTY shell into this Docker container — no password, root access.')
+                    : (tt.localShellHint || 'Direct PTY shell on this host.')}
+                  {localTerm.shell && <span className="ms-2 font-mono opacity-60">{localTerm.shell}</span>}
+                </p>
+              </div>
+              <span className="flex items-center gap-1 text-[11px] text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                {tt.connect || 'Connect'}
+                <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>arrow_forward</span>
+              </span>
+            </div>
+          )}
           {loading ? (
             <div className="flex items-center justify-center h-40"><span className="material-symbols-outlined animate-spin text-2xl text-text-muted">progress_activity</span></div>
           ) : hosts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-text-muted gap-4 py-12">
-              <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 flex items-center justify-center"><span className="material-symbols-outlined text-4xl text-cyan-400/60">dns</span></div>
-              <div className="text-center">
-                <p className="text-sm font-medium mb-1">{tt.noHosts || 'No SSH hosts configured'}</p>
+            localTerm?.available ? (
+              // When the local shell is available, don't force the user into
+              // "add your first host" — SSH hosts are optional.
+              <div className="flex flex-col items-center justify-center text-text-muted gap-3 py-8">
                 <p className="text-xs opacity-60">{tt.noHostsHint || 'Add a server to get started'}</p>
+                <button onClick={() => { setForm({ ...emptyForm }); setEditId(null); setView('add'); }} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 transition-colors">
+                  <span className="material-symbols-outlined text-sm">add_circle</span>
+                  {tt.addHost || 'Add SSH host'}
+                </button>
               </div>
-              <button onClick={() => { setForm({ ...emptyForm }); setEditId(null); setView('add'); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 transition-colors">
-                <span className="material-symbols-outlined text-lg">add_circle</span>
-                {tt.addFirstHost || 'Add your first host'}
-              </button>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-text-muted gap-4 py-12">
+                <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 flex items-center justify-center"><span className="material-symbols-outlined text-4xl text-cyan-400/60">dns</span></div>
+                <div className="text-center">
+                  <p className="text-sm font-medium mb-1">{tt.noHosts || 'No SSH hosts configured'}</p>
+                  <p className="text-xs opacity-60">{tt.noHostsHint || 'Add a server to get started'}</p>
+                </div>
+                <button onClick={() => { setForm({ ...emptyForm }); setEditId(null); setView('add'); }} className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 transition-colors">
+                  <span className="material-symbols-outlined text-lg">add_circle</span>
+                  {tt.addFirstHost || 'Add your first host'}
+                </button>
+              </div>
+            )
           ) : (
             <div className="space-y-4">
               {(() => {
@@ -2115,6 +2351,13 @@ const TerminalPage: React.FC<Props> = ({ language }) => {
                   {/* ── Commands tab content ── */}
                   {bottomTab === 'commands' && (
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                      {/* Shared-history notice for local/container tabs */}
+                      {activeTab.isLocal && activeTab.snippets.length > 0 && (
+                        <div className={`flex items-center gap-1.5 px-3 py-1 text-[10px] border-b shrink-0 ${isDark ? 'border-white/5 text-white/40 bg-white/[.02]' : 'border-black/5 text-black/40 bg-black/[.02]'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>info</span>
+                          <span>{tt.localHistoryShared || 'History is shared across all local/container shell tabs.'}</span>
+                        </div>
+                      )}
                       {/* Command input bar */}
                       <div className={`flex items-center gap-2 px-3 py-2 border-b shrink-0 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
                         <span className={`text-xs font-mono shrink-0 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>$</span>

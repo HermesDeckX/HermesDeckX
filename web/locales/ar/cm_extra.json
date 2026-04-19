@@ -323,6 +323,14 @@
     "credentialsSaved": "Credentials saved",
     "credentialsSaveFailed": "Failed to save credentials",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "localShell": "Local Shell",
+    "containerShell": "Container Shell",
+    "noSshRequired": "No SSH required",
+    "containerShellHint": "Direct PTY shell into this Docker container — no password, root access.",
+    "localShellHint": "Direct PTY shell on this host.",
+    "localShellOpening": "Opening {name}...",
+    "localShellUnavailable": "Local shell is not available on this host",
+    "localHistoryShared": "History is shared across all local/container shell tabs."
   }
 }
