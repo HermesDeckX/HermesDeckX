@@ -553,7 +553,11 @@
       "speedTestDone": "Teste concluído, mirror mais rápido selecionado",
       "fastest": "Mais rápido",
       "hermesHubDesc": "Espelho de fonte de dados do mercado de habilidades HermesHub"
-    }
+    },
+    "skinTitle": "CLI Skin",
+    "skinDesc": "Controls the hermes CLI's banner, spinner and tool prefix. Drop YAML files in ~/.hermes/skins/ to add custom skins.",
+    "skinSwitched": "CLI skin set to \"{name}\". Restart hermes CLI to apply.",
+    "skinSwitchFailed": "Failed to set skin"
   },
   "hi": {
     "title": "Info do Host",

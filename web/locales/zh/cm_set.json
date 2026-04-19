@@ -553,7 +553,11 @@
       "speedTestDone": "测速完成，已自动选中最快镜像",
       "fastest": "最快",
       "hermesHubDesc": "HermesHub 技能市场数据源镜像"
-    }
+    },
+    "skinTitle": "CLI 皮肤",
+    "skinDesc": "控制 hermes CLI 的横幅、spinner 与工具前缀。将 YAML 文件放入 ~/.hermes/skins/ 可添加自定义皮肤。",
+    "skinSwitched": "CLI 皮肤已切换为 \"{name}\"。请重启 hermes CLI 生效。",
+    "skinSwitchFailed": "设置皮肤失败"
   },
   "hi": {
     "title": "宿主机信息",

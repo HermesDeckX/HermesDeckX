@@ -553,7 +553,11 @@
       "speedTestDone": "गति परीक्षण पूर्ण, सबसे तेज़ मिरर चुना गया",
       "fastest": "सबसे तेज़",
       "hermesHubDesc": "HermesHub कौशल बाज़ार डेटा स्रोत मिरर"
-    }
+    },
+    "skinTitle": "CLI Skin",
+    "skinDesc": "Controls the hermes CLI's banner, spinner and tool prefix. Drop YAML files in ~/.hermes/skins/ to add custom skins.",
+    "skinSwitched": "CLI skin set to \"{name}\". Restart hermes CLI to apply.",
+    "skinSwitchFailed": "Failed to set skin"
   },
   "hi": {
     "title": "होस्ट जानकारी",

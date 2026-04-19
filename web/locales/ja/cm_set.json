@@ -553,7 +553,11 @@
       "speedTestDone": "速度テスト完了、最速ミラーを自動選択",
       "fastest": "最速",
       "hermesHubDesc": "HermesHub スキルマーケットデータソースミラー"
-    }
+    },
+    "skinTitle": "CLI スキン",
+    "skinDesc": "hermes CLI のバナー、スピナー、ツール接頭辞を制御します。~/.hermes/skins/ に YAML を置くとカスタムスキンを追加できます。",
+    "skinSwitched": "CLI スキンを「{name}」に設定しました。hermes CLI を再起動してください。",
+    "skinSwitchFailed": "スキン設定に失敗"
   },
   "hi": {
     "title": "ホスト情報",

@@ -534,6 +534,11 @@ func RunServe(args []string) int {
 	router.POST("/api/v1/auth/credentials/reset", web.RequireAdmin(authCredHandler.Reset))
 	router.GET("/api/v1/auth/oauth-command", authCredHandler.OAuthCommand)
 
+	// CLI skins (~/.hermes/skins + built-in list). Active skin persists to config.display.skin.
+	skinsHandler := handlers.NewSkinsHandler()
+	router.GET("/api/v1/skins", skinsHandler.List)
+	router.PUT("/api/v1/skins/active", web.RequireAdmin(skinsHandler.SetActive))
+
 	router.GET("/api/v1/dashboard", dashboardHandler.Get)
 	router.GET("/api/v1/host-info", hostInfoHandler.Get)
 	router.GET("/api/v1/host-info/check-update", hostInfoHandler.CheckUpdate)
