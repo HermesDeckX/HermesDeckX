@@ -72,11 +72,15 @@ func RegisterDefaultHandlers(b *Bridge, svc *hermes.Service) {
 	b.RegisterHandler("sessions.unsubscribe", noopHandler)
 	b.RegisterHandler("sessions.messages.subscribe", noopHandler)
 	b.RegisterHandler("sessions.messages.unsubscribe", noopHandler)
-	b.RegisterHandler("sessions.compact", noopHandler)
+	// Compaction is driven by hermes-agent's in-process context_compressor
+	// (agent/context_compressor.py); there is no CLI/HTTP seam to trigger it
+	// externally. Return a clear "not supported" error so the UI surfaces it
+	// instead of silently succeeding.
+	b.RegisterHandler("sessions.compact", unsupportedHandler("compaction is triggered automatically by hermes-agent; manual compaction is not exposed over the gateway"))
 	b.RegisterHandler("sessions.compaction.list", handleCompactionListStub)
-	b.RegisterHandler("sessions.compaction.get", noopHandler)
-	b.RegisterHandler("sessions.compaction.branch", noopHandler)
-	b.RegisterHandler("sessions.compaction.restore", noopHandler)
+	b.RegisterHandler("sessions.compaction.get", unsupportedHandler("compaction history is not exposed by hermes-agent"))
+	b.RegisterHandler("sessions.compaction.branch", unsupportedHandler("compaction branch is not exposed by hermes-agent"))
+	b.RegisterHandler("sessions.compaction.restore", unsupportedHandler("compaction restore is not exposed by hermes-agent"))
 	b.RegisterHandler("sessions.usage.timeseries", noopHandler)
 	b.RegisterHandler("sessions.usage.logs", noopHandler)
 

@@ -281,10 +281,15 @@ func ModelConfigured() bool {
 	return false
 }
 
-// NotifyConfigured checks if any messaging platform is configured in .env.
+// NotifyConfigured checks if any messaging platform is configured, either via
+// a token in .env or an explicit `platforms.<id>` block in config.yaml. The
+// env list mirrors every platform hermes-agent actually implements under
+// gateway/platforms/ so users don't see "unconfigured" for platforms we just
+// forgot to check.
 func NotifyConfigured() bool {
 	env := ReadEnvFile()
 	platformTokenKeys := []string{
+		// Core platforms
 		"TELEGRAM_BOT_TOKEN",
 		"DISCORD_BOT_TOKEN",
 		"SLACK_BOT_TOKEN",
@@ -292,10 +297,35 @@ func NotifyConfigured() bool {
 		"MATRIX_ACCESS_TOKEN",
 		"SIGNAL_PHONE_NUMBER",
 		"WHATSAPP_PHONE_NUMBER",
+		// Chinese platforms
+		"DINGTALK_CLIENT_ID",
+		"DINGTALK_APP_KEY",
+		"FEISHU_APP_ID",
+		"WECOM_BOT_ID",
+		"WECOM_CORP_ID",
+		"WEIXIN_APPID",
+		"QQBOT_APPID",
+		// Enterprise / other
+		"MATTERMOST_TOKEN",
+		"HASS_URL",
+		"BLUEBUBBLES_HOST",
+		"EMAIL_IMAP_HOST",
+		"SMS_PROVIDER",
+		"WEBHOOK_SHARED_SECRET",
 	}
 	for _, key := range platformTokenKeys {
 		if v, ok := env[key]; ok && strings.TrimSpace(v) != "" {
 			return true
+		}
+	}
+	// Also scan config.yaml platforms.* for any explicit per-channel config.
+	if cfg := ReadConfig(); cfg != nil {
+		if pl, ok := cfg["platforms"].(map[string]interface{}); ok {
+			for _, v := range pl {
+				if sub, ok := v.(map[string]interface{}); ok && len(sub) > 0 {
+					return true
+				}
+			}
 		}
 	}
 	return false

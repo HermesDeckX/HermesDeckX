@@ -27,6 +27,15 @@ func noopHandler(params json.RawMessage) (interface{}, error) {
 	return map[string]interface{}{"ok": true}, nil
 }
 
+// unsupportedHandler returns a handler that always fails with a clear reason.
+// Use this when hermes-agent exposes no seam for the RPC: callers see a real
+// error instead of a silently-successful no-op.
+func unsupportedHandler(reason string) RPCHandler {
+	return func(params json.RawMessage) (interface{}, error) {
+		return nil, errors.New(reason)
+	}
+}
+
 // handleCompactionListStub returns an empty compaction checkpoint list.
 func handleCompactionListStub(params json.RawMessage) (interface{}, error) {
 	return map[string]interface{}{"checkpoints": []interface{}{}}, nil
