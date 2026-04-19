@@ -12,6 +12,7 @@
 package wsbridge
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -55,6 +56,63 @@ type rpcError struct {
 
 // ---------- Bridge ----------
 
+// Broadcaster is the minimal interface wsbridge needs to push real-time
+// chat streaming events to the frontend Manager WS (internal/web.WSHub).
+// The frontend listens for {type: "chat"|"agent"|..., data: {...}} frames.
+type Broadcaster interface {
+	Broadcast(channel string, msgType string, data interface{})
+}
+
+// RunRegistry tracks in-flight chat runs so that chat.abort / sessions.abort
+// can cancel the associated HTTP request to hermes-agent's /v1/chat/completions.
+type RunRegistry struct {
+	mu   sync.Mutex
+	runs map[string]context.CancelFunc // runId → cancel
+}
+
+func newRunRegistry() *RunRegistry {
+	return &RunRegistry{runs: make(map[string]context.CancelFunc)}
+}
+
+func (r *RunRegistry) Add(runID string, cancel context.CancelFunc) {
+	if runID == "" {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.runs[runID] = cancel
+}
+
+func (r *RunRegistry) Remove(runID string) {
+	if runID == "" {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.runs, runID)
+}
+
+// Cancel cancels the run if present. When runID is empty, cancels all runs.
+// Returns the number of runs that were cancelled.
+func (r *RunRegistry) Cancel(runID string) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if runID == "" {
+		n := len(r.runs)
+		for id, cancel := range r.runs {
+			cancel()
+			delete(r.runs, id)
+		}
+		return n
+	}
+	if cancel, ok := r.runs[runID]; ok {
+		cancel()
+		delete(r.runs, runID)
+		return 1
+	}
+	return 0
+}
+
 // Bridge is the local WS JSON-RPC server that GWClient connects to.
 type Bridge struct {
 	mu       sync.Mutex
@@ -71,6 +129,29 @@ type Bridge struct {
 	writeMu    sync.Mutex
 	clientConn *websocket.Conn
 	seq        int
+
+	// Optional: Manager WS broadcaster for streaming chat events to frontend.
+	broadcaster Broadcaster
+	runs        *RunRegistry
+}
+
+// SetBroadcaster wires a Manager WS broadcaster used for streaming chat events.
+func (b *Bridge) SetBroadcaster(bc Broadcaster) {
+	b.mu.Lock()
+	b.broadcaster = bc
+	b.mu.Unlock()
+}
+
+// Broadcaster returns the wired broadcaster, or nil.
+func (b *Bridge) Broadcaster() Broadcaster {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.broadcaster
+}
+
+// Runs returns the in-flight run registry.
+func (b *Bridge) Runs() *RunRegistry {
+	return b.runs
 }
 
 // RPCHandler processes an RPC request and returns a result payload or error.
@@ -92,6 +173,7 @@ func New() *Bridge {
 	return &Bridge{
 		handlers: make(map[string]RPCHandler),
 		startAt:  time.Now(),
+		runs:     newRunRegistry(),
 	}
 }
 

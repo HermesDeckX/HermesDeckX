@@ -220,6 +220,7 @@ func RunServe(args []string) int {
 	clientPort := gwPort
 	if !svc.IsRemote() {
 		bridge = wsbridge.New()
+		bridge.SetBroadcaster(wsHub)
 		wsbridge.RegisterDefaultHandlers(bridge, svc)
 		bridgePort, err := bridge.Start()
 		if err != nil {

@@ -208,120 +208,169 @@ func handleAgentIdentityGet(params json.RawMessage) (interface{}, error) {
 	return identity, nil
 }
 
-// ---------- chat.send ----------
+// ---------- chat.send / sessions.send (streaming) ----------
 
-func handleChatSend(svc *hermes.Service) RPCHandler {
+// chatSendRequest is the union of chat.send and sessions.send params.
+// chat.send uses "sessionKey", sessions.send uses "key" — we accept both.
+type chatSendRequest struct {
+	SessionKey     string `json:"sessionKey,omitempty"`
+	Key            string `json:"key,omitempty"`
+	Message        string `json:"message"`
+	IdempotencyKey string `json:"idempotencyKey,omitempty"`
+	TimeoutMs      int    `json:"timeoutMs,omitempty"`
+}
+
+func (r chatSendRequest) sessionKey() string {
+	if r.SessionKey != "" {
+		return r.SessionKey
+	}
+	return r.Key
+}
+
+func handleChatSend(b *Bridge, svc *hermes.Service) RPCHandler {
+	return func(params json.RawMessage) (interface{}, error) {
+		return runStreamingChat(b, svc, params)
+	}
+}
+
+func handleSessionsSend(b *Bridge, svc *hermes.Service) RPCHandler {
+	return func(params json.RawMessage) (interface{}, error) {
+		return runStreamingChat(b, svc, params)
+	}
+}
+
+// handleChatAbort cancels an in-flight streaming chat run by runId.
+// If runId is empty, cancels all runs.
+func handleChatAbort(b *Bridge) RPCHandler {
 	return func(params json.RawMessage) (interface{}, error) {
 		var req struct {
-			SessionKey     string `json:"sessionKey"`
-			Message        string `json:"message"`
-			IdempotencyKey string `json:"idempotencyKey,omitempty"`
+			RunID      string `json:"runId,omitempty"`
+			Key        string `json:"key,omitempty"`
+			SessionKey string `json:"sessionKey,omitempty"`
 		}
-		if err := json.Unmarshal(params, &req); err != nil {
-			return nil, fmt.Errorf("invalid params: %w", err)
+		_ = json.Unmarshal(params, &req)
+		n := 0
+		if b != nil && b.Runs() != nil {
+			n = b.Runs().Cancel(req.RunID)
 		}
-		if req.Message == "" {
-			return nil, fmt.Errorf("message is required")
-		}
-
-		result, err := localapi.SendMessage(svc, localapi.SendMessageRequest{
-			Key:            req.SessionKey,
-			Message:        req.Message,
-			TimeoutMs:      300000,
-			IdempotencyKey: req.IdempotencyKey,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if result == nil {
-			return nil, fmt.Errorf("empty API server response")
-		}
-		if !result.OK {
-			return nil, fmt.Errorf("%s", result.Error)
-		}
-
-		runId := req.IdempotencyKey
-		if runId == "" {
-			runId = fmt.Sprintf("run-%d", time.Now().UnixMilli())
-		}
-
 		return map[string]interface{}{
-			"ok":         true,
-			"runId":      runId,
-			"sessionKey": result.SessionKey,
-			"response":   result.Response,
-			"model":      result.Model,
-			"reply": map[string]interface{}{
-				"model": result.Model,
-				"choices": []map[string]interface{}{{
-					"index": 0,
-					"message": map[string]interface{}{
-						"role":    "assistant",
-						"content": result.Response,
-					},
-					"finish_reason": "stop",
-				}},
-			},
+			"ok":        true,
+			"cancelled": n,
 		}, nil
 	}
 }
 
-// ---------- sessions.send ----------
-
-func handleSessionsSend(svc *hermes.Service) RPCHandler {
-	return func(params json.RawMessage) (interface{}, error) {
-		var req struct {
-			Key            string `json:"key"`
-			Message        string `json:"message"`
-			IdempotencyKey string `json:"idempotencyKey,omitempty"`
-		}
-		if err := json.Unmarshal(params, &req); err != nil {
-			return nil, fmt.Errorf("invalid params: %w", err)
-		}
-		if req.Message == "" {
-			return nil, fmt.Errorf("message is required")
-		}
-
-		result, err := localapi.SendMessage(svc, localapi.SendMessageRequest{
-			Key:            req.Key,
-			Message:        req.Message,
-			TimeoutMs:      300000,
-			IdempotencyKey: req.IdempotencyKey,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if result == nil {
-			return nil, errors.New("empty API server response")
-		}
-		if !result.OK {
-			return nil, errors.New(result.Error)
-		}
-
-		runId := req.IdempotencyKey
-		if runId == "" {
-			runId = fmt.Sprintf("run-%d", time.Now().UnixMilli())
-		}
-
-		return map[string]interface{}{
-			"ok":         true,
-			"runId":      runId,
-			"sessionKey": result.SessionKey,
-			"response":   result.Response,
-			"model":      result.Model,
-			"reply": map[string]interface{}{
-				"model": result.Model,
-				"choices": []map[string]interface{}{{
-					"index": 0,
-					"message": map[string]interface{}{
-						"role":    "assistant",
-						"content": result.Response,
-					},
-					"finish_reason": "stop",
-				}},
-			},
-		}, nil
+// runStreamingChat posts the message to hermes-agent's /v1/chat/completions
+// with stream:true, emits incremental deltas via Manager WS broadcaster,
+// and returns the final assistant message to the RPC caller.
+//
+// Emits Manager WS events:
+//   - {type: "chat", data: {state: "delta", sessionKey, runId, text}}
+//   - {type: "chat", data: {state: "final", sessionKey, runId, message}}
+//   - {type: "chat", data: {state: "aborted", sessionKey, runId}}
+//   - {type: "chat", data: {state: "error", sessionKey, runId, error}}
+func runStreamingChat(b *Bridge, svc *hermes.Service, params json.RawMessage) (interface{}, error) {
+	var req chatSendRequest
+	if err := json.Unmarshal(params, &req); err != nil {
+		return nil, fmt.Errorf("invalid params: %w", err)
 	}
+	if req.Message == "" {
+		return nil, fmt.Errorf("message is required")
+	}
+
+	runID := req.IdempotencyKey
+	if runID == "" {
+		runID = fmt.Sprintf("run-%d", time.Now().UnixMilli())
+	}
+	sessionKey := req.sessionKey()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	if b != nil && b.Runs() != nil {
+		b.Runs().Add(runID, cancel)
+		defer b.Runs().Remove(runID)
+	}
+	defer cancel()
+
+	var bc Broadcaster
+	if b != nil {
+		bc = b.Broadcaster()
+	}
+	broadcast := func(state string, extra map[string]interface{}) {
+		if bc == nil {
+			return
+		}
+		payload := map[string]interface{}{
+			"state":      state,
+			"runId":      runID,
+			"sessionKey": sessionKey,
+		}
+		for k, v := range extra {
+			payload[k] = v
+		}
+		bc.Broadcast("", "chat", payload)
+	}
+
+	timeoutMs := req.TimeoutMs
+	if timeoutMs <= 0 {
+		timeoutMs = 600000 // 10 min default for streaming
+	}
+
+	resolvedSessionKey, fullText, model, err := localapi.StreamMessage(ctx, svc, localapi.SendMessageRequest{
+		Key:            sessionKey,
+		Message:        req.Message,
+		TimeoutMs:      timeoutMs,
+		IdempotencyKey: req.IdempotencyKey,
+	}, localapi.StreamCallbacks{
+		OnDelta: func(text string) {
+			broadcast("delta", map[string]interface{}{"text": text})
+		},
+	})
+
+	// Always keep frontend in sync with the real resolved session key.
+	if resolvedSessionKey != "" {
+		sessionKey = resolvedSessionKey
+	}
+
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			broadcast("aborted", nil)
+			// Return a normal ack so the caller Promise resolves rather than rejects.
+			return map[string]interface{}{
+				"ok":         false,
+				"aborted":    true,
+				"runId":      runID,
+				"sessionKey": sessionKey,
+				"response":   fullText,
+			}, nil
+		}
+		broadcast("error", map[string]interface{}{"error": err.Error()})
+		return nil, err
+	}
+
+	finalMsg := map[string]interface{}{
+		"role":    "assistant",
+		"content": fullText,
+	}
+	broadcast("final", map[string]interface{}{
+		"message": finalMsg,
+		"model":   model,
+	})
+
+	return map[string]interface{}{
+		"ok":         true,
+		"runId":      runID,
+		"sessionKey": sessionKey,
+		"response":   fullText,
+		"model":      model,
+		"reply": map[string]interface{}{
+			"model": model,
+			"choices": []map[string]interface{}{{
+				"index":         0,
+				"message":       finalMsg,
+				"finish_reason": "stop",
+			}},
+		},
+	}, nil
 }
 
 // ---------- channels.status ----------

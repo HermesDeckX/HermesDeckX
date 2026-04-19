@@ -47,11 +47,11 @@ func RegisterDefaultHandlers(b *Bridge, svc *hermes.Service) {
 	b.RegisterHandler("chat.history", handleChatHistory)
 	b.RegisterHandler("usage.cost", handleUsageCost)
 
-	// Chat — proxy to API Server
-	b.RegisterHandler("chat.send", handleChatSend(svc))
-	b.RegisterHandler("sessions.send", handleSessionsSend(svc))
-	b.RegisterHandler("chat.abort", noopHandler) // hermes-agent API server doesn't support abort yet
-	b.RegisterHandler("sessions.abort", noopHandler)
+	// Chat — proxy to API Server with streaming + abort support
+	b.RegisterHandler("chat.send", handleChatSend(b, svc))
+	b.RegisterHandler("sessions.send", handleSessionsSend(b, svc))
+	b.RegisterHandler("chat.abort", handleChatAbort(b))
+	b.RegisterHandler("sessions.abort", handleChatAbort(b))
 	b.RegisterHandler("chat.inject", noopHandler) // not supported
 
 	// Channels, Cron, Tools, Status — read from config/filesystem
