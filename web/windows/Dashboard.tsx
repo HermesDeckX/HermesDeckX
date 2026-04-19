@@ -10,6 +10,7 @@ import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
 import { parseEventTitle } from '../utils/parseEventText';
 import { saTranslateAlertTitle } from '../utils/saTranslate';
+import ProviderHealthGrid from '../components/ProviderHealthGrid';
 
 interface DashboardProps {
   language: Language;
@@ -1115,6 +1116,9 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
             )}
           </div>
         )}
+
+        {/* Provider Health Grid — live status of every configured inference provider. */}
+        <ProviderHealthGrid t={(d as any).ph || {}} compact />
 
         {/* Security Status Card */}
         {secSummary && (

@@ -653,5 +653,24 @@
   "skinSwitched": "CLI 스킨을 \"{name}\"(으)로 설정했습니다. hermes CLI를 재시작하세요.",
   "skinSwitchFailed": "스킨 설정 실패",
   "skinDesc": "hermes CLI의 배너, 스피너, 도구 접두사를 제어합니다. ~/.hermes/skins/에 YAML을 넣어 커스텀 스킨을 추가할 수 있습니다.",
-  "secAuth": "프로바이더 인증"
+  "secAuth": "프로바이더 인증",
+  "ph": {
+    "title": "Provider Health",
+    "summary": "Summary:",
+    "ok": "OK",
+    "degraded": "degraded",
+    "error": "error",
+    "missing": "missing",
+    "expiring": "Expiring",
+    "exhausted": "Exhausted",
+    "keys": "keys",
+    "noKeys": "no keys",
+    "empty": "No providers detected. Add credentials in Config Center → Auth.",
+    "refresh": "Refresh",
+    "probe": "Probe",
+    "probing": "Probing…",
+    "probeTooltip": "Run a real request against each provider to measure live latency",
+    "probeDone": "Probe done: {ok} ok · {fail} failed",
+    "probeFailed": "Probe failed"
+  }
 }

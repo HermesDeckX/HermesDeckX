@@ -653,5 +653,24 @@
   "skinSwitched": "CLI skin set to \"{name}\". Restart hermes CLI to apply.",
   "skinSwitchFailed": "Failed to set skin",
   "skinDesc": "Controls the hermes CLI's banner, spinner and tool prefix. Drop YAML files in ~/.hermes/skins/ to add custom skins.",
-  "secAuth": "مصادقة المزوّد"
+  "secAuth": "مصادقة المزوّد",
+  "ph": {
+    "title": "Provider Health",
+    "summary": "Summary:",
+    "ok": "OK",
+    "degraded": "degraded",
+    "error": "error",
+    "missing": "missing",
+    "expiring": "Expiring",
+    "exhausted": "Exhausted",
+    "keys": "keys",
+    "noKeys": "no keys",
+    "empty": "No providers detected. Add credentials in Config Center → Auth.",
+    "refresh": "Refresh",
+    "probe": "Probe",
+    "probing": "Probing…",
+    "probeTooltip": "Run a real request against each provider to measure live latency",
+    "probeDone": "Probe done: {ok} ok · {fail} failed",
+    "probeFailed": "Probe failed"
+  }
 }

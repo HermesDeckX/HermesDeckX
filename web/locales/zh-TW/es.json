@@ -653,5 +653,24 @@
   "skinSwitched": "CLI 外觀已切換為「{name}」。請重新啟動 hermes CLI 生效。",
   "skinSwitchFailed": "設定外觀失敗",
   "skinDesc": "控制 hermes CLI 的橫幅、Spinner 與工具前綴。將 YAML 檔放入 ~/.hermes/skins/ 可新增自訂外觀。",
-  "secAuth": "供應商授權"
+  "secAuth": "供應商授權",
+  "ph": {
+    "title": "供應商健康",
+    "summary": "概覽：",
+    "ok": "正常",
+    "degraded": "降級",
+    "error": "錯誤",
+    "missing": "缺失",
+    "expiring": "即將過期",
+    "exhausted": "配額耗盡",
+    "keys": "個金鑰",
+    "noKeys": "無金鑰",
+    "empty": "未偵測到供應商。請在配置中心 → 供應商授權中新增憑據。",
+    "refresh": "重新整理",
+    "probe": "探測",
+    "probing": "探測中…",
+    "probeTooltip": "對每個供應商發一次真實請求，量測端到端延遲",
+    "probeDone": "探測完成：{ok} 成功 · {fail} 失敗",
+    "probeFailed": "探測失敗"
+  }
 }

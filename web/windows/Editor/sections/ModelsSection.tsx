@@ -6,6 +6,7 @@ import { getTranslation } from '../../../locales';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import { schemaTooltip } from '../schemaTooltip';
+import ProviderHealthGrid from '../../../components/ProviderHealthGrid';
 
 // ============================================================================
 // hermes-agent provider presets
@@ -762,6 +763,9 @@ export const ModelsSection: React.FC<SectionProps> = ({ config, schema, setField
   // ── Render ──
   return (
     <div className="space-y-4">
+      {/* Provider Health Grid — live status + latency per provider */}
+      <ProviderHealthGrid t={(es as any).ph || {}} compact />
+
       {/* ================================================================ */}
       {/* 已配置的服务商列表 (matches ClawDeckX layout) */}
       {/* ================================================================ */}
