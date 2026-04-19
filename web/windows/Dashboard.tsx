@@ -11,6 +11,7 @@ import { useConfirm } from '../components/ConfirmDialog';
 import { parseEventTitle } from '../utils/parseEventText';
 import { saTranslateAlertTitle } from '../utils/saTranslate';
 import ProviderHealthGrid from '../components/ProviderHealthGrid';
+import HermesHomeUsageCard from '../components/HermesHomeUsageCard';
 
 interface DashboardProps {
   language: Language;
@@ -293,6 +294,21 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
   const [chartTooltip, setChartTooltip] = useState<{ x: number; y: number; label: string } | null>(null);
   const [refreshCountdown, setRefreshCountdown] = useState(FAST_INTERVAL / 1000);
   const [hasFirstDashboardData, setHasFirstDashboardData] = useState(!!cachedFast?.data || !!cachedFast?.gwStatus);
+  // Monthly cost budget (USD). Stored locally; empty/0 = disabled.
+  const [monthlyBudget, setMonthlyBudget] = useState<number>(() => {
+    const raw = typeof window !== 'undefined' ? window.localStorage.getItem('hermesdeckx.monthlyBudget') : null;
+    const n = raw ? parseFloat(raw) : 0;
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  });
+  const [budgetEditing, setBudgetEditing] = useState(false);
+  const [budgetDraft, setBudgetDraft] = useState('');
+  const saveBudget = useCallback((v: number) => {
+    setMonthlyBudget(v);
+    try {
+      if (v > 0) window.localStorage.setItem('hermesdeckx.monthlyBudget', String(v));
+      else window.localStorage.removeItem('hermesdeckx.monthlyBudget');
+    } catch {}
+  }, []);
 
 
   const { data, gwStatus, sessions, models, skills, agents, cronStatus, channels, usageCost, health, instances, hostInfo, userConfig, activeGateway, taskSummary, taskAudit } = ds;
@@ -1120,6 +1136,9 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
         {/* Provider Health Grid — live status of every configured inference provider. */}
         <ProviderHealthGrid t={(d as any).ph || {}} compact />
 
+        {/* Hermes home disk usage breakdown */}
+        <HermesHomeUsageCard t={(d as any).hermesHome || {}} />
+
         {/* Security Status Card */}
         {secSummary && (
           <button type="button" onClick={() => openWindow('maintenance')}
@@ -1417,6 +1436,81 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 <span className="text-[11px] text-slate-400 dark:text-white/40 self-center ms-1">{d.providerHealth}</span>
               </div>
             )}
+            {/* Monthly budget bar — shows MTD cost vs user-configured ceiling. */}
+            {usageCost !== null && (() => {
+              // Sum daily rows that fall in the current month to get MTD cost.
+              const now = new Date();
+              const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+              let mtd = 0;
+              for (const row of dailyCost as any[]) {
+                if (typeof row?.date === 'string' && row.date.startsWith(ym)) {
+                  mtd += row.totalCost || row.cost || 0;
+                }
+              }
+              const pct = monthlyBudget > 0 ? Math.min(100, (mtd / monthlyBudget) * 100) : 0;
+              const barColor = pct >= 100 ? 'bg-mac-red' : pct >= 80 ? 'bg-amber-500' : 'bg-mac-green';
+              const textColor = pct >= 100 ? 'text-mac-red' : pct >= 80 ? 'text-amber-500' : 'text-mac-green';
+              return (
+                <div className="mt-4 rounded-xl border border-slate-200/60 dark:border-white/[0.06] p-3 bg-slate-50/40 dark:bg-white/[0.02]">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary">savings</span>
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-white/50 uppercase">
+                      {(d as any).budgetTitle || 'Monthly budget'}
+                    </span>
+                    <span className="flex-1" />
+                    {monthlyBudget > 0 ? (
+                      <span className={`text-[11px] font-bold tabular-nums ${textColor}`}>
+                        {fmtCost(mtd)} / {fmtCost(monthlyBudget)}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] theme-text-muted">{(d as any).budgetUnset || 'No budget set'}</span>
+                    )}
+                    {budgetEditing ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number" min="0" step="1" autoFocus
+                          value={budgetDraft}
+                          onChange={e => setBudgetDraft(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') { saveBudget(parseFloat(budgetDraft) || 0); setBudgetEditing(false); }
+                            else if (e.key === 'Escape') { setBudgetEditing(false); }
+                          }}
+                          placeholder={(d as any).budgetPlaceholder || 'USD / month'}
+                          className="w-20 px-1.5 py-0.5 rounded text-[11px] font-mono bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                        <button onClick={() => { saveBudget(parseFloat(budgetDraft) || 0); setBudgetEditing(false); }}
+                          className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-white/10" title={(d as any).budgetSave || 'Save'}>
+                          <span className="material-symbols-outlined text-[12px] text-mac-green">check</span>
+                        </button>
+                        <button onClick={() => setBudgetEditing(false)}
+                          className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-white/10" title={(d as any).budgetCancel || 'Cancel'}>
+                          <span className="material-symbols-outlined text-[12px] text-slate-400">close</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setBudgetDraft(String(monthlyBudget || '')); setBudgetEditing(true); }}
+                        className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400"
+                        title={(d as any).budgetEdit || 'Edit budget'}>
+                        <span className="material-symbols-outlined text-[12px]">edit</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+                    {monthlyBudget > 0 && (
+                      <div className={`h-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
+                    )}
+                  </div>
+                  {monthlyBudget > 0 && pct >= 80 && (
+                    <p className={`mt-1.5 text-[10px] font-bold ${textColor}`}>
+                      {pct >= 100
+                        ? ((d as any).budgetOver || 'Monthly budget exceeded by {diff}.').replace('{diff}', fmtCost(mtd - monthlyBudget))
+                        : ((d as any).budgetWarning || '{pct}% of monthly budget used.').replace('{pct}', pct.toFixed(0))}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Cost Trend with unique SVG ID */}
             {usageCost !== null && (
               <div className="mt-4">

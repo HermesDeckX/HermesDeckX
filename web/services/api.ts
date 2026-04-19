@@ -26,6 +26,29 @@ export const authApi = {
   }),
 };
 
+// ==================== Hermes home disk usage ====================
+export interface HermesDiskEntry {
+  path: string;
+  label: string;
+  bytes: number;
+  files: number;
+  kind: 'dir' | 'file';
+  missing: boolean;
+}
+export interface HermesDiskUsageResponse {
+  root: string;
+  totalBytes: number;
+  totalFiles: number;
+  entries: HermesDiskEntry[];
+  other?: HermesDiskEntry;
+  generatedAt: number;
+}
+export const hermesDiskApi = {
+  usage: () => get<HermesDiskUsageResponse>('/api/v1/hermes/disk-usage'),
+  usageCached: (ttlMs = 30000, force = false) =>
+    getCached<HermesDiskUsageResponse>('/api/v1/hermes/disk-usage', ttlMs, force),
+};
+
 // ==================== 宿主机信息 ====================
 export const hostInfoApi = {
   get: () => get<any>('/api/v1/host-info'),

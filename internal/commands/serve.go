@@ -539,6 +539,10 @@ func RunServe(args []string) int {
 	router.GET("/api/v1/skins", skinsHandler.List)
 	router.PUT("/api/v1/skins/active", web.RequireAdmin(skinsHandler.SetActive))
 
+	// Hermes home disk usage breakdown (sessions / logs / skills / dbs / ...).
+	hermesDiskHandler := handlers.NewHermesDiskHandler()
+	router.GET("/api/v1/hermes/disk-usage", hermesDiskHandler.Usage)
+
 	// Hermes Skills Hub wrappers — `hermes skills <action>` for search/install/update/etc.
 	skillsHubHandler := handlers.NewSkillsHubHandler()
 	router.POST("/api/v1/skills-hub/search", skillsHubHandler.Search)

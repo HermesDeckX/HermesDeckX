@@ -672,5 +672,9 @@
     "probeTooltip": "对每个供应商发一次真实请求，测量端到端延迟",
     "probeDone": "探测完成：{ok} 成功 · {fail} 失败",
     "probeFailed": "探测失败"
-  }
+  },
+  "cheapProvider": "便宜模型供应商",
+  "cheapProviderDesc": "智能路由用的便宜模型供应商（例如 openrouter）。",
+  "cheapModel": "便宜模型",
+  "cheapModelDesc": "处理简单请求的模型名（例如 google/gemini-2.5-flash）。"
 }

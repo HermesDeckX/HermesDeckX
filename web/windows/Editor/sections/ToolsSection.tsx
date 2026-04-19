@@ -371,6 +371,22 @@ export const ToolsSection: React.FC<SectionProps> = ({ config, schema, setField,
           onChange={v => setField(['smart_model_routing', 'max_simple_words'], v)}
           min={1}
         />
+        <TextField
+          label={es.cheapProvider || 'Cheap Model Provider'}
+          desc={es.cheapProviderDesc || 'Provider for the cheap model used by smart routing (e.g. openrouter).'}
+          tooltip={tip('smart_model_routing.cheap_model.provider')}
+          value={getField(['smart_model_routing', 'cheap_model', 'provider']) || ''}
+          onChange={v => setField(['smart_model_routing', 'cheap_model', 'provider'], v)}
+          placeholder="openrouter"
+        />
+        <TextField
+          label={es.cheapModel || 'Cheap Model'}
+          desc={es.cheapModelDesc || 'Model slug used for simple queries (e.g. google/gemini-2.5-flash).'}
+          tooltip={tip('smart_model_routing.cheap_model.model')}
+          value={getField(['smart_model_routing', 'cheap_model', 'model']) || ''}
+          onChange={v => setField(['smart_model_routing', 'cheap_model', 'model'], v)}
+          placeholder="google/gemini-2.5-flash"
+        />
       </ConfigSection>
     </div>
   );

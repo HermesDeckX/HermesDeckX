@@ -672,5 +672,9 @@
     "probeTooltip": "Run a real request against each provider to measure live latency",
     "probeDone": "Probe done: {ok} ok · {fail} failed",
     "probeFailed": "Probe failed"
-  }
+  },
+  "cheapProvider": "Cheap Model Provider",
+  "cheapProviderDesc": "Provider for the cheap model used by smart routing (e.g. openrouter).",
+  "cheapModel": "Cheap Model",
+  "cheapModelDesc": "Model slug used for simple queries (e.g. google/gemini-2.5-flash)."
 }
