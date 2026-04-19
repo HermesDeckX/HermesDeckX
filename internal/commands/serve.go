@@ -435,6 +435,7 @@ func RunServe(args []string) int {
 	notifyHandler.SetGWClient(gwClient)
 	auditHandler := handlers.NewAuditHandler()
 	configHandler := handlers.NewConfigHandler()
+	migrateHandler := handlers.NewMigrateHandler()
 	snapshotHandler := handlers.NewSnapshotHandler()
 	snapshotHandler.SetGWClient(gwClient)
 	snapshotHandler.SetGatewaySvc(svc)
@@ -594,6 +595,16 @@ func RunServe(args []string) int {
 	router.POST("/api/v1/config/set-key", web.RequireAdmin(configHandler.SetKey))
 	router.POST("/api/v1/config/unset-key", web.RequireAdmin(configHandler.UnsetKey))
 	router.GET("/api/v1/config/get-key", configHandler.GetKey)
+
+	// OpenClaw 一键迁移向导
+	router.POST("/api/v1/migrate/detect-local", migrateHandler.DetectLocal)
+	router.POST("/api/v1/migrate/connect-local", web.RequireAdmin(migrateHandler.ConnectLocal))
+	router.POST("/api/v1/migrate/connect-remote", web.RequireAdmin(migrateHandler.ConnectRemote))
+	router.POST("/api/v1/migrate/preview/", migrateHandler.Preview)
+	router.POST("/api/v1/migrate/elevate/", web.RequireAdmin(migrateHandler.Elevate))
+	router.GET("/api/v1/migrate/pair-status/", migrateHandler.PairStatus)
+	router.POST("/api/v1/migrate/execute/", web.RequireAdmin(migrateHandler.Execute))
+	router.POST("/api/v1/migrate/disconnect/", migrateHandler.Disconnect)
 
 	router.GET("/api/v1/snapshots", snapshotHandler.List)
 	router.GET("/api/v1/snapshots/scan", snapshotHandler.Scan)

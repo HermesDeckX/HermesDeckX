@@ -395,6 +395,76 @@ export const configApi = {
   getKey: (key: string) => get<{ key: string; value: any }>(`/api/v1/config/get-key?key=${encodeURIComponent(key)}`),
 };
 
+// ==================== OpenClaw 一键迁移向导 ====================
+export interface MigratePreviewField {
+  sourcePath: string;
+  targetKey: string;
+  targetKind: 'yaml' | 'env';
+  label: string;
+  status: 'mapped' | 'needs-secret' | 'conflict' | 'unmapped' | 'archive' | 'unsupported';
+  sensitive: boolean;
+  display: string;
+  existingHermes?: string;
+  secretTargetId?: string;
+  notes?: string;
+}
+export interface MigratePreviewGroup {
+  key: string;
+  label: string;
+  fields: MigratePreviewField[];
+}
+export interface MigratePreview {
+  source: 'local' | 'remote';
+  openclawPath?: string;
+  groups: MigratePreviewGroup[];
+  totalMapped: number;
+  totalSecrets: number;
+  totalConflicts: number;
+  totalArchive: number;
+  generatedAt: string;
+}
+export interface MigrateExecuteRequest {
+  selectedSourcePaths?: string[];
+  conflictStrategy?: 'skip' | 'overwrite' | 'rename';
+  migrateSecrets?: boolean;
+  archiveUnmapped?: boolean;
+}
+export interface MigrateConflictRow {
+  key: string;
+  targetKind: 'yaml' | 'env';
+  hermesValue: string;
+  openClawValue: string;
+  resolution: string;
+}
+export interface MigrateReport {
+  writtenKeys: string[];
+  skippedKeys: string[];
+  conflictedKeys: MigrateConflictRow[];
+  archivedKeys: string[];
+  warnings: string[];
+  configBackupPath?: string;
+  envBackupPath?: string;
+  archivePath?: string;
+  durationMs: number;
+}
+export interface MigratePairStatus {
+  state: 'connected' | 'waiting-approval' | 'elevated' | 'closed';
+  requestId?: string;
+  reason?: string;
+  error?: string;
+}
+export const migrateApi = {
+  detectLocal: () => post<{ found: boolean; openclawDir?: string; configFile?: string; envFile?: string; candidates: string[]; providerCount: number; channelCount: number; skillCount: number }>('/api/v1/migrate/detect-local', {}),
+  connectLocal: (dir?: string) => post<{ sessionId: string; source: 'local'; openclawDir: string }>('/api/v1/migrate/connect-local', { dir: dir || '' }),
+  connectRemote: (data: { url: string; token: string; tlsInsecure?: boolean; tlsFingerprint?: string }) =>
+    post<{ sessionId: string; source: 'remote'; protocolVersion: number; gatewayIdentity?: Record<string, any> }>('/api/v1/migrate/connect-remote', data),
+  preview: (sessionId: string) => post<MigratePreview>(`/api/v1/migrate/preview/${encodeURIComponent(sessionId)}`, {}),
+  elevate: (sessionId: string) => post<{ state: string }>(`/api/v1/migrate/elevate/${encodeURIComponent(sessionId)}`, {}),
+  pairStatus: (sessionId: string) => get<MigratePairStatus>(`/api/v1/migrate/pair-status/${encodeURIComponent(sessionId)}`),
+  execute: (sessionId: string, data: MigrateExecuteRequest) => post<MigrateReport>(`/api/v1/migrate/execute/${encodeURIComponent(sessionId)}`, data),
+  disconnect: (sessionId: string) => post<{ closed: boolean }>(`/api/v1/migrate/disconnect/${encodeURIComponent(sessionId)}`, {}),
+};
+
 // ==================== 快照管理 ====================
 export interface SnapshotScheduleConfig {
   enabled: boolean;

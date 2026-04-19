@@ -19,6 +19,7 @@ interface EditorProps {
 }
 
 type SectionId =
+  | 'migration'
   | 'models' | 'agents' | 'tools' | 'channels' | 'messages'
   | 'gateway' | 'cron' | 'extensions'
   | 'memory' | 'audio' | 'logging' | 'yaml' | 'templates' | 'secrets'
@@ -51,7 +52,11 @@ const YamlEditorSection = lazy(() => import('./sections/YamlEditorSection').then
 const TemplatesSection = lazy(() => import('./sections/TemplatesSectionV2').then(m => ({ default: m.TemplatesSectionV2 })));
 const UnmappedConfigSection = lazy(() => import('./sections/UnmappedConfigSection').then(m => ({ default: m.UnmappedConfigSection })));
 const SecretsSection = lazy(() => import('./sections/SecretsSection').then(m => ({ default: m.SecretsSection })));
+const MigrationSection = lazy(() => import('./sections/MigrationSection').then(m => ({ default: m.MigrationSection })));
 const SECTIONS: SectionDef[] = [
+  // OpenClaw 一键迁移（置顶）
+  { id: 'migration', icon: 'swap_horiz', labelKey: 'secMigration', color: 'text-cyan-400',
+    searchKeys: ['migrate', 'openclaw', 'import', '迁移', 'migration'] },
   // core sections
   { id: 'models', icon: 'psychology', labelKey: 'secModels', color: 'text-blue-500',
     searchKeys: ['providers', 'provider', 'model', 'fallback_providers', 'delegation', 'api_key', 'base_url', 'default_model', 'transport', 'credentials', 'openrouter', 'anthropic', 'openai', 'google', 'mistral', 'groq'] },
@@ -289,6 +294,7 @@ const Editor: React.FC<EditorProps> = ({ language, pendingSection, onSectionCons
   const renderedSection = useMemo(() => {
     if (!editor.config || !sectionProps) return null;
     switch (activeSection) {
+      case 'migration': return <MigrationSection {...sectionProps} />;
       case 'models': return <ModelsSection {...sectionProps} />;
       case 'agents': return <AgentsSection {...sectionProps} />;
       case 'tools': return <ToolsSection {...sectionProps} />;
