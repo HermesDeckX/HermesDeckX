@@ -239,5 +239,11 @@
   "wsDiagIssues": "개 문제",
   "wsDiagAllPass": "모든 검사 통과",
   "wsDiagExpand": "상세보기",
-  "wsDiagCollapse": "접기"
+  "wsDiagCollapse": "접기",
+  "profileTitle": "활성 프로필",
+  "profileDesc": "hermes-agent 프로필 간 전환 (~/.hermes/profiles/<name>/). config, state.db, cron, .env 대상이 변경됩니다. 적용하려면 게이트웨이를 재시작하세요.",
+  "profileActive": "활성",
+  "profileSwitched": "프로필 \"{name}\"(으)로 전환했습니다. 게이트웨이를 재시작하세요.",
+  "profileSwitchFailed": "프로필 전환 실패",
+  "profileUnavailable": "프로필 정보를 읽을 수 없음"
 }

@@ -239,5 +239,11 @@
   "wsDiagIssues": "個問題",
   "wsDiagAllPass": "所有檢查通過",
   "wsDiagExpand": "展開詳情",
-  "wsDiagCollapse": "收起"
+  "wsDiagCollapse": "收起",
+  "profileTitle": "活動設定檔",
+  "profileDesc": "在 hermes-agent 設定檔之間切換（~/.hermes/profiles/<name>/）。切換會改變 config、state.db、cron 與 .env 的目標路徑。需重啟網關以生效。",
+  "profileActive": "活動",
+  "profileSwitched": "已切換至設定檔「{name}」。請重啟網關以生效。",
+  "profileSwitchFailed": "切換設定檔失敗",
+  "profileUnavailable": "無法讀取設定檔資訊"
 }

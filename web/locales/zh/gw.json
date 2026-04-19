@@ -239,5 +239,11 @@
   "wsDiagIssues": "个问题",
   "wsDiagAllPass": "所有检查通过",
   "wsDiagExpand": "展开详情",
-  "wsDiagCollapse": "收起"
+  "wsDiagCollapse": "收起",
+  "profileTitle": "活动配置档案",
+  "profileDesc": "在 hermes-agent 配置档案之间切换（~/.hermes/profiles/<name>/）。切换会改变 config、state.db、cron 和 .env 的目标路径。需重启网关以生效。",
+  "profileActive": "活动",
+  "profileSwitched": "已切换到配置档案 \"{name}\"。请重启网关以生效。",
+  "profileSwitchFailed": "切换配置档案失败",
+  "profileUnavailable": "无法读取配置档案信息"
 }

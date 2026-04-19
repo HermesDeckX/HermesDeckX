@@ -239,5 +239,11 @@
   "wsDiagIssues": "Problem(e)",
   "wsDiagAllPass": "Alle Prüfungen bestanden",
   "wsDiagExpand": "Details",
-  "wsDiagCollapse": "Zuklappen"
+  "wsDiagCollapse": "Zuklappen",
+  "profileTitle": "Active Profile",
+  "profileDesc": "Switch between hermes-agent profiles (~/.hermes/profiles/<name>/). Changes config, state.db, cron and .env target. Restart gateway to apply.",
+  "profileActive": "Active",
+  "profileSwitched": "Switched to profile \"{name}\". Restart gateway to apply.",
+  "profileSwitchFailed": "Failed to switch profile",
+  "profileUnavailable": "Profile info unavailable"
 }

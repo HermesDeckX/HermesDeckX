@@ -239,5 +239,11 @@
   "wsDiagIssues": "件の問題",
   "wsDiagAllPass": "すべてのチェックに合格",
   "wsDiagExpand": "詳細",
-  "wsDiagCollapse": "閉じる"
+  "wsDiagCollapse": "閉じる",
+  "profileTitle": "アクティブプロファイル",
+  "profileDesc": "hermes-agent プロファイル間を切り替えます（~/.hermes/profiles/<name>/）。config、state.db、cron、.env の対象が変わります。適用にはゲートウェイの再起動が必要です。",
+  "profileActive": "アクティブ",
+  "profileSwitched": "プロファイル「{name}」に切り替えました。ゲートウェイを再起動してください。",
+  "profileSwitchFailed": "プロファイルの切り替えに失敗",
+  "profileUnavailable": "プロファイル情報を取得できません"
 }

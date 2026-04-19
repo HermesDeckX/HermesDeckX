@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { dispatchOpenWindow } from '../../types';
-import { gatewayApi, gwApi } from '../../services/api';
+import { gatewayApi, gwApi, profileApi, type ProfileActiveInfo } from '../../services/api';
 import { subscribeManagerWS } from '../../services/manager-ws';
 
 interface DaemonState {
@@ -126,6 +126,29 @@ const ServicePanel: React.FC<ServicePanelProps> = ({ status, healthCheckEnabled,
   const [lifecycleExpanded, setLifecycleExpanded] = useState(false);
   const lifecycleLoadedRef = useRef(false);
 
+  // Hermes profile (sticky active profile)
+  const [profileInfo, setProfileInfo] = useState<ProfileActiveInfo | null>(null);
+  const [profileSwitching, setProfileSwitching] = useState(false);
+
+  const fetchProfile = useCallback(() => {
+    profileApi.get().then(setProfileInfo).catch(() => setProfileInfo(null));
+  }, []);
+
+  const handleSwitchProfile = useCallback((name: string) => {
+    if (!profileInfo || name === profileInfo.active) return;
+    setProfileSwitching(true);
+    profileApi.setActive(name)
+      .then((info) => {
+        setProfileInfo(info);
+        const tmpl = (gw.profileSwitched as string) || 'Switched to profile "{name}". Restart gateway to apply.';
+        toast?.('success', tmpl.replace('{name}', name));
+      })
+      .catch((e: any) => {
+        toast?.('error', e?.message || (gw.profileSwitchFailed as string) || 'Failed to switch profile');
+      })
+      .finally(() => setProfileSwitching(false));
+  }, [profileInfo, toast, gw]);
+
   const fetchDaemonStatus = useCallback(() => {
     setLoading(true);
     gatewayApi.daemonStatus()
@@ -145,7 +168,7 @@ const ServicePanel: React.FC<ServicePanelProps> = ({ status, healthCheckEnabled,
     }).catch(() => {});
   }, []);
 
-  useEffect(() => { fetchDaemonStatus(); fetchWsStatus(); fetchLifecycle(); }, [fetchDaemonStatus, fetchWsStatus, fetchLifecycle]);
+  useEffect(() => { fetchDaemonStatus(); fetchWsStatus(); fetchLifecycle(); fetchProfile(); }, [fetchDaemonStatus, fetchWsStatus, fetchLifecycle, fetchProfile]);
 
   useEffect(() => {
     const timer = setInterval(fetchWsStatus, 6000);
@@ -301,6 +324,52 @@ const ServicePanel: React.FC<ServicePanelProps> = ({ status, healthCheckEnabled,
           <div className="px-3 py-3 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] text-center">
             <p className="text-[11px] text-slate-400 dark:text-white/30">{gw.daemonStatusFailed || 'Failed to query daemon status'}</p>
             <button onClick={fetchDaemonStatus} className="mt-1 text-[10px] text-primary hover:underline">{gw.retry || 'Retry'}</button>
+          </div>
+        )}
+      </div>
+
+      {/* Hermes Active Profile */}
+      <div className="space-y-2">
+        <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-white/40 flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[14px]">workspaces</span>
+          {gw.profileTitle || 'Active Profile'}
+        </h4>
+        <p className="text-[10px] text-slate-400 dark:text-white/30 leading-relaxed">
+          {gw.profileDesc || 'Switch between hermes-agent profiles (~/.hermes/profiles/<name>/). Changes config, state.db, cron and .env target. Restart gateway to apply.'}
+        </p>
+        {profileInfo ? (
+          <div className="px-3 py-3 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] flex items-center gap-3 flex-wrap">
+            <span className="material-symbols-outlined text-[18px] text-primary">account_tree</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold text-slate-600 dark:text-white/70">
+                {gw.profileActive || 'Active'}: <span className="text-primary">{profileInfo.active}</span>
+              </p>
+              <p className="text-[9px] font-mono text-slate-300 dark:text-white/25 mt-0.5 truncate" title={profileInfo.base}>
+                {profileInfo.base}
+              </p>
+            </div>
+            <select
+              value={profileInfo.active}
+              disabled={profileSwitching || profileInfo.profiles.length <= 1}
+              onChange={(e) => handleSwitchProfile(e.target.value)}
+              className="px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
+            >
+              {profileInfo.profiles.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+            <button
+              onClick={fetchProfile}
+              disabled={profileSwitching}
+              className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/40 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all disabled:opacity-40"
+              title={gw.refresh || 'Refresh'}
+            >
+              <span className={`material-symbols-outlined text-[14px] ${profileSwitching ? 'animate-spin' : ''}`}>refresh</span>
+            </button>
+          </div>
+        ) : (
+          <div className="px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] text-[11px] text-slate-400 dark:text-white/30">
+            {gw.profileUnavailable || 'Profile info unavailable'}
           </div>
         )}
       </div>

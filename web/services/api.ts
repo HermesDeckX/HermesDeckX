@@ -84,6 +84,17 @@ export const selfUpdateApi = {
   getDismissedVersions: () => get<Record<string, string>>('/api/v1/settings'),
 };
 
+// ==================== Hermes Profile (active sticky profile) ====================
+export interface ProfileActiveInfo {
+  active: string;      // "default" or named profile
+  profiles: string[];  // all available, always starts with "default"
+  base: string;        // base hermes home (~/.hermes)
+}
+export const profileApi = {
+  get: () => get<ProfileActiveInfo>('/api/v1/profile/active'),
+  setActive: (name: string) => put<ProfileActiveInfo>('/api/v1/profile/active', { name }),
+};
+
 export const serviceApi = {
   status: () => get<{ hermesagent_installed: boolean; hermesdeckx_installed: boolean; is_docker: boolean }>('/api/v1/service/status'),
   installHermesAgent: () => post<{ message: string }>('/api/v1/service/hermesagent/install', {}),
