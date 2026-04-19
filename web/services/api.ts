@@ -95,6 +95,49 @@ export const profileApi = {
   setActive: (name: string) => put<ProfileActiveInfo>('/api/v1/profile/active', { name }),
 };
 
+// ==================== Hermes Credential Pool (inference-provider auth) ====================
+export interface AuthProviderInfo {
+  id: string;
+  name: string;
+  authType: 'api_key' | 'oauth_device_code' | 'oauth_external' | 'aws_sdk' | 'external_process';
+  envVars?: string[];
+  baseUrl?: string;
+  oauthCapable: boolean;
+}
+export interface AuthCredentialEntry {
+  provider: string;
+  id: string;
+  label: string;
+  authType: string;
+  priority: number;
+  source: string;
+  tokenPreview: string;
+  baseUrl?: string;
+  lastStatus?: string;
+  lastErrorCode?: string;
+  lastErrorReason?: string;
+  expiresAtMs?: number;
+  lastStatusAt?: number;
+}
+export interface AuthCredentialsResponse {
+  activeProvider: string;
+  credentialsByProvider: Record<string, AuthCredentialEntry[]>;
+  authStorePath: string;
+  storeFound: boolean;
+}
+export const authCredentialsApi = {
+  providers: () => get<{ providers: AuthProviderInfo[] }>('/api/v1/auth/providers'),
+  list: () => get<AuthCredentialsResponse>('/api/v1/auth/credentials'),
+  addApiKey: (data: { provider: string; apiKey: string; label?: string }) =>
+    post<{ message: string }>('/api/v1/auth/credentials/apikey', data),
+  remove: (provider: string, target: string) =>
+    post<{ message: string }>('/api/v1/auth/credentials/remove', { provider, target }),
+  reset: (provider: string) =>
+    post<{ message: string }>('/api/v1/auth/credentials/reset', { provider }),
+  oauthCommand: (provider: string) =>
+    get<{ provider: string; command: string; note: string }>(`/api/v1/auth/oauth-command?provider=${encodeURIComponent(provider)}`),
+};
+
 export const serviceApi = {
   status: () => get<{ hermesagent_installed: boolean; hermesdeckx_installed: boolean; is_docker: boolean }>('/api/v1/service/status'),
   installHermesAgent: () => post<{ message: string }>('/api/v1/service/hermesagent/install', {}),

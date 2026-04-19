@@ -525,6 +525,15 @@ func RunServe(args []string) int {
 	router.GET("/api/v1/profile/active", profileHandler.Get)
 	router.PUT("/api/v1/profile/active", web.RequireAdmin(profileHandler.SetActive))
 
+	// Hermes credential pool (pooled API keys + OAuth tokens for inference providers).
+	authCredHandler := handlers.NewAuthCredentialsHandler()
+	router.GET("/api/v1/auth/providers", authCredHandler.Providers)
+	router.GET("/api/v1/auth/credentials", authCredHandler.List)
+	router.POST("/api/v1/auth/credentials/apikey", web.RequireAdmin(authCredHandler.AddAPIKey))
+	router.POST("/api/v1/auth/credentials/remove", web.RequireAdmin(authCredHandler.Remove))
+	router.POST("/api/v1/auth/credentials/reset", web.RequireAdmin(authCredHandler.Reset))
+	router.GET("/api/v1/auth/oauth-command", authCredHandler.OAuthCommand)
+
 	router.GET("/api/v1/dashboard", dashboardHandler.Get)
 	router.GET("/api/v1/host-info", hostInfoHandler.Get)
 	router.GET("/api/v1/host-info/check-update", hostInfoHandler.CheckUpdate)
