@@ -42,7 +42,9 @@ func handleAgentsFilesList(params json.RawMessage) (interface{}, error) {
 		json.Unmarshal(params, &req)
 	}
 
-	stateDir := hermes.ResolveStateDir()
+	// Use base home here: req.AgentID already encodes "which profile". If
+	// ResolveStateDir returned the active profile, paths would stack.
+	stateDir := hermes.ResolveBaseHome()
 	if stateDir == "" {
 		return map[string]interface{}{"files": []interface{}{}, "workspace": ""}, nil
 	}
@@ -152,7 +154,8 @@ func handleAgentIdentityGet(params json.RawMessage) (interface{}, error) {
 		json.Unmarshal(params, &req)
 	}
 
-	stateDir := hermes.ResolveStateDir()
+	// Agent-scoped — use base home so req.AgentID (profile id) doesn't stack.
+	stateDir := hermes.ResolveBaseHome()
 	identity := map[string]interface{}{
 		"id":   req.AgentID,
 		"name": "Hermes Agent",
@@ -1780,8 +1783,8 @@ func handleToolsCatalog(params json.RawMessage) (interface{}, error) {
 		_ = json.Unmarshal(params, &req)
 	}
 
-	// Resolve profile directory
-	stateDir := hermes.ResolveStateDir()
+	// Resolve profile directory (use base home — AgentID already encodes profile)
+	stateDir := hermes.ResolveBaseHome()
 	profDir := stateDir
 	if req.AgentID != "" && req.AgentID != "default" && stateDir != "" {
 		profDir = filepath.Join(stateDir, "profiles", req.AgentID)
@@ -1843,7 +1846,8 @@ func handleToolsToggle(params json.RawMessage) (interface{}, error) {
 		return nil, fmt.Errorf("toolsetId is required")
 	}
 
-	stateDir := hermes.ResolveStateDir()
+	// Agent-scoped — use base home so AgentID profile mapping doesn't stack.
+	stateDir := hermes.ResolveBaseHome()
 	if stateDir == "" {
 		return nil, fmt.Errorf("hermes state dir not found")
 	}

@@ -521,6 +521,10 @@ func RunServe(args []string) int {
 	router.PUT("/api/v1/auth/password", authHandler.ChangePassword)
 	router.PUT("/api/v1/auth/username", authHandler.ChangeUsername)
 
+	profileHandler := handlers.NewProfileHandler()
+	router.GET("/api/v1/profile/active", profileHandler.Get)
+	router.PUT("/api/v1/profile/active", web.RequireAdmin(profileHandler.SetActive))
+
 	router.GET("/api/v1/dashboard", dashboardHandler.Get)
 	router.GET("/api/v1/host-info", hostInfoHandler.Get)
 	router.GET("/api/v1/host-info/check-update", hostInfoHandler.CheckUpdate)

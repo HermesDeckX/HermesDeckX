@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -19,9 +20,11 @@ func CommandExists(name string) bool {
 	return err == nil
 }
 
-// ResolveHermesHome returns the hermes-agent home directory (~/.hermes).
-// Respects HERMES_HOME env var, matching hermes-agent's get_hermes_home().
-func ResolveHermesHome() string {
+// ResolveBaseHome returns the base hermes-agent home directory (~/.hermes),
+// ignoring any active profile. Use this when you specifically need the root
+// directory — for example, to list profiles under <base>/profiles/ or to
+// read/write the <base>/active_profile pointer file. Respects HERMES_HOME.
+func ResolveBaseHome() string {
 	if dir := strings.TrimSpace(os.Getenv("HERMES_HOME")); dir != "" {
 		return dir
 	}
@@ -32,19 +35,136 @@ func ResolveHermesHome() string {
 	return filepath.Join(home, ".hermes")
 }
 
-// ResolveStateDir returns the hermes-agent state directory.
-// For hermes-agent, state dir == home dir (~/.hermes).
+// ResolveHermesHome returns the effective hermes-agent home directory for the
+// currently active profile. When no named profile is active (empty or
+// "default"), this is the base home (~/.hermes). When a named profile is
+// active (stored in <base>/active_profile, matching hermes-agent's CLI
+// sticky-profile semantics in hermes_cli/main.py), returns
+// <base>/profiles/<name>/.
+func ResolveHermesHome() string {
+	base := ResolveBaseHome()
+	if base == "" {
+		return ""
+	}
+	name := GetActiveProfile()
+	if name == "" || name == "default" {
+		return base
+	}
+	return filepath.Join(base, "profiles", name)
+}
+
+// ResolveStateDir returns the hermes-agent state directory for the active
+// profile. For hermes-agent, state dir == home dir.
 func ResolveStateDir() string {
 	return ResolveHermesHome()
 }
 
-// ResolveConfigPath returns the path to hermes-agent's config.yaml.
+// ResolveConfigPath returns the path to hermes-agent's config.yaml for the
+// active profile.
 func ResolveConfigPath() string {
 	home := ResolveHermesHome()
 	if home == "" {
 		return ""
 	}
 	return filepath.Join(home, "config.yaml")
+}
+
+// profileNameRegex mirrors hermes-agent's profile-name validation in
+// hermes_cli/profiles.py (lowercase alnum + dash/underscore, 1..64 chars).
+var profileNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$`)
+
+// validateProfileName returns nil when name is a safe, non-traversal profile
+// identifier. Empty name is allowed (means "default").
+func validateProfileName(name string) error {
+	if name == "" || name == "default" {
+		return nil
+	}
+	if !profileNameRegex.MatchString(name) {
+		return fmt.Errorf("invalid profile name %q", name)
+	}
+	return nil
+}
+
+// GetActiveProfile reads <base>/active_profile and returns the stored name.
+// Returns "" when no profile is set, the file is missing, or the stored name
+// is "default". Matches hermes-agent's _apply_profile_override() fallback.
+func GetActiveProfile() string {
+	base := ResolveBaseHome()
+	if base == "" {
+		return ""
+	}
+	data, err := os.ReadFile(filepath.Join(base, "active_profile"))
+	if err != nil {
+		return ""
+	}
+	name := strings.TrimSpace(string(data))
+	if name == "" || name == "default" {
+		return ""
+	}
+	if err := validateProfileName(name); err != nil {
+		return ""
+	}
+	return name
+}
+
+// SetActiveProfile atomically writes the profile name into
+// <base>/active_profile so that all subsequent hermes CLI invocations and
+// Resolve* calls honor it. Passing "" or "default" clears the pointer.
+func SetActiveProfile(name string) error {
+	name = strings.TrimSpace(name)
+	if err := validateProfileName(name); err != nil {
+		return err
+	}
+	base := ResolveBaseHome()
+	if base == "" {
+		return fmt.Errorf("cannot resolve hermes base home")
+	}
+	if err := os.MkdirAll(base, 0o755); err != nil {
+		return err
+	}
+	target := filepath.Join(base, "active_profile")
+	if name == "" || name == "default" {
+		// Remove the pointer so the default profile is used.
+		if err := os.Remove(target); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		return nil
+	}
+	// Verify profile directory exists before pointing at it so we don't
+	// accidentally break the CLI with a dangling pointer.
+	if _, err := os.Stat(filepath.Join(base, "profiles", name)); err != nil {
+		return fmt.Errorf("profile %q does not exist under %s/profiles", name, base)
+	}
+	tmp := target + ".tmp"
+	if err := os.WriteFile(tmp, []byte(name+"\n"), 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, target)
+}
+
+// ListProfiles returns the names of named profiles under <base>/profiles/,
+// always preceded by "default" representing the base home.
+func ListProfiles() []string {
+	out := []string{"default"}
+	base := ResolveBaseHome()
+	if base == "" {
+		return out
+	}
+	entries, err := os.ReadDir(filepath.Join(base, "profiles"))
+	if err != nil {
+		return out
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if validateProfileName(name) != nil {
+			continue
+		}
+		out = append(out, name)
+	}
+	return out
 }
 
 // GetWrapperScriptPaths returns common paths where the hermes wrapper script
