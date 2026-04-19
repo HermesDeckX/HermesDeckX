@@ -2852,6 +2852,24 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
                     <h4 className={`text-[11px] font-bold truncate pe-12 ${sessionKey === s.key ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-white/50'}`}>
                       {s.label || s.key}
                     </h4>
+                    {(s.parentKey || s.spawnedBy) && (() => {
+                      // Show a small chip linking back to the parent session so
+                      // subagent / branched / worktree spawns are discoverable
+                      // from the child. Click jumps to the parent.
+                      const pk = s.parentKey || s.spawnedBy || '';
+                      const parent = sessions.find(x => x.key === pk);
+                      const label = parent?.label || parent?.derivedTitle || pk;
+                      return (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSessionKey(pk); }}
+                          className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 max-w-full"
+                          title={`${c.parentSession || 'Parent session'}: ${label}`}
+                        >
+                          <span className="material-symbols-outlined text-[10px]">subdirectory_arrow_right</span>
+                          <span className="truncate max-w-[140px]">{label}</span>
+                        </button>
+                      );
+                    })()}
                     {s.lastMessagePreview && (
                       <p className="text-[10px] text-slate-400 dark:text-white/25 truncate mt-0.5">{s.lastMessagePreview}</p>
                     )}
