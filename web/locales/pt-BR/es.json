@@ -58,7 +58,12 @@
     "cfgBackup": "Backup do config.yaml",
     "envBackup": "Backup do .env",
     "archive": "Diretório de arquivo",
-    "startOver": "Migrar novamente"
+    "startOver": "Migrar novamente",
+    "checkingInstall": "Checking hermes-agent install status…",
+    "notInstalledTitle": "hermes-agent not installed",
+    "notInstalledHint": "Migration writes into the local hermes-agent config. Install it first via the Setup Wizard, then come back here.",
+    "openSetup": "Open Setup Wizard",
+    "recheck": "Re-check"
   },
   "secModels": "Modelos",
   "secAgents": "Agentes",

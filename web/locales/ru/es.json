@@ -58,7 +58,12 @@
     "cfgBackup": "Резервная копия config.yaml",
     "envBackup": "Резервная копия .env",
     "archive": "Каталог архива",
-    "startOver": "Мигрировать снова"
+    "startOver": "Мигрировать снова",
+    "checkingInstall": "Checking hermes-agent install status…",
+    "notInstalledTitle": "hermes-agent not installed",
+    "notInstalledHint": "Migration writes into the local hermes-agent config. Install it first via the Setup Wizard, then come back here.",
+    "openSetup": "Open Setup Wizard",
+    "recheck": "Re-check"
   },
   "secModels": "Модели",
   "secAgents": "Агенты",

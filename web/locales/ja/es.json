@@ -58,7 +58,12 @@
     "cfgBackup": "config.yaml バックアップ",
     "envBackup": ".env バックアップ",
     "archive": "アーカイブディレクトリ",
-    "startOver": "もう一度移行"
+    "startOver": "もう一度移行",
+    "checkingInstall": "Checking hermes-agent install status…",
+    "notInstalledTitle": "hermes-agent not installed",
+    "notInstalledHint": "Migration writes into the local hermes-agent config. Install it first via the Setup Wizard, then come back here.",
+    "openSetup": "Open Setup Wizard",
+    "recheck": "Re-check"
   },
   "secModels": "モデル",
   "secAgents": "エージェント",

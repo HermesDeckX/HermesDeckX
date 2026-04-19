@@ -58,7 +58,12 @@
     "cfgBackup": "Cadangan config.yaml",
     "envBackup": "Cadangan .env",
     "archive": "Direktori arsip",
-    "startOver": "Migrasi lagi"
+    "startOver": "Migrasi lagi",
+    "checkingInstall": "Checking hermes-agent install status…",
+    "notInstalledTitle": "hermes-agent not installed",
+    "notInstalledHint": "Migration writes into the local hermes-agent config. Install it first via the Setup Wizard, then come back here.",
+    "openSetup": "Open Setup Wizard",
+    "recheck": "Re-check"
   },
   "secModels": "Model",
   "secAgents": "Agen",

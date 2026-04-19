@@ -58,7 +58,12 @@
     "cfgBackup": "config.yaml 備份",
     "envBackup": ".env 備份",
     "archive": "歸檔目錄",
-    "startOver": "再次遷移"
+    "startOver": "再次遷移",
+    "checkingInstall": "正在檢測 hermes-agent 安裝狀態…",
+    "notInstalledTitle": "尚未安裝 hermes-agent",
+    "notInstalledHint": "遷移會把設定寫入本地 hermes-agent，請先透過安裝精靈完成安裝再回來執行遷移。",
+    "openSetup": "開啟安裝精靈",
+    "recheck": "重新檢測"
   },
   "secModels": "模型配置",
   "secAgents": "代理配置",

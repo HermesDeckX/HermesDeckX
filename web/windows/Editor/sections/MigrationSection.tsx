@@ -7,6 +7,7 @@ import {
   type MigrateReport,
   type MigratePairStatus,
 } from '../../../services/api';
+import { get } from '../../../services/request';
 import { getTranslation } from '../../../locales';
 import { useToast } from '../../../components/Toast';
 
@@ -46,6 +47,9 @@ export const MigrationSection: React.FC<SectionProps> = ({ language }) => {
   const [executing, setExecuting] = useState(false);
   const [report, setReport] = useState<MigrateReport | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  // hermes-agent install gate — migration needs a local install to write into.
+  // null = still probing, true/false = known state.
+  const [hermesInstalled, setHermesInstalled] = useState<boolean | null>(null);
 
   const pollRef = useRef<number | null>(null);
 
@@ -54,6 +58,20 @@ export const MigrationSection: React.FC<SectionProps> = ({ language }) => {
     if (sessionId) { migrateApi.disconnect(sessionId).catch(() => {}); }
     if (pollRef.current) { window.clearInterval(pollRef.current); }
   }, [sessionId]);
+
+  // ── Probe hermes-agent install status on mount ─────────────────────
+  // Same /api/v1/setup/scan endpoint Editor/index.tsx uses; single source of
+  // truth so the two gates can't disagree.
+  const refreshInstallStatus = useCallback(() => {
+    setHermesInstalled(null);
+    get<any>('/api/v1/setup/scan')
+      .then((data: any) => {
+        const report = data?.data || data;
+        setHermesInstalled(!!report?.hermesAgentInstalled);
+      })
+      .catch(() => setHermesInstalled(false));
+  }, []);
+  useEffect(() => { refreshInstallStatus(); }, [refreshInstallStatus]);
 
   // ── Step 1 actions ─────────────────────────────────────────────────
   const chooseLocal = useCallback(async () => {
@@ -242,7 +260,17 @@ export const MigrationSection: React.FC<SectionProps> = ({ language }) => {
       )}
 
       <div className="mt-6">
-        {step === 1 && <Step1 onLocal={chooseLocal} onRemote={chooseRemote} busy={connecting} detect={detectResult} m={m} />}
+        {step === 1 && (
+          <Step1
+            onLocal={chooseLocal}
+            onRemote={chooseRemote}
+            busy={connecting}
+            detect={detectResult}
+            m={m}
+            hermesInstalled={hermesInstalled}
+            onRecheckInstall={refreshInstallStatus}
+          />
+        )}
         {step === 2 && <Step2 form={remoteForm} setForm={setRemoteForm} onSubmit={submitRemote} onBack={() => setStep(1)} busy={connecting} m={m} />}
         {step === 3 && preview && (
           <Step3
@@ -295,29 +323,81 @@ const StepIndicator: React.FC<{ step: Step; labels: string[] }> = ({ step, label
 
 // ── Step 1 ───────────────────────────────────────────────────────────
 
-const Step1: React.FC<{ onLocal: () => void; onRemote: () => void; busy: boolean; detect: any; m: any }> = ({ onLocal, onRemote, busy, detect, m }) => (
-  <div className="grid md:grid-cols-2 gap-4">
-    <SourceCard
-      icon="computer"
-      title={m.localTitle || '本地 OpenClaw'}
-      desc={m.localDesc || '自动扫描 ~/.openclaw、~/.clawdbot、~/.moltbot 目录。'}
-      disabled={busy}
-      onClick={onLocal}
-      extra={detect?.found ? (
-        <span className="text-green-500">{m.localFound || '已检测到'}: {detect.openclawDir}</span>
-      ) : detect ? (
-        <span className="text-slate-400">{m.localMissing || '未检测到本地目录'}</span>
-      ) : null}
-    />
-    <SourceCard
-      icon="cloud"
-      title={m.remoteTitle || '远程 OpenClaw Gateway'}
-      desc={m.remoteDesc || '通过 WebSocket 连接任意可达的 OpenClaw Gateway。'}
-      disabled={busy}
-      onClick={onRemote}
-    />
-  </div>
-);
+const Step1: React.FC<{
+  onLocal: () => void;
+  onRemote: () => void;
+  busy: boolean;
+  detect: any;
+  m: any;
+  hermesInstalled: boolean | null;
+  onRecheckInstall: () => void;
+}> = ({ onLocal, onRemote, busy, detect, m, hermesInstalled, onRecheckInstall }) => {
+  const installing = hermesInstalled === null;
+  const blocked = hermesInstalled === false;
+  const goToSetup = () => {
+    try {
+      window.dispatchEvent(new CustomEvent('clawdeck:open-window', { detail: { id: 'setup' } }));
+    } catch { /* ignore */ }
+  };
+  return (
+    <div className="space-y-4">
+      {installing && (
+        <div className="p-3 rounded-lg bg-slate-500/10 border border-slate-500/20 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+          {m.checkingInstall || 'Checking hermes-agent install status…'}
+        </div>
+      )}
+      {blocked && (
+        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+          <span className="material-symbols-outlined text-[16px] shrink-0">warning</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold">{m.notInstalledTitle || 'hermes-agent not installed'}</p>
+            <p className="mt-0.5 text-[11px] text-amber-700/80 dark:text-amber-200/80">
+              {m.notInstalledHint || 'Migration writes into the local hermes-agent config. Install it first via the Setup Wizard, then come back here.'}
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                onClick={goToSetup}
+                className="px-2.5 py-1 rounded text-[11px] font-bold bg-amber-500 text-white hover:bg-amber-600"
+              >
+                <span className="material-symbols-outlined text-[12px] align-middle me-0.5">install_desktop</span>
+                {m.openSetup || 'Open Setup Wizard'}
+              </button>
+              <button
+                onClick={onRecheckInstall}
+                className="px-2.5 py-1 rounded text-[11px] font-bold bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white/70 hover:bg-slate-300 dark:hover:bg-white/15"
+              >
+                <span className="material-symbols-outlined text-[12px] align-middle me-0.5">refresh</span>
+                {m.recheck || 'Re-check'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="grid md:grid-cols-2 gap-4">
+        <SourceCard
+          icon="computer"
+          title={m.localTitle || '本地 OpenClaw'}
+          desc={m.localDesc || '自动扫描 ~/.openclaw、~/.clawdbot、~/.moltbot 目录。'}
+          disabled={busy || blocked || installing}
+          onClick={onLocal}
+          extra={detect?.found ? (
+            <span className="text-green-500">{m.localFound || '已检测到'}: {detect.openclawDir}</span>
+          ) : detect ? (
+            <span className="text-slate-400">{m.localMissing || '未检测到本地目录'}</span>
+          ) : null}
+        />
+        <SourceCard
+          icon="cloud"
+          title={m.remoteTitle || '远程 OpenClaw Gateway'}
+          desc={m.remoteDesc || '通过 WebSocket 连接任意可达的 OpenClaw Gateway。'}
+          disabled={busy || blocked || installing}
+          onClick={onRemote}
+        />
+      </div>
+    </div>
+  );
+};
 
 const SourceCard: React.FC<{ icon: string; title: string; desc: string; disabled?: boolean; onClick: () => void; extra?: React.ReactNode }> = ({ icon, title, desc, disabled, onClick, extra }) => (
   <button
