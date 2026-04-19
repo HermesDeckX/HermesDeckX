@@ -149,5 +149,17 @@
     "compatIncompatDesc": "Текущая: {{current}} · Требуется: {{required}}",
     "compatGoUpdate": "Обновить",
     "dreaming": "Dreaming"
-  }
+  },
+  "toolGatewayTitle": "Nous Tool Gateway",
+  "toolGatewayActive": "Subscription Active",
+  "toolGatewayInactive": "Not Subscribed",
+  "toolGatewayConfigure": "Configure",
+  "toolGatewayDescActive": "Paid Nous Portal subscribers get web search, image gen, TTS and browser automation — no extra API keys needed. Per-tool opt-in via use_gateway below.",
+  "toolGatewayDescInactive": "Switch the model provider to \"nous\" in Models → Providers to unlock managed tools through your Nous Portal subscription.",
+  "toolGatewayWebSearch": "Web Search",
+  "toolGatewayImageGen": "Image Gen",
+  "toolGatewayTts": "TTS",
+  "toolGatewayBrowser": "Browser",
+  "toolGatewayOn": "use_gateway: on",
+  "toolGatewayOff": "direct / off"
 }

@@ -328,5 +328,12 @@
     "开放公网端口前，请先审视限流策略和访问白名单"
   ],
   "api_serverPitfall": "⚠️ 常见踩坑：1) 没有反向代理 + TLS + API Key 就绑定 0.0.0.0 极危险 —— Agent 可执行工具；2) 把 API Key 放在 query 里会写进日志，应使用 `Authorization: Bearer …` 请求头；3) 长耗时请求需双向调大超时；4) 流式响应依赖 HTTP/1.1 keep-alive 或 HTTP/2，老旧代理可能缓冲导致流式中断。",
-  "feishuPitfall": "⚠️ 常见踩坑：1) 必须在「事件与回调」添加 im.message.receive_v1 事件，否则机器人能发消息但收不到消息；2) 事件订阅方式必须与 connectionMode 匹配：长连接 → websocket（推荐），请求地址 → webhook；3) 每次修改权限/配置后必须重新「创建版本并发布」才能生效；4) 机器人没有自己的云空间根目录，需手动分享文件夹给机器人才能使用云空间工具。"
+  "feishuPitfall": "⚠️ 常见踩坑：1) 必须在「事件与回调」添加 im.message.receive_v1 事件，否则机器人能发消息但收不到消息；2) 事件订阅方式必须与 connectionMode 匹配：长连接 → websocket（推荐），请求地址 → webhook；3) 每次修改权限/配置后必须重新「创建版本并发布」才能生效；4) 机器人没有自己的云空间根目录，需手动分享文件夹给机器人才能使用云空间工具。",
+  "qqbot": "QQ 机器人（官方）",
+  "qqbotDesc": "QQ 官方机器人 API v2（频道/群/C2C）",
+  "sttApiKey": "STT API Key",
+  "sttBaseUrl": "STT Base URL",
+  "sttModel": "STT 模型",
+  "groupAllowedUsers": "群允许用户",
+  "markdownSupport": "Markdown 支持"
 }

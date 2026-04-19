@@ -2105,6 +2105,52 @@ func (h *WizardHandler) buildChannelEnvVars(req ChannelWizardRequest) map[string
 		if v := req.Tokens["host"]; v != "" {
 			env["API_SERVER_HOST"] = v
 		}
+
+	case "qqbot", "qq":
+		// QQ Official Bot API v2 (hermes-agent v0.10.0+)
+		if v := req.Tokens["appId"]; v != "" {
+			env["QQ_APP_ID"] = v
+		}
+		if v := req.Tokens["clientSecret"]; v != "" {
+			env["QQ_CLIENT_SECRET"] = v
+		}
+		// Fallback: some callers still send appSecret
+		if v := req.Tokens["appSecret"]; v != "" && env["QQ_CLIENT_SECRET"] == "" {
+			env["QQ_CLIENT_SECRET"] = v
+		}
+		if v := req.Tokens["homeChannel"]; v != "" {
+			env["QQ_HOME_CHANNEL"] = v
+		}
+		if v := req.Tokens["sttApiKey"]; v != "" {
+			env["QQ_STT_API_KEY"] = v
+		}
+		if v := req.Tokens["sttBaseUrl"]; v != "" {
+			env["QQ_STT_BASE_URL"] = v
+		}
+		if v := req.Tokens["sttModel"]; v != "" {
+			env["QQ_STT_MODEL"] = v
+		}
+		if v := req.Tokens["groupAllowedUsers"]; v != "" {
+			env["QQ_GROUP_ALLOWED_USERS"] = v
+		}
+		if v := req.Tokens["markdownSupport"]; v != "" {
+			env["QQ_MARKDOWN_SUPPORT"] = v
+		}
+		// DM policy mapping
+		switch req.DmPolicy {
+		case "open":
+			env["QQ_ALLOW_ALL_USERS"] = "true"
+		case "allowlist":
+			env["QQ_ALLOW_ALL_USERS"] = "false"
+			if allowCSV != "" {
+				env["QQ_ALLOWED_USERS"] = allowCSV
+			}
+		default:
+			env["QQ_ALLOW_ALL_USERS"] = "false"
+			if allowCSV != "" {
+				env["QQ_ALLOWED_USERS"] = allowCSV
+			}
+		}
 	}
 
 	// Global access control

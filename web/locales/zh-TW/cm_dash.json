@@ -149,5 +149,17 @@
     "compatIncompatDesc": "目前: {{current}} · 需要: {{required}}",
     "compatGoUpdate": "去更新",
     "dreaming": "夢境"
-  }
+  },
+  "toolGatewayTitle": "Nous 工具閘道",
+  "toolGatewayActive": "訂閱已啟用",
+  "toolGatewayInactive": "未訂閱",
+  "toolGatewayConfigure": "設定",
+  "toolGatewayDescActive": "付費 Nous Portal 訂閱者可直接使用網頁搜尋、圖片生成、TTS、瀏覽器自動化，無需額外 API Key。下方按工具啟用 use_gateway。",
+  "toolGatewayDescInactive": "在 模型 → Providers 中將 provider 切換為 \"nous\"，即可透過 Nous Portal 訂閱使用托管工具。",
+  "toolGatewayWebSearch": "網頁搜尋",
+  "toolGatewayImageGen": "圖片生成",
+  "toolGatewayTts": "語音合成",
+  "toolGatewayBrowser": "瀏覽器",
+  "toolGatewayOn": "use_gateway 開啟",
+  "toolGatewayOff": "直連 / 關閉"
 }

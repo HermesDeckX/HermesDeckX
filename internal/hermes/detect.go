@@ -304,6 +304,7 @@ func NotifyConfigured() bool {
 		"WECOM_BOT_ID",
 		"WECOM_CORP_ID",
 		"WEIXIN_APPID",
+		"QQ_APP_ID",
 		"QQBOT_APPID",
 		// Enterprise / other
 		"MATTERMOST_TOKEN",

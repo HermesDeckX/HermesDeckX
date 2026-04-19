@@ -328,5 +328,12 @@
     "Review rate limiting and allow-lists before opening the port publicly"
   ],
   "api_serverPitfall": "⚠️ Common pitfalls: 1) Do NOT bind to 0.0.0.0 without a reverse proxy + TLS + API key — the agent can execute tools; 2) API keys in query strings leak into logs; send them as `Authorization: Bearer …` headers; 3) Long-running requests may need higher timeouts on both sides; 4) Streaming responses require HTTP/1.1 keep-alive or HTTP/2 — old proxies may buffer and break streaming.",
-  "feishuPitfall": "⚠️ 常見踩坑：1) 必須在「事件與回呼」添加 im.message.receive_v1 事件，否則機器人能發訊息但收不到訊息；2) 事件訂閱方式必須與 connectionMode 匹配：長連線 → websocket（推薦），請求位址 → webhook；3) 每次修改權限／配置後必須重新「建立版本並發布」才會生效；4) 機器人沒有自己的雲端空間根目錄，需手動分享資料夾給機器人才能使用雲端空間工具。"
+  "feishuPitfall": "⚠️ 常見踩坑：1) 必須在「事件與回呼」添加 im.message.receive_v1 事件，否則機器人能發訊息但收不到訊息；2) 事件訂閱方式必須與 connectionMode 匹配：長連線 → websocket（推薦），請求位址 → webhook；3) 每次修改權限／配置後必須重新「建立版本並發布」才會生效；4) 機器人沒有自己的雲端空間根目錄，需手動分享資料夾給機器人才能使用雲端空間工具。",
+  "qqbot": "QQ 機器人（官方）",
+  "qqbotDesc": "QQ 官方機器人 API v2（頻道/群/C2C）",
+  "sttApiKey": "STT API Key",
+  "sttBaseUrl": "STT Base URL",
+  "sttModel": "STT 模型",
+  "groupAllowedUsers": "群允許使用者",
+  "markdownSupport": "Markdown 支援"
 }

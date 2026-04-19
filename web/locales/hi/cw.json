@@ -327,5 +327,12 @@
     "If exposing to the internet, front with a reverse proxy (nginx/Caddy/Cloudflare) terminating TLS",
     "Review rate limiting and allow-lists before opening the port publicly"
   ],
-  "api_serverPitfall": "⚠️ Common pitfalls: 1) Do NOT bind to 0.0.0.0 without a reverse proxy + TLS + API key — the agent can execute tools; 2) API keys in query strings leak into logs; send them as `Authorization: Bearer …` headers; 3) Long-running requests may need higher timeouts on both sides; 4) Streaming responses require HTTP/1.1 keep-alive or HTTP/2 — old proxies may buffer and break streaming."
+  "api_serverPitfall": "⚠️ Common pitfalls: 1) Do NOT bind to 0.0.0.0 without a reverse proxy + TLS + API key — the agent can execute tools; 2) API keys in query strings leak into logs; send them as `Authorization: Bearer …` headers; 3) Long-running requests may need higher timeouts on both sides; 4) Streaming responses require HTTP/1.1 keep-alive or HTTP/2 — old proxies may buffer and break streaming.",
+  "qqbot": "QQ Bot (Official)",
+  "qqbotDesc": "QQ Official Bot API v2",
+  "sttApiKey": "STT API Key",
+  "sttBaseUrl": "STT Base URL",
+  "sttModel": "STT Model",
+  "groupAllowedUsers": "Group Allowed Users",
+  "markdownSupport": "Markdown Support"
 }

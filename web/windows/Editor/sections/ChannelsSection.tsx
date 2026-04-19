@@ -197,6 +197,19 @@ const CHANNEL_TYPES: ChannelTypeDef[] = [
     ],
   },
   {
+    id: 'qqbot', labelKey: 'qqbot', descKey: 'qqbotDesc', icon: 'forum', category: 'china',
+    hasAccessControl: true, helpUrl: 'https://q.qq.com/qqbot/',
+    envDetectKeys: ['QQ_APP_ID'],
+    tokenFields: [
+      { key: 'appId', labelKey: 'appId', placeholder: '102012345', required: true },
+      { key: 'clientSecret', labelKey: 'clientSecret', secret: true, required: true },
+      { key: 'homeChannel', labelKey: 'homeChannel', placeholder: 'guild_id or channel_id' },
+      { key: 'sttApiKey', labelKey: 'sttApiKey', secret: true },
+      { key: 'sttBaseUrl', labelKey: 'sttBaseUrl', placeholder: 'https://api.openai.com/v1' },
+      { key: 'sttModel', labelKey: 'sttModel', placeholder: 'whisper-1' },
+    ],
+  },
+  {
     id: 'api_server', labelKey: 'apiServer', descKey: 'apiServerDesc', icon: 'api', category: 'other',
     envDetectKeys: ['API_SERVER_ENABLED'],
     tokenFields: [
@@ -298,6 +311,18 @@ const ENV_TO_TOKEN: Record<string, { ch: string; key: string }> = {
   WEIXIN_HOME_CHANNEL: { ch: 'weixin', key: 'homeChannel' },
   BLUEBUBBLES_SERVER_URL: { ch: 'bluebubbles', key: 'serverUrl' },
   BLUEBUBBLES_PASSWORD: { ch: 'bluebubbles', key: 'password' },
+  // QQ Bot v2 (Official API)
+  QQ_APP_ID: { ch: 'qqbot', key: 'appId' },
+  QQ_CLIENT_SECRET: { ch: 'qqbot', key: 'clientSecret' },
+  QQ_HOME_CHANNEL: { ch: 'qqbot', key: 'homeChannel' },
+  QQ_HOME_CHANNEL_NAME: { ch: 'qqbot', key: 'homeChannelName' },
+  QQ_ALLOWED_USERS: { ch: 'qqbot', key: '_allowFrom' },
+  QQ_GROUP_ALLOWED_USERS: { ch: 'qqbot', key: 'groupAllowedUsers' },
+  QQ_ALLOW_ALL_USERS: { ch: 'qqbot', key: 'allowAllUsers' },
+  QQ_MARKDOWN_SUPPORT: { ch: 'qqbot', key: 'markdownSupport' },
+  QQ_STT_API_KEY: { ch: 'qqbot', key: 'sttApiKey' },
+  QQ_STT_BASE_URL: { ch: 'qqbot', key: 'sttBaseUrl' },
+  QQ_STT_MODEL: { ch: 'qqbot', key: 'sttModel' },
   TWILIO_ACCOUNT_SID: { ch: 'sms', key: 'accountSid' },
   TWILIO_AUTH_TOKEN: { ch: 'sms', key: 'authToken' },
   TWILIO_PHONE_NUMBER: { ch: 'sms', key: 'phoneNumber' },
@@ -347,10 +372,10 @@ const ENV_TO_TOKEN: Record<string, { ch: string; key: string }> = {
 };
 
 // Channels that support DM pairing
-const PAIRING_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'whatsapp', 'weixin', 'mattermost', 'matrix', 'wecom', 'wecom_callback', 'email', 'sms', 'bluebubbles']);
+const PAIRING_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'whatsapp', 'weixin', 'mattermost', 'matrix', 'wecom', 'wecom_callback', 'email', 'sms', 'bluebubbles', 'qqbot']);
 
 // Channels that support home channel
-const HOME_CHANNEL_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'mattermost', 'matrix', 'weixin', 'email', 'sms']);
+const HOME_CHANNEL_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'mattermost', 'matrix', 'weixin', 'email', 'sms', 'qqbot']);
 
 // Channels that support reply-to-mode
 const REPLY_TO_CHANNELS = new Set(['telegram', 'discord']);
@@ -371,6 +396,90 @@ const replyToOptions = (cw: any) => [
   { value: 'first', label: cw.optFirst || 'First' },
   { value: 'all', label: cw.optAll || 'All' },
 ];
+
+// Per-platform channel_prompts editor (hermes-agent v0.10.0+).
+// Stores a map { channelId/topicId -> ephemeral system prompt }.
+const ChannelPromptsField: React.FC<{
+  platform: string;
+  getField: (path: (string | number)[]) => any;
+  setField: (path: (string | number)[], value: any) => void;
+  tip: (key: string) => any;
+  es: any;
+}> = ({ platform, getField, setField, tip, es }) => {
+  const map = (getField([platform, 'channel_prompts']) || {}) as Record<string, string>;
+  const [newKey, setNewKey] = useState('');
+  const [newVal, setNewVal] = useState('');
+  const entries = Object.entries(map);
+  const updateMap = (next: Record<string, string>) => {
+    const cur = getField([platform]) || {};
+    setField([platform], { ...cur, channel_prompts: Object.keys(next).length ? next : undefined });
+  };
+  return (
+    <div className="pt-2 space-y-2">
+      <div className="flex items-start gap-2">
+        <span className="material-symbols-outlined text-[14px] text-primary mt-0.5">edit_note</span>
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-bold theme-text-secondary">
+            {es.channelPrompts || 'Per-Channel Prompts'}
+          </div>
+          <p className="text-[10px] theme-text-muted mt-0.5" title={tip(`${platform}.channel_prompts`)}>
+            {es.channelPromptsDesc || 'Override the system prompt per channel/topic. For forums, the parent channel applies to child threads.'}
+          </p>
+        </div>
+      </div>
+      {entries.length > 0 && (
+        <div className="space-y-1">
+          {entries.map(([k, v]) => (
+            <div key={k} className="flex items-start gap-1 p-2 rounded-md bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06]">
+              <input
+                type="text"
+                value={k}
+                readOnly
+                className="w-40 shrink-0 px-2 py-1 text-[10px] font-mono rounded bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70"
+              />
+              <textarea
+                value={v}
+                onChange={e => updateMap({ ...map, [k]: e.target.value })}
+                rows={2}
+                className="flex-1 px-2 py-1 text-[10px] rounded bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <button
+                onClick={() => { const next = { ...map }; delete next[k]; updateMap(next); }}
+                className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-500/10"
+                title={es.remove || 'Remove'}
+              >
+                <span className="material-symbols-outlined text-[12px]">delete</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex items-start gap-1">
+        <input
+          type="text"
+          value={newKey}
+          onChange={e => setNewKey(e.target.value)}
+          placeholder={es.channelPromptsIdPlaceholder || 'channel / topic id'}
+          className="w-40 shrink-0 px-2 py-1 text-[10px] font-mono rounded bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <textarea
+          value={newVal}
+          onChange={e => setNewVal(e.target.value)}
+          rows={2}
+          placeholder={es.channelPromptsTextPlaceholder || 'Ephemeral system prompt…'}
+          className="flex-1 px-2 py-1 text-[10px] rounded bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <button
+          onClick={() => { if (!newKey.trim()) return; updateMap({ ...map, [newKey.trim()]: newVal }); setNewKey(''); setNewVal(''); }}
+          className="px-2 py-1 rounded text-[10px] font-bold bg-primary text-white hover:bg-primary/90 disabled:opacity-40"
+          disabled={!newKey.trim()}
+        >
+          {es.add || 'Add'}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // Collapsible field group component — matches ClawDeckX's ConfigSection style
 const FieldGroup: React.FC<{
@@ -1000,8 +1109,24 @@ export const ChannelsSection: React.FC<SectionProps> = ({ config, schema, setFie
           <TextField label={es.allowedChannels || 'Allowed Channels'} desc={es.allowedChannelsDesc || ''} tooltip={tip('discord.allowed_channels')} value={getField(['discord', 'allowed_channels']) || ''} onChange={v => setField(['discord', 'allowed_channels'], v)} placeholder="" />
           <SwitchField label={es.autoThread || 'Auto Thread'} desc={es.autoThreadDesc || ''} tooltip={tip('discord.auto_thread')} value={getField(['discord', 'auto_thread']) !== false} onChange={v => setField(['discord', 'auto_thread'], v)} />
           <SwitchField label={es.reactions || 'Reactions'} desc={es.reactionsDesc || ''} tooltip={tip('discord.reactions')} value={getField(['discord', 'reactions']) !== false} onChange={v => setField(['discord', 'reactions'], v)} />
+          <ChannelPromptsField platform="discord" getField={getField} setField={setField} tip={tip} es={es} />
         </ConfigSection>
       )}
+
+      {/* Telegram / Slack / Mattermost channel_prompts (hermes v0.10.0+) */}
+      {(['telegram', 'slack', 'mattermost'] as const).map(platform => (
+        configuredChannels.has(platform) && (
+          <ConfigSection
+            key={`${platform}-yaml`}
+            title={(es as any)[`${platform}Config`] || `${platform.charAt(0).toUpperCase() + platform.slice(1)} (config.yaml)`}
+            icon={platform === 'telegram' ? 'send' : platform === 'slack' ? 'tag' : 'chat_bubble'}
+            iconColor={platform === 'telegram' ? 'text-sky-500' : platform === 'slack' ? 'text-purple-500' : 'text-teal-500'}
+            defaultOpen={false}
+          >
+            <ChannelPromptsField platform={platform} getField={getField} setField={setField} tip={tip} es={es} />
+          </ConfigSection>
+        )
+      ))}
 
       {/* WhatsApp config.yaml settings */}
       {configuredChannels.has('whatsapp') && (

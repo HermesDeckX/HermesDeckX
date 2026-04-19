@@ -8,7 +8,7 @@ import { schemaTooltip } from '../schemaTooltip';
 // hermes-agent TTS / STT / Voice Section
 // ============================================================================
 // hermes-agent config.yaml paths:
-//   tts.provider              — edge | elevenlabs | openai | minimax | mistral | neutts
+//   tts.provider              — edge | elevenlabs | openai | xai | minimax | mistral | neutts
 //   tts.edge.voice            — Edge TTS voice name
 //   tts.elevenlabs.*          — ElevenLabs voice_id, model_id
 //   tts.openai.*              — OpenAI TTS model, voice
@@ -29,6 +29,7 @@ export const AudioSection: React.FC<SectionProps> = ({ config, schema, setField,
     { value: 'edge', label: es.ttsEdge || 'Edge TTS (free)' },
     { value: 'elevenlabs', label: es.ttsElevenlabs || 'ElevenLabs (premium)' },
     { value: 'openai', label: es.ttsOpenai || 'OpenAI' },
+    { value: 'xai', label: es.ttsXai || 'xAI' },
     { value: 'minimax', label: es.ttsMinimax || 'MiniMax' },
     { value: 'mistral', label: es.ttsMistral || 'Mistral' },
     { value: 'neutts', label: es.ttsNeutts || 'NeuTTS (local)' },
@@ -120,6 +121,40 @@ export const AudioSection: React.FC<SectionProps> = ({ config, schema, setField,
                 { value: 'nova', label: 'Nova' },
                 { value: 'shimmer', label: 'Shimmer' },
               ]}
+            />
+          </>
+        )}
+
+        {/* xAI TTS */}
+        {ttsProvider === 'xai' && (
+          <>
+            <TextField
+              label={es.xaiVoiceId || 'Voice ID'}
+              tooltip={tip('tts.xai.voice_id')}
+              value={getField(['tts', 'xai', 'voice_id']) || ''}
+              onChange={v => setField(['tts', 'xai', 'voice_id'], v)}
+              placeholder="eve"
+            />
+            <TextField
+              label={es.xaiLanguage || 'Language'}
+              tooltip={tip('tts.xai.language')}
+              value={getField(['tts', 'xai', 'language']) || ''}
+              onChange={v => setField(['tts', 'xai', 'language'], v)}
+              placeholder="en"
+            />
+            <TextField
+              label={es.xaiSampleRate || 'Sample Rate'}
+              tooltip={tip('tts.xai.sample_rate')}
+              value={String(getField(['tts', 'xai', 'sample_rate']) || '')}
+              onChange={v => setField(['tts', 'xai', 'sample_rate'], v ? Number(v) : undefined)}
+              placeholder="24000"
+            />
+            <TextField
+              label={es.xaiBitRate || 'Bit Rate'}
+              tooltip={tip('tts.xai.bit_rate')}
+              value={String(getField(['tts', 'xai', 'bit_rate']) || '')}
+              onChange={v => setField(['tts', 'xai', 'bit_rate'], v ? Number(v) : undefined)}
+              placeholder="128000"
             />
           </>
         )}

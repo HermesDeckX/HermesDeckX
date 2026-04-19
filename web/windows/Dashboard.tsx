@@ -1248,6 +1248,73 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
           );
         })()}
 
+        {/* Tool Gateway Card — Nous Portal managed tools (hermes-agent v0.10.0+) */}
+        {userConfig && (() => {
+          const parsed = userConfig?.parsed || userConfig?.config || userConfig || {};
+          const modelProvider = String(
+            parsed?.model?.provider ||
+            parsed?.model_provider ||
+            (typeof parsed?.model === 'string' && parsed.model.includes('/') ? parsed.model.split('/')[0] : '') ||
+            ''
+          ).toLowerCase();
+          const providerIsNous = modelProvider === 'nous';
+          const toolMeta = [
+            { key: 'web_search', icon: 'search', label: d.toolGatewayWebSearch || 'Web Search', cfgPath: ['tools', 'web_search'] },
+            { key: 'image_generation', icon: 'image', label: d.toolGatewayImageGen || 'Image Gen', cfgPath: ['tools', 'image_generation'] },
+            { key: 'tts', icon: 'record_voice_over', label: d.toolGatewayTts || 'TTS', cfgPath: ['tts'] },
+            { key: 'browser_automation', icon: 'web', label: d.toolGatewayBrowser || 'Browser', cfgPath: ['browser'] },
+          ];
+          const getByPath = (root: any, parts: (string | number)[]) => parts.reduce((acc, k) => (acc && typeof acc === 'object') ? (acc as any)[k] : undefined, root);
+          const toolStates = toolMeta.map(t => {
+            const node = getByPath(parsed, t.cfgPath);
+            const useGateway = !!(node && typeof node === 'object' && (node as any).use_gateway === true);
+            return { ...t, useGateway };
+          });
+          const enabledCount = toolStates.filter(t => t.useGateway).length;
+          // Hide the card entirely when not using Nous provider AND no tools opt in — keeps dashboard clean
+          if (!providerIsNous && enabledCount === 0) return null;
+          const statusTone = providerIsNous ? 'text-emerald-500' : 'text-amber-500';
+          const statusBg = providerIsNous
+            ? 'from-emerald-50/60 dark:from-emerald-500/[0.08]'
+            : 'from-amber-50/60 dark:from-amber-500/[0.08]';
+          return (
+            <div className={`rounded-2xl border border-slate-200/60 dark:border-white/[0.06] bg-gradient-to-br ${statusBg} via-white to-white dark:via-white/[0.02] dark:to-transparent p-4 sci-card`}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`material-symbols-outlined text-[16px] ${statusTone}`}>hub</span>
+                <h3 className="text-[12px] font-bold text-slate-700 dark:text-white/80 flex-1">{d.toolGatewayTitle || 'Nous Tool Gateway'}</h3>
+                <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${providerIsNous ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'}`}>
+                  {providerIsNous ? (d.toolGatewayActive || 'Subscription Active') : (d.toolGatewayInactive || 'Not Subscribed')}
+                </span>
+                <button
+                  onClick={() => dispatchOpenWindow({ id: 'editor', section: 'models' })}
+                  className="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5"
+                >
+                  <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                  {d.toolGatewayConfigure || 'Configure'}
+                </button>
+              </div>
+              <p className="text-[10px] theme-text-muted mb-2 leading-relaxed">
+                {providerIsNous
+                  ? (d.toolGatewayDescActive || 'Paid Nous Portal subscribers get web search, image gen, TTS and browser automation — no extra API keys needed. Per-tool opt-in via use_gateway below.')
+                  : (d.toolGatewayDescInactive || 'Switch the model provider to "nous" in Models → Providers to unlock managed tools through your Nous Portal subscription.')}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {toolStates.map(t => (
+                  <div key={t.key} className={`rounded-lg border p-2 flex items-center gap-2 ${t.useGateway ? 'border-emerald-400/30 bg-emerald-500/[0.04] dark:bg-emerald-500/10' : 'border-slate-200 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.02]'}`}>
+                    <span className={`material-symbols-outlined text-[14px] ${t.useGateway ? 'text-emerald-500' : 'text-slate-400'}`}>{t.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-slate-700 dark:text-white/80 truncate">{t.label}</p>
+                      <p className={`text-[9px] font-mono ${t.useGateway ? 'text-emerald-500' : 'text-slate-400 dark:text-white/30'}`}>
+                        {t.useGateway ? (d.toolGatewayOn || 'use_gateway: on') : (d.toolGatewayOff || 'direct / off')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Host Info Card - refactored with GaugeCard */}
         {(() => {
           if (!hostInfo) {

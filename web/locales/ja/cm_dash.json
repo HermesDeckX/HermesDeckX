@@ -149,5 +149,17 @@
     "compatIncompatDesc": "現在: {{current}} · 必要: {{required}}",
     "compatGoUpdate": "更新",
     "dreaming": "ドリーミング"
-  }
+  },
+  "toolGatewayTitle": "Nous Tool Gateway",
+  "toolGatewayActive": "サブスク有効",
+  "toolGatewayInactive": "未加入",
+  "toolGatewayConfigure": "設定",
+  "toolGatewayDescActive": "有料 Nous Portal サブスク会員は Web 検索・画像生成・TTS・ブラウザ自動化を API キーなしで利用可能。下のツールごとに use_gateway を有効化。",
+  "toolGatewayDescInactive": "Models → Providers で provider を \"nous\" に切り替えると、Nous Portal サブスクでマネージドツールが使えます。",
+  "toolGatewayWebSearch": "Web 検索",
+  "toolGatewayImageGen": "画像生成",
+  "toolGatewayTts": "TTS",
+  "toolGatewayBrowser": "ブラウザ",
+  "toolGatewayOn": "use_gateway: 有効",
+  "toolGatewayOff": "直接 / 無効"
 }

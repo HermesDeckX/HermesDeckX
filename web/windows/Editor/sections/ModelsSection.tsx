@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { SectionProps } from '../sectionTypes';
-import { ConfigSection, ConfigCard, TextField, PasswordField, SelectField, NumberField, EmptyState } from '../fields';
+import { ConfigSection, ConfigCard, TextField, PasswordField, SelectField, NumberField, SwitchField, EmptyState } from '../fields';
 import { post } from '../../../services/request';
 import { getTranslation } from '../../../locales';
 import { useToast } from '../../../components/Toast';
@@ -133,6 +133,8 @@ const PROVIDERS: ProviderPreset[] = [
   { id: 'opencode-zen', name: 'OpenCode Zen', icon: '💻', category: 'builtin', envVars: ['OPENCODE_ZEN_API_KEY'], defaultModel: 'claude-opus-4-6', models: [], baseUrl: 'https://opencode.ai/zen/v1', helpUrl: 'https://opencode.ai' },
   { id: 'opencode-go', name: 'OpenCode Go', icon: '💻', category: 'builtin', envVars: ['OPENCODE_GO_API_KEY'], defaultModel: 'glm-4-plus', models: [], baseUrl: 'https://opencode.ai/zen/go/v1', helpUrl: 'https://opencode.ai' },
   { id: 'kilocode', name: 'Kilo Code', icon: '📊', category: 'builtin', envVars: ['KILOCODE_API_KEY'], defaultModel: 'claude-opus-4-6', models: [], baseUrl: 'https://api.kilo.ai/api/gateway', helpUrl: 'https://kilo.ai' },
+  { id: 'arceeai', name: 'Arcee AI', icon: '🏹', category: 'builtin', envVars: ['ARCEEAI_API_KEY'], defaultModel: 'arcee-blitz', models: [], baseUrl: 'https://conductor.arcee.ai/v1', helpUrl: 'https://chat.arcee.ai' },
+  { id: 'ollama-cloud', name: 'Ollama Cloud', icon: '☁️', category: 'builtin', envVars: ['OLLAMA_API_KEY'], defaultModel: '', models: [], baseUrl: 'https://ollama.com/v1', helpUrl: 'https://ollama.com/settings' },
   // ── OAuth providers ──
   { id: 'nous', name: 'Nous Portal', icon: '🧠', category: 'oauth', envVars: [], defaultModel: '', models: [], baseUrl: 'https://inference-api.nousresearch.com/v1', helpUrl: 'https://portal.nousresearch.com' },
   { id: 'openai-codex', name: 'OpenAI Codex', icon: '🤖', category: 'oauth', envVars: [], defaultModel: 'codex-mini-latest', models: [
@@ -1368,6 +1370,90 @@ export const ModelsSection: React.FC<SectionProps> = ({ config, schema, setField
             )}
           </ConfigSection>
         ))}
+      </ConfigSection>
+
+      {/* ================================================================ */}
+      {/* AWS Bedrock — discovery / guardrail (hermes-agent v0.10.0+) */}
+      {/* ================================================================ */}
+      <ConfigSection title={es.bedrockConfig || 'AWS Bedrock'} icon="cloud" iconColor="text-amber-500" defaultOpen={false}>
+        <p className="text-[10px] theme-text-muted mb-2">
+          {es.bedrockDesc || 'Amazon Bedrock region, model discovery and guardrail settings. Requires AWS credentials via standard IAM / env vars.'}
+        </p>
+        <TextField
+          label={es.bedrockRegion || 'AWS Region'}
+          desc={es.bedrockRegionDesc || 'Region for Bedrock API calls (empty = AWS_REGION env var → us-east-1).'}
+          tooltip={tip('bedrock.region')}
+          value={getField(['bedrock', 'region']) || ''}
+          onChange={v => setField(['bedrock', 'region'], v)}
+          placeholder="us-east-1"
+        />
+        <ConfigSection title={es.bedrockDiscovery || 'Model Discovery'} icon="travel_explore" iconColor="text-sky-500" defaultOpen={false}>
+          <SwitchField
+            label={es.bedrockDiscoveryEnabled || 'Enable Auto-Discovery'}
+            desc={es.bedrockDiscoveryEnabledDesc || 'Auto-discover models via ListFoundationModels.'}
+            tooltip={tip('bedrock.discovery.enabled')}
+            value={getField(['bedrock', 'discovery', 'enabled']) !== false}
+            onChange={v => setField(['bedrock', 'discovery', 'enabled'], v)}
+          />
+          <TextField
+            label={es.bedrockProviderFilter || 'Provider Filter'}
+            desc={es.bedrockProviderFilterDesc || 'Comma-separated provider list (e.g. "anthropic,amazon"). Empty = all.'}
+            tooltip={tip('bedrock.discovery.provider_filter')}
+            value={(() => { const arr = getField(['bedrock', 'discovery', 'provider_filter']); return Array.isArray(arr) ? arr.join(',') : ''; })()}
+            onChange={v => {
+              const arr = v.split(',').map(s => s.trim()).filter(Boolean);
+              setField(['bedrock', 'discovery', 'provider_filter'], arr.length ? arr : []);
+            }}
+            placeholder="anthropic,amazon"
+          />
+          <NumberField
+            label={es.bedrockRefreshInterval || 'Refresh Interval (s)'}
+            desc={es.bedrockRefreshIntervalDesc || 'Cache discovery results for this many seconds.'}
+            tooltip={tip('bedrock.discovery.refresh_interval')}
+            value={getField(['bedrock', 'discovery', 'refresh_interval'])}
+            onChange={v => setField(['bedrock', 'discovery', 'refresh_interval'], v)}
+            min={60}
+          />
+        </ConfigSection>
+        <ConfigSection title={es.bedrockGuardrail || 'Guardrail'} icon="shield" iconColor="text-red-500" defaultOpen={false}>
+          <TextField
+            label={es.bedrockGuardrailId || 'Guardrail Identifier'}
+            desc={es.bedrockGuardrailIdDesc || 'Bedrock Guardrail ID, e.g. "abc123def456".'}
+            tooltip={tip('bedrock.guardrail.guardrail_identifier')}
+            value={getField(['bedrock', 'guardrail', 'guardrail_identifier']) || ''}
+            onChange={v => setField(['bedrock', 'guardrail', 'guardrail_identifier'], v)}
+            placeholder=""
+          />
+          <TextField
+            label={es.bedrockGuardrailVersion || 'Guardrail Version'}
+            desc={es.bedrockGuardrailVersionDesc || 'Version number or "DRAFT".'}
+            tooltip={tip('bedrock.guardrail.guardrail_version')}
+            value={getField(['bedrock', 'guardrail', 'guardrail_version']) || ''}
+            onChange={v => setField(['bedrock', 'guardrail', 'guardrail_version'], v)}
+            placeholder="DRAFT"
+          />
+          <SelectField
+            label={es.bedrockStreamProcessing || 'Stream Processing Mode'}
+            tooltip={tip('bedrock.guardrail.stream_processing_mode')}
+            value={getField(['bedrock', 'guardrail', 'stream_processing_mode']) || 'async'}
+            onChange={v => setField(['bedrock', 'guardrail', 'stream_processing_mode'], v)}
+            options={[
+              { value: 'sync', label: 'Sync' },
+              { value: 'async', label: 'Async' },
+            ]}
+          />
+          <SelectField
+            label={es.bedrockTrace || 'Trace'}
+            tooltip={tip('bedrock.guardrail.trace')}
+            value={getField(['bedrock', 'guardrail', 'trace']) || 'disabled'}
+            onChange={v => setField(['bedrock', 'guardrail', 'trace'], v)}
+            options={[
+              { value: 'enabled', label: 'Enabled' },
+              { value: 'disabled', label: 'Disabled' },
+              { value: 'enabled_full', label: 'Enabled Full' },
+            ]}
+          />
+        </ConfigSection>
       </ConfigSection>
 
       {/* ================================================================ */}

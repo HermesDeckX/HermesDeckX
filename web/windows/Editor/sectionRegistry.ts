@@ -15,7 +15,7 @@
 
 // ── hermes-agent config.yaml paths covered by hand-coded UI sections ──
 
-// ModelsSection — model, providers, fallback, delegation, auxiliary, credential_pool
+// ModelsSection — model, providers, fallback, delegation, auxiliary, credential_pool, bedrock
 const MODELS_KEYS = [
   'model', 'model.*',
   'providers.*',
@@ -24,6 +24,7 @@ const MODELS_KEYS = [
   'delegation.*',
   'auxiliary.*',
   'custom_providers', 'custom_providers.*',
+  'bedrock.*',
 ];
 
 // AgentsSection — agent core, personalities, quick_commands, prefill

@@ -149,5 +149,17 @@
     "compatIncompatDesc": "현재: {{current}} · 필요: {{required}}",
     "compatGoUpdate": "업데이트",
     "dreaming": "드리밍"
-  }
+  },
+  "toolGatewayTitle": "Nous Tool Gateway",
+  "toolGatewayActive": "구독 활성",
+  "toolGatewayInactive": "구독 안 됨",
+  "toolGatewayConfigure": "설정",
+  "toolGatewayDescActive": "유료 Nous Portal 구독자는 웹 검색, 이미지 생성, TTS, 브라우저 자동화를 API 키 없이 사용할 수 있습니다. 아래 도구별로 use_gateway 활성화.",
+  "toolGatewayDescInactive": "Models → Providers에서 provider를 \"nous\"로 전환하면 Nous Portal 구독으로 관리형 도구를 사용할 수 있습니다.",
+  "toolGatewayWebSearch": "웹 검색",
+  "toolGatewayImageGen": "이미지 생성",
+  "toolGatewayTts": "TTS",
+  "toolGatewayBrowser": "브라우저",
+  "toolGatewayOn": "use_gateway: 켬",
+  "toolGatewayOff": "직접 / 끔"
 }
