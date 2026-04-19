@@ -866,6 +866,26 @@ func RunServe(args []string) int {
 	// Server System Info
 	router.GET("/api/v1/ssh/sysinfo", sysInfoHandler.Get)
 
+	// Local / Container shell (native PTY, no SSH required). Auto-enabled when
+	// running inside a Docker container; opt-in via HERMESDECKX_ENABLE_LOCAL_TERMINAL=1
+	// outside Docker. See internal/handlers/local_terminal_ws.go.
+	localTerminalHandler := handlers.NewLocalTerminalHandler()
+	router.GET("/api/v1/terminal/local/available", localTerminalHandler.Available)
+	router.GET("/api/v1/terminal/local/ws", localTerminalHandler.HandleWS(cfg.Auth.JWTSecret))
+	router.GET("/api/v1/terminal/local/sysinfo", web.RequireAdmin(sysInfoHandler.GetLocal))
+
+	// Local / Container files REST API (mirrors /api/v1/sftp/* but operates on
+	// the local/container filesystem). Admin-only, gated by the same env flag.
+	localFilesHandler := handlers.NewLocalFilesHandler()
+	router.GET("/api/v1/local-files/list", web.RequireAdmin(localFilesHandler.List))
+	router.GET("/api/v1/local-files/read", web.RequireAdmin(localFilesHandler.Read))
+	router.PUT("/api/v1/local-files/write", web.RequireAdmin(localFilesHandler.Write))
+	router.POST("/api/v1/local-files/mkdir", web.RequireAdmin(localFilesHandler.Mkdir))
+	router.POST("/api/v1/local-files/remove", web.RequireAdmin(localFilesHandler.Remove))
+	router.POST("/api/v1/local-files/rename", web.RequireAdmin(localFilesHandler.Rename))
+	router.POST("/api/v1/local-files/upload", web.RequireAdmin(localFilesHandler.Upload))
+	router.GET("/api/v1/local-files/download", localFilesHandler.Download)
+
 	// Command Snippets
 	router.GET("/api/v1/ssh/snippets", snippetHandler.List)
 	router.POST("/api/v1/ssh/snippets", web.RequireAdmin(snippetHandler.Record))
@@ -918,6 +938,7 @@ func RunServe(args []string) int {
 		"/api/v1/health",
 		"/api/v1/ws",
 		"/api/v1/terminal/ws",
+		"/api/v1/terminal/local/ws",
 	}
 
 	rlCtx, rlCancel := context.WithCancel(context.Background())
