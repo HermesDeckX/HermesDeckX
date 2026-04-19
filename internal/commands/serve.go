@@ -539,6 +539,17 @@ func RunServe(args []string) int {
 	router.GET("/api/v1/skins", skinsHandler.List)
 	router.PUT("/api/v1/skins/active", web.RequireAdmin(skinsHandler.SetActive))
 
+	// Hermes Skills Hub wrappers — `hermes skills <action>` for search/install/update/etc.
+	skillsHubHandler := handlers.NewSkillsHubHandler()
+	router.POST("/api/v1/skills-hub/search", skillsHubHandler.Search)
+	router.GET("/api/v1/skills-hub/browse", skillsHubHandler.Browse)
+	router.GET("/api/v1/skills-hub/list", skillsHubHandler.List)
+	router.POST("/api/v1/skills-hub/install", web.RequireAdmin(skillsHubHandler.Install))
+	router.POST("/api/v1/skills-hub/uninstall", web.RequireAdmin(skillsHubHandler.Uninstall))
+	router.POST("/api/v1/skills-hub/update", web.RequireAdmin(skillsHubHandler.Update))
+	router.GET("/api/v1/skills-hub/check", skillsHubHandler.Check)
+	router.GET("/api/v1/skills-hub/inspect", skillsHubHandler.Inspect)
+
 	router.GET("/api/v1/dashboard", dashboardHandler.Get)
 	router.GET("/api/v1/host-info", hostInfoHandler.Get)
 	router.GET("/api/v1/host-info/check-update", hostInfoHandler.CheckUpdate)

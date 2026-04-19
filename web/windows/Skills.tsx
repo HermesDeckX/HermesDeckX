@@ -14,6 +14,7 @@ import PluginCenter from './PluginCenter';
 import SkillHub from './SkillHub';
 import McpCenter from './McpCenter';
 import ToolsCenter from './ToolsCenter';
+import SkillsHubModal from './Skills/SkillsHubModal';
 import { copyToClipboard } from '../utils/clipboard';
 import { pickLocalizedText } from '../utils/localizedContent';
 
@@ -700,6 +701,8 @@ const Skills: React.FC<SkillsProps> = ({ language }) => {
   // Batch mode
   const [batchMode, setBatchMode] = useState(false);
   const [batchSelected, setBatchSelected] = useState<Set<string>>(new Set());
+  // Hermes Skills Hub CLI wrapper modal
+  const [skillsHubOpen, setSkillsHubOpen] = useState(false);
   // Search ref for keyboard shortcut
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -1568,6 +1571,12 @@ const Skills: React.FC<SkillsProps> = ({ language }) => {
                 title={sk.batchMode || 'Batch'}>
                 <span className="material-symbols-outlined text-[16px]">checklist</span>
               </button>
+              {/* Hermes Skills Hub (hermes skills <action>) */}
+              <button onClick={() => setSkillsHubOpen(true)}
+                className="h-9 w-9 flex items-center justify-center theme-field hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg shrink-0"
+                title={sk.hubTitle || 'Hermes Skills Hub'}>
+                <span className="material-symbols-outlined text-[16px] theme-text-secondary">hub</span>
+              </button>
               {/* Compact / Group / Flat */}
               <button onClick={() => { if (compactView) { setCompactView(false); } else if (groupView) { setGroupView(false); setCompactView(true); } else { setGroupView(true); } }}
                 className="h-9 w-9 flex items-center justify-center theme-field hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg shrink-0"
@@ -2345,6 +2354,9 @@ const Skills: React.FC<SkillsProps> = ({ language }) => {
           </div>
         </div>
       )}
+
+      {/* Hermes Skills Hub modal (wraps `hermes skills` CLI) */}
+      <SkillsHubModal open={skillsHubOpen} onClose={() => setSkillsHubOpen(false)} sk={sk} />
 
       {/* 数据源配置弹窗 */}
       {showSourceConfig && (
