@@ -1,8 +1,89 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SectionProps } from '../sectionTypes';
 import { ConfigSection, TextField, NumberField, SelectField, SwitchField, KeyValueField } from '../fields';
 import { getTranslation } from '../../../locales';
 import { schemaTooltip } from '../schemaTooltip';
+import { get as apiGet, put as apiPut } from '../../../services/request';
+import { useToast } from '../../../components/Toast';
+
+interface SkinInfo { name: string; description: string; source: 'builtin' | 'user'; }
+interface SkinsResponse { active: string; skins: SkinInfo[]; }
+
+// Dropdown-backed skin picker. Falls back to a raw text input when the
+// /api/v1/skins endpoint isn't reachable (older backend).
+const SkinPicker: React.FC<{ value: string; onChange: (v: string) => void; es: Record<string, any> }> = ({ value, onChange, es }) => {
+  const { toast } = useToast();
+  const [data, setData] = useState<SkinsResponse | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const load = useCallback(() => {
+    apiGet<SkinsResponse>('/api/v1/skins')
+      .then(r => { setData(r); setLoadFailed(false); })
+      .catch(() => setLoadFailed(true));
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const handleChange = useCallback((name: string) => {
+    if (!data || name === value) return;
+    // Write immediately through the dedicated endpoint so the CLI config
+    // and this form stay in lock-step.
+    setBusy(true);
+    apiPut<SkinsResponse>('/api/v1/skins/active', { name })
+      .then((r) => {
+        setData(r);
+        onChange(name);
+        toast('success', ((es.skinSwitched as string) || 'CLI skin set to "{name}". Restart hermes CLI to apply.').replace('{name}', name));
+      })
+      .catch((e: any) => toast('error', e?.message || (es.skinSwitchFailed as string) || 'Failed to set skin'))
+      .finally(() => setBusy(false));
+  }, [data, value, onChange, toast, es]);
+
+  if (loadFailed) {
+    // Endpoint missing — degrade to the classic text field so the user can
+    // still type a skin name and have it written through the normal save flow.
+    return (
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder="default"
+        className="w-full px-2 py-1.5 rounded-lg text-[11px] bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary"
+      />
+    );
+  }
+
+  const current = data?.active || value || 'default';
+  const active = data?.skins.find(s => s.name === current);
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <select
+        value={current}
+        disabled={busy || !data}
+        onChange={e => handleChange(e.target.value)}
+        className="px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-white/5 text-slate-700 dark:text-white/80 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
+      >
+        {(data?.skins || [{ name: current, description: '', source: 'builtin' as const }]).map(sk => (
+          <option key={sk.name} value={sk.name}>
+            {sk.name} {sk.source === 'user' ? '(user)' : ''}
+          </option>
+        ))}
+      </select>
+      {active?.description && (
+        <p className="text-[10px] text-slate-400 dark:text-white/30 flex-1 min-w-0 truncate">{active.description}</p>
+      )}
+      <button
+        onClick={load}
+        disabled={busy}
+        className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 disabled:opacity-40"
+        title={es.refresh || 'Refresh'}
+      >
+        <span className={`material-symbols-outlined text-[14px] ${busy ? 'animate-spin' : ''}`}>refresh</span>
+      </button>
+    </div>
+  );
+};
 
 // ============================================================================
 // hermes-agent Messages / Display Section — ALL display.* config.yaml paths
@@ -49,14 +130,19 @@ export const MessagesSection: React.FC<SectionProps> = ({ config, schema, setFie
     <div className="space-y-4">
       {/* CLI Appearance */}
       <ConfigSection title={es.cliAppearance || 'CLI Appearance'} icon="palette" iconColor="text-pink-500">
-        <TextField
-          label={es.skin || 'CLI Skin'}
-          desc={es.skinDesc || 'CLI theme skin name.'}
-          tooltip={tip('display.skin')}
-          value={getField(['display', 'skin']) || ''}
-          onChange={v => setField(['display', 'skin'], v)}
-          placeholder="default"
-        />
+        <div className="space-y-1.5">
+          <label className="block text-[11px] font-bold text-slate-600 dark:text-white/70">
+            {es.skin || 'CLI Skin'}
+          </label>
+          <p className="text-[10px] text-slate-400 dark:text-white/40" title={tip('display.skin') || undefined}>
+            {es.skinDesc || "Controls the hermes CLI's banner, spinner and tool prefix. Drop YAML files in ~/.hermes/skins/ to add custom skins."}
+          </p>
+          <SkinPicker
+            value={getField(['display', 'skin']) || ''}
+            onChange={v => setField(['display', 'skin'], v)}
+            es={es}
+          />
+        </div>
         <SelectField
           label={es.personality || 'Personality'}
           desc={es.personalityDesc || 'CLI spinner personality style.'}

@@ -1,86 +1,8 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import type { Preferences, WindowControlsPosition, WallpaperSource, StartupWindowMode } from '../../utils/preferences';
 import { updatePreferences, resolveWallpaperData, applyResolvedWallpaper, getCachedWallpaper, selectWallpaperHistoryEntry, setCachedWallpaper } from '../../utils/preferences';
 import { useToast } from '../../components/Toast';
 import MirrorSettings from './MirrorSettings';
-import { get as apiGet, put as apiPut } from '../../services/request';
-
-interface SkinInfo {
-  name: string;
-  description: string;
-  source: 'builtin' | 'user';
-}
-interface SkinsResponse {
-  active: string;
-  skins: SkinInfo[];
-}
-
-const SkinSection: React.FC<{ pref: Record<string, any> }> = ({ pref }) => {
-  const { toast } = useToast();
-  const [data, setData] = useState<SkinsResponse | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const load = useCallback(() => {
-    apiGet<SkinsResponse>('/api/v1/skins').then(setData).catch(() => setData(null));
-  }, []);
-  useEffect(() => { load(); }, [load]);
-
-  const handleChange = useCallback((name: string) => {
-    if (!data || name === data.active) return;
-    setBusy(true);
-    apiPut<SkinsResponse>('/api/v1/skins/active', { name })
-      .then((resp) => {
-        setData(resp);
-        toast('success', (pref?.skinSwitched as string) || `CLI skin set to "${name}". Restart hermes CLI to apply.`);
-      })
-      .catch((e: any) => {
-        toast('error', e?.message || (pref?.skinSwitchFailed as string) || 'Failed to set skin');
-      })
-      .finally(() => setBusy(false));
-  }, [data, toast, pref]);
-
-  if (!data) return null;
-
-  return (
-    <div className="rounded-xl border border-slate-200 dark:border-white/10 p-4 space-y-3 bg-slate-50/40 dark:bg-white/[0.02]">
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-[18px] text-violet-500">palette</span>
-        <h3 className="text-[14px] font-bold text-slate-700 dark:text-white/80 flex-1">
-          {pref?.skinTitle || 'CLI Skin'}
-        </h3>
-      </div>
-      <p className="text-[11px] text-slate-500 dark:text-white/50 leading-relaxed">
-        {pref?.skinDesc || "Controls the hermes CLI's banner, spinner and tool prefix. Drop YAML files in ~/.hermes/skins/ to add custom skins."}
-      </p>
-      <div className="flex items-center gap-2 flex-wrap">
-        <select
-          value={data.active}
-          disabled={busy}
-          onChange={(e) => handleChange(e.target.value)}
-          className="px-2 py-1.5 rounded-lg text-[12px] font-bold bg-white dark:bg-white/5 text-slate-700 dark:text-white/80 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
-        >
-          {data.skins.map((sk) => (
-            <option key={sk.name} value={sk.name}>
-              {sk.name} {sk.source === 'user' ? '(user)' : ''}
-            </option>
-          ))}
-        </select>
-        <p className="text-[10px] text-slate-400 dark:text-white/30 flex-1 min-w-0 truncate">
-          {data.skins.find(sk => sk.name === data.active)?.description || ''}
-        </p>
-        <button
-          onClick={load}
-          disabled={busy}
-          className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 disabled:opacity-40"
-          title={pref?.refresh || 'Refresh'}
-        >
-          <span className={`material-symbols-outlined text-[14px] ${busy ? 'animate-spin' : ''}`}>refresh</span>
-        </button>
-      </div>
-    </div>
-  );
-};
 
 interface PreferencesTabProps {
   s: Record<string, any>;
@@ -179,9 +101,6 @@ const PreferencesTab: React.FC<PreferencesTabProps> = ({ s, pref, prefs, onPrefs
   return (
     <div className="space-y-5">
       <h2 className="text-[22px] font-bold text-slate-800 dark:text-white">{pref?.title || 'Preferences'}</h2>
-
-      {/* CLI Skin */}
-      <SkinSection pref={pref} />
 
       {/* Window Controls Position */}
       <div className={rowCls}>

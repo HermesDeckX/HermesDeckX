@@ -20,7 +20,7 @@ interface EditorProps {
 
 type SectionId =
   | 'migration'
-  | 'models' | 'agents' | 'tools' | 'channels' | 'messages'
+  | 'models' | 'agents' | 'tools' | 'channels' | 'messages' | 'auth'
   | 'gateway' | 'cron' | 'extensions'
   | 'memory' | 'audio' | 'logging' | 'yaml' | 'templates' | 'secrets'
   | 'unmapped';
@@ -53,6 +53,7 @@ const TemplatesSection = lazy(() => import('./sections/TemplatesSectionV2').then
 const UnmappedConfigSection = lazy(() => import('./sections/UnmappedConfigSection').then(m => ({ default: m.UnmappedConfigSection })));
 const SecretsSection = lazy(() => import('./sections/SecretsSection').then(m => ({ default: m.SecretsSection })));
 const MigrationSection = lazy(() => import('./sections/MigrationSection').then(m => ({ default: m.MigrationSection })));
+const AuthSection = lazy(() => import('./sections/AuthSection').then(m => ({ default: m.AuthSection })));
 const SECTIONS: SectionDef[] = [
   // OpenClaw 一键迁移（置顶）
   { id: 'migration', icon: 'swap_horiz', labelKey: 'secMigration', color: 'text-cyan-400',
@@ -70,6 +71,8 @@ const SECTIONS: SectionDef[] = [
     searchKeys: ['toolsets', 'terminal', 'backend', 'docker', 'ssh', 'modal', 'timeout', 'persistent_shell', 'browser', 'checkpoints', 'file_read_max_chars', 'security', 'compression', 'smart_model_routing', 'container'] },
   { id: 'messages', icon: 'chat', labelKey: 'secMessages', color: 'text-cyan-500',
     searchKeys: ['display', 'skin', 'show_cost', 'tool_progress', 'tool_preview_length'] },
+  { id: 'auth', icon: 'key', labelKey: 'secAuth', color: 'text-cyan-500',
+    searchKeys: ['auth', 'credentials', 'api_key', 'oauth', 'anthropic', 'openai', 'openrouter', 'gemini', 'nous', 'provider', 'token'] },
   // secondary sections
   { id: 'audio', icon: 'volume_up', labelKey: 'secAudio', color: 'text-fuchsia-500',
     searchKeys: ['tts', 'stt', 'voice', 'speech', 'edge', 'elevenlabs', 'openai', 'whisper', 'recording', 'auto_tts', 'silence', 'neutts', 'mistral', 'groq'] },
@@ -300,6 +303,7 @@ const Editor: React.FC<EditorProps> = ({ language, pendingSection, onSectionCons
       case 'tools': return <ToolsSection {...sectionProps} />;
       case 'channels': return <ChannelsSection {...sectionProps} />;
       case 'messages': return <MessagesSection {...sectionProps} />;
+      case 'auth': return <AuthSection {...sectionProps} />;
       case 'gateway': return <GatewaySection {...sectionProps} />;
       case 'cron': return <CronSection {...sectionProps} />;
       case 'extensions': return <ExtensionsSection {...sectionProps} />;

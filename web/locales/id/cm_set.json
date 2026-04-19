@@ -416,42 +416,7 @@
     "logoutDesc": "Akhiri sesi saat ini dan kembali ke layar masuk. Anda perlu masuk kembali lain kali.",
     "on": "ON",
     "off": "OFF",
-    "ocBackupFull": "Cadangan standar",
-    "auth": {
-      "nav": "Provider Auth",
-      "title": "Provider Credentials",
-      "subtitle": "Manage pooled API keys and OAuth tokens that hermes-agent uses to call inference providers. Tokens are never sent to the browser.",
-      "noStore": "No auth.json found yet. Add your first credential below.",
-      "addTitle": "Add credential",
-      "provider": "Provider",
-      "apiKey": "API key",
-      "apiKeyPlaceholder": "Paste API key",
-      "labelOptional": "Label (optional)",
-      "addBtn": "Add key",
-      "oauthHint": "Use OAuth below for this provider",
-      "oauthDesc": "OAuth-capable. Run this command in a terminal to complete device-code login:",
-      "showCommand": "Show command",
-      "copy": "Copy",
-      "copied": "Copied",
-      "copyFailed": "Copy failed",
-      "listTitle": "Configured credentials",
-      "refresh": "Refresh",
-      "empty": "No credentials configured yet.",
-      "active": "Active",
-      "reset": "Reset status",
-      "resetTooltip": "Clear exhaustion status for all entries",
-      "remove": "Remove",
-      "removeTitle": "Remove credential",
-      "removeMsg": "Remove this credential?",
-      "removedMsg": "Credential removed",
-      "removeFailed": "Failed to remove credential",
-      "addedMsg": "Credential added",
-      "addFailed": "Failed to add credential",
-      "resetMsg": "Exhaustion status cleared",
-      "resetFailed": "Failed to reset status",
-      "loading": "Loading credentials…",
-      "loadFailed": "Failed to load credentials"
-    }
+    "ocBackupFull": "Cadangan standar"
   },
   "pref": {
     "title": "Preferences",
@@ -553,11 +518,7 @@
       "speedTestDone": "Uji kecepatan selesai, mirror tercepat dipilih",
       "fastest": "Tercepat",
       "hermesHubDesc": "Mirror sumber data marketplace skill HermesHub"
-    },
-    "skinTitle": "CLI Skin",
-    "skinDesc": "Controls the hermes CLI's banner, spinner and tool prefix. Drop YAML files in ~/.hermes/skins/ to add custom skins.",
-    "skinSwitched": "CLI skin set to \"{name}\". Restart hermes CLI to apply.",
-    "skinSwitchFailed": "Failed to set skin"
+    }
   },
   "hi": {
     "title": "Info Host",

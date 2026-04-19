@@ -416,42 +416,7 @@
     "logoutDesc": "结束当前会话，并返回登录页。下次需要重新输入用户名和密码。",
     "on": "开启",
     "off": "关闭",
-    "ocBackupFull": "标准备份",
-    "auth": {
-      "nav": "供应商授权",
-      "title": "供应商凭据",
-      "subtitle": "管理 hermes-agent 调用推理服务时使用的 API Key 与 OAuth 凭据池。token 不会传回浏览器。",
-      "noStore": "尚未创建 auth.json，请先在下方添加凭据。",
-      "addTitle": "添加凭据",
-      "provider": "供应商",
-      "apiKey": "API Key",
-      "apiKeyPlaceholder": "粘贴 API Key",
-      "labelOptional": "标签（可选）",
-      "addBtn": "添加",
-      "oauthHint": "此供应商请使用下方 OAuth 方式",
-      "oauthDesc": "此供应商支持 OAuth。请在终端执行以下命令完成设备码登录：",
-      "showCommand": "显示命令",
-      "copy": "复制",
-      "copied": "已复制",
-      "copyFailed": "复制失败",
-      "listTitle": "已配置凭据",
-      "refresh": "刷新",
-      "empty": "尚无凭据配置。",
-      "active": "活动",
-      "reset": "重置状态",
-      "resetTooltip": "清除所有条目的耗尽状态",
-      "remove": "删除",
-      "removeTitle": "删除凭据",
-      "removeMsg": "确认删除此凭据？",
-      "removedMsg": "已删除凭据",
-      "removeFailed": "删除凭据失败",
-      "addedMsg": "已添加凭据",
-      "addFailed": "添加凭据失败",
-      "resetMsg": "已清除耗尽状态",
-      "resetFailed": "重置状态失败",
-      "loading": "正在加载凭据…",
-      "loadFailed": "加载凭据失败"
-    }
+    "ocBackupFull": "标准备份"
   },
   "pref": {
     "title": "功能设置",
@@ -553,11 +518,7 @@
       "speedTestDone": "测速完成，已自动选中最快镜像",
       "fastest": "最快",
       "hermesHubDesc": "HermesHub 技能市场数据源镜像"
-    },
-    "skinTitle": "CLI 皮肤",
-    "skinDesc": "控制 hermes CLI 的横幅、spinner 与工具前缀。将 YAML 文件放入 ~/.hermes/skins/ 可添加自定义皮肤。",
-    "skinSwitched": "CLI 皮肤已切换为 \"{name}\"。请重启 hermes CLI 生效。",
-    "skinSwitchFailed": "设置皮肤失败"
+    }
   },
   "hi": {
     "title": "宿主机信息",

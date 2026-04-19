@@ -416,42 +416,7 @@
     "logoutDesc": "현재 세션을 종료하고 로그인 화면으로 돌아갑니다. 다음에 다시 로그인해야 합니다.",
     "on": "ON",
     "off": "OFF",
-    "ocBackupFull": "표준 백업",
-    "auth": {
-      "nav": "프로바이더 인증",
-      "title": "프로바이더 자격 증명",
-      "subtitle": "hermes-agent가 추론 프로바이더 호출에 사용하는 API 키 및 OAuth 토큰 풀을 관리합니다. 토큰은 브라우저로 전달되지 않습니다.",
-      "noStore": "auth.json이 아직 없습니다. 아래에서 첫 자격 증명을 추가하세요.",
-      "addTitle": "자격 증명 추가",
-      "provider": "프로바이더",
-      "apiKey": "API 키",
-      "apiKeyPlaceholder": "API 키 붙여넣기",
-      "labelOptional": "레이블 (선택)",
-      "addBtn": "추가",
-      "oauthHint": "이 프로바이더는 아래 OAuth를 사용하세요",
-      "oauthDesc": "OAuth 지원. 터미널에서 다음을 실행해 디바이스 코드 로그인을 완료하세요:",
-      "showCommand": "명령 보기",
-      "copy": "복사",
-      "copied": "복사됨",
-      "copyFailed": "복사 실패",
-      "listTitle": "구성된 자격 증명",
-      "refresh": "새로 고침",
-      "empty": "구성된 자격 증명이 없습니다.",
-      "active": "활성",
-      "reset": "상태 재설정",
-      "resetTooltip": "모든 항목의 소진 상태 초기화",
-      "remove": "삭제",
-      "removeTitle": "자격 증명 삭제",
-      "removeMsg": "이 자격 증명을 삭제하시겠습니까?",
-      "removedMsg": "자격 증명 삭제됨",
-      "removeFailed": "자격 증명 삭제 실패",
-      "addedMsg": "자격 증명 추가됨",
-      "addFailed": "자격 증명 추가 실패",
-      "resetMsg": "소진 상태 초기화됨",
-      "resetFailed": "상태 재설정 실패",
-      "loading": "자격 증명 로드 중…",
-      "loadFailed": "자격 증명 로드 실패"
-    }
+    "ocBackupFull": "표준 백업"
   },
   "pref": {
     "title": "기능 설정",
@@ -553,11 +518,7 @@
       "speedTestDone": "속도 테스트 완료, 가장 빠른 미러 자동 선택",
       "fastest": "가장 빠름",
       "hermesHubDesc": "HermesHub 스킬 마켓 데이터 소스 미러"
-    },
-    "skinTitle": "CLI 스킨",
-    "skinDesc": "hermes CLI의 배너, 스피너, 도구 접두사를 제어합니다. ~/.hermes/skins/에 YAML을 넣어 커스텀 스킨을 추가할 수 있습니다.",
-    "skinSwitched": "CLI 스킨을 \"{name}\"(으)로 설정했습니다. hermes CLI를 재시작하세요.",
-    "skinSwitchFailed": "스킨 설정 실패"
+    }
   },
   "hi": {
     "title": "호스트 정보",

@@ -12,11 +12,10 @@ import type { NotifyChannelDef } from '../components/NotifyChannelCard';
 import SnapshotTab from './Settings/SnapshotTab';
 import UpdateTab from './Settings/UpdateTab';
 import PreferencesTab from './Settings/PreferencesTab';
-import AuthTab from './Settings/AuthTab';
 import type { Preferences } from '../utils/preferences';
 import { loadPreferences } from '../utils/preferences';
 
-type SettingsTab = 'account' | 'auth' | 'notify' | 'snapshot' | 'preferences' | 'audit' | 'update' | 'donate' | 'about';
+type SettingsTab = 'account' | 'notify' | 'snapshot' | 'preferences' | 'audit' | 'update' | 'donate' | 'about';
 
 interface SettingsProps {
   language: Language;
@@ -43,7 +42,7 @@ const Settings: React.FC<SettingsProps> = ({ language, onLogout, pendingTab, onT
     onPrefsChange?.(next);
   }, [onPrefsChange]);
 
-  const VALID_TABS: SettingsTab[] = useMemo(() => ['account', 'auth', 'notify', 'snapshot', 'preferences', 'audit', 'update', 'donate', 'about'], []);
+  const VALID_TABS: SettingsTab[] = useMemo(() => ['account', 'notify', 'snapshot', 'preferences', 'audit', 'update', 'donate', 'about'], []);
   useEffect(() => {
     if (pendingTab && VALID_TABS.includes(pendingTab as SettingsTab)) {
       setActiveTab(pendingTab as SettingsTab);
@@ -99,7 +98,6 @@ const Settings: React.FC<SettingsProps> = ({ language, onLogout, pendingTab, onT
 
   const navItems: { id: SettingsTab; icon: string; label: string; color: string }[] = [
     { id: 'account', icon: 'shield_person', label: s.account, color: 'bg-blue-500' },
-    { id: 'auth', icon: 'key', label: ((s as any).auth?.nav) || 'Provider Auth', color: 'bg-cyan-500' },
     { id: 'notify', icon: 'notifications_active', label: s.notify, color: 'bg-amber-500' },
     { id: 'snapshot', icon: 'backup', label: s.snapshotTitle || s.backup, color: 'bg-emerald-500' },
     { id: 'preferences', icon: 'tune', label: (t as any).pref?.title || 'Preferences', color: 'bg-violet-500' },
@@ -715,11 +713,6 @@ const Settings: React.FC<SettingsProps> = ({ language, onLogout, pendingTab, onT
           {/* 配置快照 */}
           {activeTab === 'snapshot' && (
             <SnapshotTab s={s} inputCls={inputCls} labelCls={labelCls} rowCls={rowCls} />
-          )}
-
-          {/* Provider Auth */}
-          {activeTab === 'auth' && (
-            <AuthTab a={(s as any).auth || {}} />
           )}
 
           {/* 功能设置 */}

@@ -416,42 +416,7 @@
     "logoutDesc": "現在のセッションを終了してログイン画面に戻ります。次回は再度サインインが必要です。",
     "on": "ON",
     "off": "OFF",
-    "ocBackupFull": "標準バックアップ",
-    "auth": {
-      "nav": "プロバイダ認証",
-      "title": "プロバイダ資格情報",
-      "subtitle": "hermes-agent が推論プロバイダ呼び出しに使う API キーと OAuth トークンプールを管理します。トークンはブラウザに返しません。",
-      "noStore": "auth.json がまだありません。以下から最初の資格情報を追加してください。",
-      "addTitle": "資格情報を追加",
-      "provider": "プロバイダ",
-      "apiKey": "API キー",
-      "apiKeyPlaceholder": "API キーを貼り付け",
-      "labelOptional": "ラベル（任意）",
-      "addBtn": "追加",
-      "oauthHint": "このプロバイダは下の OAuth を使用してください",
-      "oauthDesc": "OAuth 対応プロバイダです。ターミナルで以下を実行しデバイスコードログインを完了してください：",
-      "showCommand": "コマンドを表示",
-      "copy": "コピー",
-      "copied": "コピーしました",
-      "copyFailed": "コピー失敗",
-      "listTitle": "設定済み資格情報",
-      "refresh": "更新",
-      "empty": "まだ資格情報が設定されていません。",
-      "active": "有効",
-      "reset": "ステータスをリセット",
-      "resetTooltip": "すべてのエントリの枯渇状態をクリア",
-      "remove": "削除",
-      "removeTitle": "資格情報を削除",
-      "removeMsg": "この資格情報を削除しますか？",
-      "removedMsg": "資格情報を削除しました",
-      "removeFailed": "資格情報の削除に失敗",
-      "addedMsg": "資格情報を追加しました",
-      "addFailed": "資格情報の追加に失敗",
-      "resetMsg": "枯渇状態をクリアしました",
-      "resetFailed": "ステータスのリセットに失敗",
-      "loading": "資格情報を読み込み中…",
-      "loadFailed": "資格情報の読み込みに失敗"
-    }
+    "ocBackupFull": "標準バックアップ"
   },
   "pref": {
     "title": "機能設定",
@@ -553,11 +518,7 @@
       "speedTestDone": "速度テスト完了、最速ミラーを自動選択",
       "fastest": "最速",
       "hermesHubDesc": "HermesHub スキルマーケットデータソースミラー"
-    },
-    "skinTitle": "CLI スキン",
-    "skinDesc": "hermes CLI のバナー、スピナー、ツール接頭辞を制御します。~/.hermes/skins/ に YAML を置くとカスタムスキンを追加できます。",
-    "skinSwitched": "CLI スキンを「{name}」に設定しました。hermes CLI を再起動してください。",
-    "skinSwitchFailed": "スキン設定に失敗"
+    }
   },
   "hi": {
     "title": "ホスト情報",
