@@ -68,6 +68,7 @@ interface ChatMsg {
   stopReason?: string;
   sendFailed?: boolean;
   sendError?: string;
+  reasoningContent?: string;
 }
 
 type ChatRunPhase = 'idle' | 'sending' | 'waiting' | 'streaming' | 'running' | 'error';
@@ -1324,6 +1325,7 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
     ...(m.model ? { model: m.model } : {}),
     ...(m.provider ? { provider: m.provider } : {}),
     ...(m.stopReason ? { stopReason: m.stopReason } : {}),
+    ...(m.reasoningContent ? { reasoningContent: m.reasoningContent } : {}),
   })), []);
 
   // Helper: restore optimistic image data stripped by gateway
@@ -3501,8 +3503,11 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
                       : `bg-white/80 dark:bg-white/[0.05] text-slate-800 dark:text-slate-200 border-slate-200/70 dark:border-white/[0.08] msg-glow-accent ${showAvatar ? 'rounded-2xl rounded-ss-sm' : isLast ? 'rounded-2xl rounded-ss-sm' : 'rounded-xl rounded-ss-sm'}`
                       }`}>
                       {/* Thinking blocks (folded) */}
-                      {thinkingBlocks.length > 0 && (
+                      {(thinkingBlocks.length > 0 || msg.reasoningContent) && (
                         <div className="mb-2">
+                          {msg.reasoningContent && !thinkingBlocks.length && (
+                            <ThinkingBlock key={`reason-${messageKey}`} content={msg.reasoningContent} labels={{ thinking: c.thinkingLabel || 'Reasoning' }} />
+                          )}
                           {thinkingBlocks.map((tb, ti) => (
                             <ThinkingBlock key={`think-${messageKey}-${ti}`} content={tb} labels={{ thinking: c.thinkingLabel }} />
                           ))}

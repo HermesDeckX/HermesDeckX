@@ -442,6 +442,11 @@
   "delegationApiKey": "API Key",
   "delegationMaxIterations": "Max Iterations",
   "delegationReasoning": "Reasoning Effort",
+  "delegationMaxSpawnDepth": "Profundidade máx. de spawn",
+  "delegationOrchestrator": "Modo orquestrador",
+  "delegationMaxConcurrent": "Máx. filhos simultâneos",
+  "delegationChildTimeout": "Timeout filho (s)",
+  "delegationInheritMcp": "Herdar MCP Toolsets",
   "personalities": "Personalities",
   "personalitiesMap": "Custom Personalities",
   "quickCommands": "Quick Commands",
@@ -590,6 +595,7 @@
   "auxApproval": "Aprovação",
   "auxMcp": "MCP",
   "auxFlushMemories": "Liberar Memórias",
+  "auxTitleGeneration": "Geração de título",
   "auxProvider": "Provedor",
   "auxModel": "Modelo",
   "auxBaseUrl": "URL Base",
@@ -711,5 +717,10 @@
   "bedrockGuardrailVersion": "Guardrail Version",
   "bedrockGuardrailVersionDesc": "Version number or \"DRAFT\".",
   "bedrockStreamProcessing": "Stream Processing Mode",
-  "bedrockTrace": "Trace"
+  "bedrockTrace": "Trace",
+  "sessionAutoPrune": "Auto-limpeza",
+  "autoPrune": "Ativar auto-limpeza",
+  "retentionDays": "Dias de retenção",
+  "vacuumAfterPrune": "VACUUM após limpeza",
+  "minIntervalHours": "Intervalo mín. (horas)"
 }

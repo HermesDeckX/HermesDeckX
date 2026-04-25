@@ -151,6 +151,44 @@ export const AgentsSection: React.FC<SectionProps> = ({ config, schema, setField
           onChange={v => setField(['delegation', 'reasoning_effort'], v)}
           options={reasoningEffortOptions}
         />
+        <NumberField
+          label={es.delegationMaxSpawnDepth || 'Max Spawn Depth'}
+          desc={es.delegationMaxSpawnDepthDesc || 'How many levels deep subagents can spawn (0 = no nesting).'}
+          tooltip={tip('delegation.max_spawn_depth')}
+          value={getField(['delegation', 'max_spawn_depth'])}
+          onChange={v => setField(['delegation', 'max_spawn_depth'], v)}
+          min={0}
+        />
+        <SwitchField
+          label={es.delegationOrchestrator || 'Orchestrator Mode'}
+          desc={es.delegationOrchestratorDesc || 'Allow subagents to act as orchestrators and spawn their own children.'}
+          tooltip={tip('delegation.orchestrator_enabled')}
+          value={getField(['delegation', 'orchestrator_enabled']) === true}
+          onChange={v => setField(['delegation', 'orchestrator_enabled'], v)}
+        />
+        <NumberField
+          label={es.delegationMaxConcurrent || 'Max Concurrent Children'}
+          desc={es.delegationMaxConcurrentDesc || 'Maximum number of concurrent subagent tasks.'}
+          tooltip={tip('delegation.max_concurrent_children')}
+          value={getField(['delegation', 'max_concurrent_children'])}
+          onChange={v => setField(['delegation', 'max_concurrent_children'], v)}
+          min={1}
+        />
+        <NumberField
+          label={es.delegationChildTimeout || 'Child Timeout (s)'}
+          desc={es.delegationChildTimeoutDesc || 'Timeout for each subagent task in seconds (0 = no limit).'}
+          tooltip={tip('delegation.child_timeout_seconds')}
+          value={getField(['delegation', 'child_timeout_seconds'])}
+          onChange={v => setField(['delegation', 'child_timeout_seconds'], v)}
+          min={0}
+        />
+        <SwitchField
+          label={es.delegationInheritMcp || 'Inherit MCP Toolsets'}
+          desc={es.delegationInheritMcpDesc || 'Subagents inherit MCP server connections from the parent agent.'}
+          tooltip={tip('delegation.inherit_mcp_toolsets')}
+          value={getField(['delegation', 'inherit_mcp_toolsets']) !== false}
+          onChange={v => setField(['delegation', 'inherit_mcp_toolsets'], v)}
+        />
       </ConfigSection>
 
       {/* Personalities */}

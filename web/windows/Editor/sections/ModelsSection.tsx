@@ -46,6 +46,9 @@ const ZH_PROVIDER_NAMES: Record<string, string> = {
   zai: '智谱 Z.AI',
   alibaba: '阿里云 DashScope',
   huggingface: 'Hugging Face',
+  nvidia: '英伟达 NIM',
+  stepfun: '阶跃星辰',
+  xiaomi: '小米 MiMo',
 };
 
 interface ProviderTestResult {
@@ -135,6 +138,15 @@ const PROVIDERS: ProviderPreset[] = [
   { id: 'kilocode', name: 'Kilo Code', icon: '📊', category: 'builtin', envVars: ['KILOCODE_API_KEY'], defaultModel: 'claude-opus-4-6', models: [], baseUrl: 'https://api.kilo.ai/api/gateway', helpUrl: 'https://kilo.ai' },
   { id: 'arceeai', name: 'Arcee AI', icon: '🏹', category: 'builtin', envVars: ['ARCEEAI_API_KEY'], defaultModel: 'arcee-blitz', models: [], baseUrl: 'https://conductor.arcee.ai/v1', helpUrl: 'https://chat.arcee.ai' },
   { id: 'ollama-cloud', name: 'Ollama Cloud', icon: '☁️', category: 'builtin', envVars: ['OLLAMA_API_KEY'], defaultModel: '', models: [], baseUrl: 'https://ollama.com/v1', helpUrl: 'https://ollama.com/settings' },
+  { id: 'nvidia', name: 'NVIDIA NIM', icon: '🟢', category: 'builtin', envVars: ['NVIDIA_API_KEY'], defaultModel: 'meta/llama-3.3-70b-instruct', models: [
+    { id: 'meta/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', ctx: '128K' },
+  ], baseUrl: 'https://integrate.api.nvidia.com/v1', helpUrl: 'https://build.nvidia.com' },
+  { id: 'stepfun', name: 'StepFun', icon: '🪜', category: 'builtin', envVars: ['STEPFUN_API_KEY'], defaultModel: 'step-2-16k', models: [
+    { id: 'step-2-16k', name: 'Step 2 16K', ctx: '16K' },
+  ], baseUrl: 'https://api.stepfun.com/v1', helpUrl: 'https://platform.stepfun.com' },
+  { id: 'xiaomi', name: 'Xiaomi MiMo', icon: '📱', category: 'builtin', envVars: ['XIAOMI_API_KEY'], defaultModel: 'MiMo-7B-RL', models: [
+    { id: 'MiMo-7B-RL', name: 'MiMo 7B RL', ctx: '128K' },
+  ], baseUrl: 'https://api.xiaomi.com/v1', helpUrl: 'https://xiaomi.com/ai' },
   // ── OAuth providers ──
   { id: 'nous', name: 'Nous Portal', icon: '🧠', category: 'oauth', envVars: [], defaultModel: '', models: [], baseUrl: 'https://inference-api.nousresearch.com/v1', helpUrl: 'https://portal.nousresearch.com' },
   { id: 'openai-codex', name: 'OpenAI Codex', icon: '🤖', category: 'oauth', envVars: [], defaultModel: 'codex-mini-latest', models: [
@@ -1317,6 +1329,7 @@ export const ModelsSection: React.FC<SectionProps> = ({ config, schema, setField
           { key: 'approval', icon: 'verified_user', label: es.auxApproval || 'Approval', desc: es.auxApprovalDesc || 'Smart command approval classification' },
           { key: 'mcp', icon: 'settings_input_component', label: es.auxMcp || 'MCP', desc: es.auxMcpDesc || 'MCP tool schema conversion' },
           { key: 'flush_memories', icon: 'neurology', label: es.auxFlushMemories || 'Flush Memories', desc: es.auxFlushMemoriesDesc || 'Memory consolidation and flush' },
+          { key: 'title_generation', icon: 'title', label: es.auxTitleGeneration || 'Title Generation', desc: es.auxTitleGenerationDesc || 'Auto-generate session titles' },
         ] as const).map(task => (
           <ConfigSection key={task.key} title={task.label} icon={task.icon} iconColor="text-slate-400" defaultOpen={false}>
             <p className="text-[10px] theme-text-muted mb-1">{task.desc}</p>

@@ -442,6 +442,11 @@
   "delegationApiKey": "API Key",
   "delegationMaxIterations": "Max Iterations",
   "delegationReasoning": "Reasoning Effort",
+  "delegationMaxSpawnDepth": "Макс. глубина спавна",
+  "delegationOrchestrator": "Режим оркестратора",
+  "delegationMaxConcurrent": "Макс. дочерних задач",
+  "delegationChildTimeout": "Таймаут дочернего (с)",
+  "delegationInheritMcp": "Наследовать MCP Toolsets",
   "personalities": "Personalities",
   "personalitiesMap": "Custom Personalities",
   "quickCommands": "Quick Commands",
@@ -590,6 +595,7 @@
   "auxApproval": "Одобрение",
   "auxMcp": "MCP",
   "auxFlushMemories": "Очистка памяти",
+  "auxTitleGeneration": "Генерация заголовка",
   "auxProvider": "Провайдер",
   "auxModel": "Модель",
   "auxBaseUrl": "Базовый URL",
@@ -711,5 +717,10 @@
   "bedrockGuardrailVersion": "Guardrail Version",
   "bedrockGuardrailVersionDesc": "Version number or \"DRAFT\".",
   "bedrockStreamProcessing": "Stream Processing Mode",
-  "bedrockTrace": "Trace"
+  "bedrockTrace": "Trace",
+  "sessionAutoPrune": "Авто-очистка",
+  "autoPrune": "Включить авто-очистку",
+  "retentionDays": "Дней хранения",
+  "vacuumAfterPrune": "VACUUM после очистки",
+  "minIntervalHours": "Мин. интервал (часов)"
 }

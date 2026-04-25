@@ -32,6 +32,39 @@ export const SessionSection: React.FC<SectionProps> = ({ config, schema, setFiel
           onChange={v => setField(['save_trajectories'], v)}
         />
       </ConfigSection>
+
+      <ConfigSection title={es.sessionAutoPrune || 'Auto-Prune'} icon="auto_delete" iconColor="text-amber-500" defaultOpen={false}>
+        <SwitchField
+          label={es.autoPrune || 'Enable Auto-Prune'}
+          desc={es.autoPruneDesc || 'Automatically delete old sessions on startup to free disk space.'}
+          tooltip={tip('sessions.auto_prune')}
+          value={getField(['sessions', 'auto_prune']) === true}
+          onChange={v => setField(['sessions', 'auto_prune'], v)}
+        />
+        <NumberField
+          label={es.retentionDays || 'Retention Days'}
+          desc={es.retentionDaysDesc || 'Sessions older than this many days are eligible for pruning.'}
+          tooltip={tip('sessions.retention_days')}
+          value={getField(['sessions', 'retention_days'])}
+          onChange={v => setField(['sessions', 'retention_days'], v)}
+          min={1}
+        />
+        <SwitchField
+          label={es.vacuumAfterPrune || 'VACUUM After Prune'}
+          desc={es.vacuumAfterPruneDesc || 'Run SQLite VACUUM after pruning to reclaim disk space.'}
+          tooltip={tip('sessions.vacuum_after_prune')}
+          value={getField(['sessions', 'vacuum_after_prune']) !== false}
+          onChange={v => setField(['sessions', 'vacuum_after_prune'], v)}
+        />
+        <NumberField
+          label={es.minIntervalHours || 'Min Interval (hours)'}
+          desc={es.minIntervalHoursDesc || 'Minimum hours between auto-prune runs to avoid repeated cleanup.'}
+          tooltip={tip('sessions.min_interval_hours')}
+          value={getField(['sessions', 'min_interval_hours'])}
+          onChange={v => setField(['sessions', 'min_interval_hours'], v)}
+          min={1}
+        />
+      </ConfigSection>
     </div>
   );
 };

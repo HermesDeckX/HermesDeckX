@@ -442,6 +442,11 @@
   "delegationApiKey": "API密钥",
   "delegationMaxIterations": "最大迭代次数",
   "delegationReasoning": "推理强度",
+  "delegationMaxSpawnDepth": "最大巢狀深度",
+  "delegationOrchestrator": "編排器模式",
+  "delegationMaxConcurrent": "最大並發子任務",
+  "delegationChildTimeout": "子任務逾時 (秒)",
+  "delegationInheritMcp": "繼承 MCP 工具集",
   "personalities": "个性",
   "personalitiesMap": "自定义个性",
   "quickCommands": "快捷命令",
@@ -590,6 +595,7 @@
   "auxApproval": "審批",
   "auxMcp": "MCP",
   "auxFlushMemories": "記憶整合",
+  "auxTitleGeneration": "標題生成",
   "auxProvider": "提供商",
   "auxModel": "模型",
   "auxBaseUrl": "基礎 URL",
@@ -711,5 +717,10 @@
   "bedrockGuardrailVersion": "Guardrail 版本",
   "bedrockGuardrailVersionDesc": "版本號或 \"DRAFT\"。",
   "bedrockStreamProcessing": "串流處理模式",
-  "bedrockTrace": "追蹤"
+  "bedrockTrace": "追蹤",
+  "sessionAutoPrune": "自動清理",
+  "autoPrune": "啟用自動清理",
+  "retentionDays": "保留天數",
+  "vacuumAfterPrune": "清理後 VACUUM",
+  "minIntervalHours": "最小間隔 (小時)"
 }

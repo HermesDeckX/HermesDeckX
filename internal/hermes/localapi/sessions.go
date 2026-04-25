@@ -29,22 +29,24 @@ type SessionInfo struct {
 	OutputTokens    int64    `json:"outputTokens"`
 	ReasoningTokens int64    `json:"reasoningTokens,omitempty"`
 	EstimatedCost   *float64 `json:"estimatedCostUsd,omitempty"`
+	ApiCallCount    int      `json:"apiCallCount"`
 	Preview         string   `json:"preview,omitempty"`
 	LastActive      string   `json:"lastActive,omitempty"`
 }
 
 // MessageInfo represents a message from state.db.
 type MessageInfo struct {
-	ID           int64           `json:"id"`
-	SessionID    string          `json:"sessionId"`
-	Role         string          `json:"role"`
-	Content      json.RawMessage `json:"content"`
-	ToolCallID   string          `json:"toolCallId,omitempty"`
-	ToolCalls    json.RawMessage `json:"toolCalls,omitempty"`
-	ToolName     string          `json:"toolName,omitempty"`
-	Timestamp    float64         `json:"timestamp"`
-	TokenCount   *int            `json:"tokenCount,omitempty"`
-	FinishReason string          `json:"finishReason,omitempty"`
+	ID               int64           `json:"id"`
+	SessionID        string          `json:"sessionId"`
+	Role             string          `json:"role"`
+	Content          json.RawMessage `json:"content"`
+	ToolCallID       string          `json:"toolCallId,omitempty"`
+	ToolCalls        json.RawMessage `json:"toolCalls,omitempty"`
+	ToolName         string          `json:"toolName,omitempty"`
+	Timestamp        float64         `json:"timestamp"`
+	TokenCount       *int            `json:"tokenCount,omitempty"`
+	FinishReason     string          `json:"finishReason,omitempty"`
+	ReasoningContent string          `json:"reasoningContent,omitempty"`
 }
 
 // openStateDB opens the hermes-agent state.db in read-only mode.
@@ -77,6 +79,7 @@ func ListSessions(limit int, source string) ([]SessionInfo, error) {
 		s.started_at, s.ended_at, s.end_reason, s.message_count,
 		s.tool_call_count, s.input_tokens, s.output_tokens,
 		s.reasoning_tokens, s.estimated_cost_usd,
+		COALESCE(s.api_call_count, 0),
 		(SELECT content FROM messages WHERE session_id = s.id AND role = 'user' ORDER BY timestamp DESC LIMIT 1) as preview
 	FROM sessions s`
 
@@ -117,7 +120,7 @@ func ListSessions(limit int, source string) ([]SessionInfo, error) {
 			&s.ID, &s.Source, &userID, &model, &title,
 			&s.StartedAt, &endedAt, &endReason, &s.MessageCount,
 			&s.ToolCallCount, &s.InputTokens, &s.OutputTokens,
-			&reasoningTokens, &estimatedCost, &preview,
+			&reasoningTokens, &estimatedCost, &s.ApiCallCount, &preview,
 		)
 		if err != nil {
 			continue
@@ -181,7 +184,8 @@ func GetSessionHistory(sessionID string, limit int, maxChars int) ([]MessageInfo
 	}
 
 	query := `SELECT id, session_id, role, content, tool_call_id, tool_calls,
-		tool_name, timestamp, token_count, finish_reason
+		tool_name, timestamp, token_count, finish_reason,
+		COALESCE(reasoning_content, '') as reasoning_content
 	FROM messages WHERE session_id = ? ORDER BY timestamp ASC LIMIT ?`
 
 	rows, err := db.Query(query, sessionID, limit)
@@ -195,10 +199,12 @@ func GetSessionHistory(sessionID string, limit int, maxChars int) ([]MessageInfo
 		var m MessageInfo
 		var content, toolCallID, toolCalls, toolName, finishReason sql.NullString
 		var tokenCount sql.NullInt64
+		var reasoningContent sql.NullString
 
 		err := rows.Scan(
 			&m.ID, &m.SessionID, &m.Role, &content, &toolCallID,
 			&toolCalls, &toolName, &m.Timestamp, &tokenCount, &finishReason,
+			&reasoningContent,
 		)
 		if err != nil {
 			continue
@@ -228,6 +234,9 @@ func GetSessionHistory(sessionID string, limit int, maxChars int) ([]MessageInfo
 		}
 		if finishReason.Valid {
 			m.FinishReason = finishReason.String
+		}
+		if reasoningContent.Valid && reasoningContent.String != "" {
+			m.ReasoningContent = reasoningContent.String
 		}
 
 		messages = append(messages, m)
@@ -411,7 +420,7 @@ func GetSessionUsageList(startDate, endDate string, limit int) ([]SessionInfo, e
 
 	query := `SELECT id, source, user_id, model, title, started_at, ended_at,
 		end_reason, message_count, tool_call_count, input_tokens, output_tokens,
-		reasoning_tokens, estimated_cost_usd
+		reasoning_tokens, estimated_cost_usd, COALESCE(api_call_count, 0)
 	FROM sessions WHERE 1=1`
 
 	var args []interface{}
@@ -447,7 +456,7 @@ func GetSessionUsageList(startDate, endDate string, limit int) ([]SessionInfo, e
 		err := rows.Scan(
 			&s.ID, &s.Source, &userID, &model, &title, &s.StartedAt, &endedAt,
 			&endReason, &s.MessageCount, &s.ToolCallCount, &s.InputTokens, &s.OutputTokens,
-			&reasoningTokens, &estimatedCost,
+			&reasoningTokens, &estimatedCost, &s.ApiCallCount,
 		)
 		if err != nil {
 			continue
@@ -569,7 +578,8 @@ func SearchSessions(query string, limit int) ([]SessionInfo, error) {
 		`SELECT DISTINCT s.id, s.source, s.user_id, s.model, s.title,
 			s.started_at, s.ended_at, s.end_reason, s.message_count,
 			s.tool_call_count, s.input_tokens, s.output_tokens,
-			s.reasoning_tokens, s.estimated_cost_usd
+			s.reasoning_tokens, s.estimated_cost_usd,
+			COALESCE(s.api_call_count, 0)
 		FROM messages_fts f
 		JOIN messages m ON m.id = f.rowid
 		JOIN sessions s ON s.id = m.session_id
@@ -592,7 +602,7 @@ func SearchSessions(query string, limit int) ([]SessionInfo, error) {
 		err := rows.Scan(
 			&s.ID, &s.Source, &userID, &model, &title, &s.StartedAt, &endedAt,
 			&endReason, &s.MessageCount, &s.ToolCallCount, &s.InputTokens, &s.OutputTokens,
-			&reasoningTokens, &estimatedCost,
+			&reasoningTokens, &estimatedCost, &s.ApiCallCount,
 		)
 		if err != nil {
 			continue
@@ -628,15 +638,15 @@ func SearchSessions(query string, limit int) ([]SessionInfo, error) {
 
 // UsageTotals is the frontend-expected totals shape for the Usage window.
 type UsageTotals struct {
-	Input         int64   `json:"input"`
-	Output        int64   `json:"output"`
-	CacheRead     int64   `json:"cacheRead"`
-	CacheWrite    int64   `json:"cacheWrite"`
-	TotalTokens   int64   `json:"totalTokens"`
-	TotalCost     float64 `json:"totalCost"`
-	InputCost     float64 `json:"inputCost"`
-	OutputCost    float64 `json:"outputCost"`
-	CacheReadCost float64 `json:"cacheReadCost"`
+	Input          int64   `json:"input"`
+	Output         int64   `json:"output"`
+	CacheRead      int64   `json:"cacheRead"`
+	CacheWrite     int64   `json:"cacheWrite"`
+	TotalTokens    int64   `json:"totalTokens"`
+	TotalCost      float64 `json:"totalCost"`
+	InputCost      float64 `json:"inputCost"`
+	OutputCost     float64 `json:"outputCost"`
+	CacheReadCost  float64 `json:"cacheReadCost"`
 	CacheWriteCost float64 `json:"cacheWriteCost"`
 }
 
@@ -656,25 +666,25 @@ type ModelEntry struct {
 
 // AnalyticsData is the full payload returned to the Usage window.
 type AnalyticsData struct {
-	Totals     UsageTotals `json:"totals"`
+	Totals     UsageTotals   `json:"totals"`
 	Sessions   []SessionInfo `json:"sessions"`
 	Aggregates struct {
 		Messages struct {
-			Total     int `json:"total"`
-			User      int `json:"user"`
-			Assistant int `json:"assistant"`
-			ToolCalls int `json:"toolCalls"`
+			Total       int `json:"total"`
+			User        int `json:"user"`
+			Assistant   int `json:"assistant"`
+			ToolCalls   int `json:"toolCalls"`
 			ToolResults int `json:"toolResults"`
-			Errors    int `json:"errors"`
+			Errors      int `json:"errors"`
 		} `json:"messages"`
 		Tools struct {
 			TotalCalls  int           `json:"totalCalls"`
 			UniqueTools int           `json:"uniqueTools"`
 			Tools       []interface{} `json:"tools"`
 		} `json:"tools"`
-		ByModel  []ModelEntry `json:"byModel"`
+		ByModel    []ModelEntry `json:"byModel"`
 		ByProvider []ModelEntry `json:"byProvider"`
-		Daily    []DailyEntry `json:"daily"`
+		Daily      []DailyEntry `json:"daily"`
 	} `json:"aggregates"`
 }
 
@@ -777,7 +787,8 @@ func GetAnalyticsData(startDate, endDate string, limit int) (*AnalyticsData, err
 	sessionRows, err := db.Query(fmt.Sprintf(
 		`SELECT id, source, user_id, model, title, started_at, ended_at,
 		        end_reason, message_count, tool_call_count, input_tokens, output_tokens,
-		        reasoning_tokens, COALESCE(actual_cost_usd, estimated_cost_usd)
+		        reasoning_tokens, COALESCE(actual_cost_usd, estimated_cost_usd),
+		        COALESCE(api_call_count, 0)
 		 FROM sessions %s ORDER BY started_at DESC LIMIT ?`, where), sessionArgs...)
 	if err != nil {
 		return nil, err
@@ -791,16 +802,30 @@ func GetAnalyticsData(startDate, endDate string, limit int) (*AnalyticsData, err
 		var reasoningTokens sql.NullInt64
 		if sessionRows.Scan(&s.ID, &s.Source, &userID, &model, &title, &s.StartedAt, &endedAt,
 			&endReason, &s.MessageCount, &s.ToolCallCount, &s.InputTokens, &s.OutputTokens,
-			&reasoningTokens, &estimatedCost) != nil {
+			&reasoningTokens, &estimatedCost, &s.ApiCallCount) != nil {
 			continue
 		}
-		if userID.Valid { s.UserID = userID.String }
-		if model.Valid { s.Model = model.String }
-		if title.Valid { s.Title = title.String }
-		if endedAt.Valid { s.EndedAt = &endedAt.Float64 }
-		if endReason.Valid { s.EndReason = endReason.String }
-		if estimatedCost.Valid { s.EstimatedCost = &estimatedCost.Float64 }
-		if reasoningTokens.Valid { s.ReasoningTokens = reasoningTokens.Int64 }
+		if userID.Valid {
+			s.UserID = userID.String
+		}
+		if model.Valid {
+			s.Model = model.String
+		}
+		if title.Valid {
+			s.Title = title.String
+		}
+		if endedAt.Valid {
+			s.EndedAt = &endedAt.Float64
+		}
+		if endReason.Valid {
+			s.EndReason = endReason.String
+		}
+		if estimatedCost.Valid {
+			s.EstimatedCost = &estimatedCost.Float64
+		}
+		if reasoningTokens.Valid {
+			s.ReasoningTokens = reasoningTokens.Int64
+		}
 		sessions = append(sessions, s)
 	}
 	if sessions == nil {

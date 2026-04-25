@@ -82,9 +82,10 @@ const MEMORY_KEYS = [
   'context.*',
 ];
 
-// SessionSection — save_trajectories
+// SessionSection — save_trajectories, sessions.*
 const SESSION_KEYS = [
   'save_trajectories',
+  'sessions.*',
 ];
 
 // LoggingSection — logging, network

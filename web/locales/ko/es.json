@@ -442,6 +442,11 @@
   "delegationApiKey": "API 키",
   "delegationMaxIterations": "최대 반복",
   "delegationReasoning": "추론 수준",
+  "delegationMaxSpawnDepth": "최대 스폰 깊이",
+  "delegationOrchestrator": "오케스트레이터 모드",
+  "delegationMaxConcurrent": "최대 동시 자식",
+  "delegationChildTimeout": "자식 타임아웃 (초)",
+  "delegationInheritMcp": "MCP 도구 세트 상속",
   "personalities": "성격",
   "personalitiesMap": "커스텀 성격",
   "quickCommands": "빠른 명령",
@@ -590,6 +595,7 @@
   "auxApproval": "승인",
   "auxMcp": "MCP",
   "auxFlushMemories": "메모리 플러시",
+  "auxTitleGeneration": "제목 생성",
   "auxProvider": "제공자",
   "auxModel": "모델",
   "auxBaseUrl": "기본 URL",
@@ -711,5 +717,10 @@
   "bedrockGuardrailVersion": "Guardrail 버전",
   "bedrockGuardrailVersionDesc": "버전 번호 또는 \"DRAFT\".",
   "bedrockStreamProcessing": "스트림 처리 모드",
-  "bedrockTrace": "추적"
+  "bedrockTrace": "추적",
+  "sessionAutoPrune": "자동 정리",
+  "autoPrune": "자동 정리 활성화",
+  "retentionDays": "보존 일수",
+  "vacuumAfterPrune": "정리 후 VACUUM",
+  "minIntervalHours": "최소 간격 (시간)"
 }

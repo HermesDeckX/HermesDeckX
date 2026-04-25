@@ -442,6 +442,11 @@
   "delegationApiKey": "API Key",
   "delegationMaxIterations": "Max Iterations",
   "delegationReasoning": "Reasoning Effort",
+  "delegationMaxSpawnDepth": "Max Spawn Depth",
+  "delegationOrchestrator": "Orchestrator Mode",
+  "delegationMaxConcurrent": "Max Concurrent Children",
+  "delegationChildTimeout": "Child Timeout (s)",
+  "delegationInheritMcp": "Inherit MCP Toolsets",
   "personalities": "Personalities",
   "personalitiesMap": "Custom Personalities",
   "quickCommands": "Quick Commands",
@@ -590,6 +595,7 @@
   "auxApproval": "अनुमोदन",
   "auxMcp": "MCP",
   "auxFlushMemories": "मेमोरी फ्लश",
+  "auxTitleGeneration": "Title Generation",
   "auxProvider": "प्रदाता",
   "auxModel": "मॉडल",
   "auxBaseUrl": "बेस URL",
@@ -711,5 +717,10 @@
   "bedrockGuardrailVersion": "Guardrail Version",
   "bedrockGuardrailVersionDesc": "Version number or \"DRAFT\".",
   "bedrockStreamProcessing": "Stream Processing Mode",
-  "bedrockTrace": "Trace"
+  "bedrockTrace": "Trace",
+  "sessionAutoPrune": "Auto-Prune",
+  "autoPrune": "Enable Auto-Prune",
+  "retentionDays": "Retention Days",
+  "vacuumAfterPrune": "VACUUM After Prune",
+  "minIntervalHours": "Min Interval (hours)"
 }

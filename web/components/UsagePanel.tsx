@@ -341,6 +341,7 @@ export const UsagePanel: React.FC<UsagePanelProps> = ({ sessionKey, gwReady, loa
             <Div />
             <div className="flex items-center flex-wrap gap-1.5">
               {s?.messageCount ? <Chip icon="chat" label={a.messages || 'Messages'} value={`${s.messageCount} msg`} /> : null}
+              {(s as any)?.apiCallCount ? <Chip icon="api" label={a.apiCalls || 'API Calls'} value={`${(s as any).apiCallCount}`} cls="text-indigo-500 dark:text-indigo-400" /> : null}
               {s?.thinkingLevel ? <Chip icon="psychology" label={a.thinking || 'Thinking'} value={s.thinkingLevel} cls="text-purple-500 dark:text-purple-400" /> : null}
               {s?.reasoningLevel ? <Chip icon="neurology" label={a.reasoning || 'Reasoning'} value={s.reasoningLevel} cls="text-blue-500 dark:text-blue-400" /> : null}
               {s?.fastMode ? <Chip icon="bolt" label={a.fastMode || 'Fast'} value={a.fastMode || 'Fast'} cls="text-amber-500 dark:text-amber-400" /> : null}

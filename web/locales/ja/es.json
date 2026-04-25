@@ -442,6 +442,11 @@
   "delegationApiKey": "APIキー",
   "delegationMaxIterations": "最大イテレーション",
   "delegationReasoning": "推論レベル",
+  "delegationMaxSpawnDepth": "最大スポーン深度",
+  "delegationOrchestrator": "オーケストレーターモード",
+  "delegationMaxConcurrent": "最大同時子タスク",
+  "delegationChildTimeout": "子タスクタイムアウト (秒)",
+  "delegationInheritMcp": "MCP ツールセットを継承",
   "personalities": "パーソナリティ",
   "personalitiesMap": "カスタムパーソナリティ",
   "quickCommands": "クイックコマンド",
@@ -590,6 +595,7 @@
   "auxApproval": "承認",
   "auxMcp": "MCP",
   "auxFlushMemories": "メモリフラッシュ",
+  "auxTitleGeneration": "タイトル生成",
   "auxProvider": "プロバイダー",
   "auxModel": "モデル",
   "auxBaseUrl": "ベースURL",
@@ -711,5 +717,10 @@
   "bedrockGuardrailVersion": "Guardrail バージョン",
   "bedrockGuardrailVersionDesc": "バージョン番号または \"DRAFT\"。",
   "bedrockStreamProcessing": "ストリーム処理モード",
-  "bedrockTrace": "トレース"
+  "bedrockTrace": "トレース",
+  "sessionAutoPrune": "自動プルーニング",
+  "autoPrune": "自動プルーニングを有効化",
+  "retentionDays": "保持日数",
+  "vacuumAfterPrune": "プルーニング後にVACUUM",
+  "minIntervalHours": "最小間隔（時間）"
 }

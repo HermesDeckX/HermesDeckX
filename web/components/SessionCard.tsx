@@ -246,12 +246,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               )}
             </div>
 
-            {/* card-7: Message count + latency row */}
+            {/* card-7: Message count + API calls + latency row */}
             <div className="flex items-center gap-3 text-[10px]">
               {msgCount > 0 && (
                 <span className="flex items-center gap-0.5 text-slate-500 dark:text-white/35">
                   <span className="material-symbols-outlined text-[10px]">chat_bubble</span>
                   <span className="font-bold tabular-nums">{msgCount}</span>
+                </span>
+              )}
+              {(s.apiCallCount || 0) > 0 && (
+                <span className="flex items-center gap-0.5 text-slate-500 dark:text-white/35" title={a.apiCalls || 'API Calls'}>
+                  <span className="material-symbols-outlined text-[10px]">api</span>
+                  <span className="font-bold tabular-nums">{s.apiCallCount}</span>
                 </span>
               )}
               {avgLatency && (
