@@ -1,0 +1,32 @@
+{
+  "name": "Komandan Replan",
+  "description": "Komandan mengirim subagen stateless secara paralel, memeriksa exit_reason per tugas, dan merencanakan ulang alih-alih mencoba ulang buta",
+  "agents": {
+    "commander": {
+      "name": "Komandan",
+      "role": "Pengiriman paralel dan replan saat gagal"
+    },
+    "scout": {
+      "name": "Pengintai",
+      "role": "Pengumpulan info paralel tanpa status"
+    },
+    "fixer": {
+      "name": "Pemulih",
+      "role": "Menangani kegagalan dapat-pulih dengan fallback"
+    },
+    "reporter": {
+      "name": "Pelapor",
+      "role": "Mensintesis laporan status akhir"
+    }
+  },
+  "workflow": {
+    "description": "Komandan mengirim pengintai paralel, memeriksa exit_reason per tugas, kegagalan diarahkan ke pemulih, pelapor mensintesis"
+  },
+  "content": {
+    "examples": [
+      "Baca /var/log/app.log, /var/log/sys.log, dan /var/log/web.log secara paralel, lewati yang tidak punya izin, ringkas 100 baris terakhir masing-masing.",
+      "Untuk 5 URL ini ambil judul halaman secara paralel, toleransi timeout, laporkan mana yang dilewati.",
+      "Periksa penggunaan disk, memori, dan proses CPU teratas pada host ini secara paralel, gabungkan jadi satu laporan kesehatan."
+    ]
+  }
+}

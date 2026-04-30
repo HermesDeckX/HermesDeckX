@@ -1,0 +1,32 @@
+{
+  "name": "Commandant de Replan",
+  "description": "Le commandant dépêche des sous-agents sans état en parallèle, inspecte exit_reason par tâche et replanifie au lieu de retenter aveuglément",
+  "agents": {
+    "commander": {
+      "name": "Commandant",
+      "role": "Dépêche parallèle et replan en cas d'échec"
+    },
+    "scout": {
+      "name": "Éclaireur",
+      "role": "Collecte d'informations parallèle et sans état"
+    },
+    "fixer": {
+      "name": "Dépanneur",
+      "role": "Gérer les échecs récupérables avec des solutions de repli"
+    },
+    "reporter": {
+      "name": "Rapporteur",
+      "role": "Synthétiser le rapport final"
+    }
+  },
+  "workflow": {
+    "description": "Le commandant envoie des éclaireurs en parallèle, examine exit_reason par tâche, route les échecs vers le dépanneur, puis le rapporteur synthétise"
+  },
+  "content": {
+    "examples": [
+      "Lis /var/log/app.log, /var/log/sys.log et /var/log/web.log en parallèle, ignore ceux sans droit et résume les 100 dernières lignes de chacun.",
+      "Pour ces 5 URL, récupère le titre de la page en parallèle, tolère les timeouts et signale celles qui ont été ignorées.",
+      "Vérifie en parallèle l'utilisation disque, mémoire et les processus CPU principaux de cet hôte, et combine le tout en un rapport de santé."
+    ]
+  }
+}

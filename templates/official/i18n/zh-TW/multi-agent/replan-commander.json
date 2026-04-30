@@ -1,0 +1,32 @@
+{
+  "name": "重規劃指揮官",
+  "description": "由指揮官派發並行無狀態子代理，逐任務檢查 exit_reason 並重規劃，而非盲目重跑",
+  "agents": {
+    "commander": {
+      "name": "指揮官",
+      "role": "並行派發子代理並根據失敗重規劃"
+    },
+    "scout": {
+      "name": "偵察兵",
+      "role": "無狀態並行資訊蒐集"
+    },
+    "fixer": {
+      "name": "修復工",
+      "role": "處理可恢復失敗並執行降級方案"
+    },
+    "reporter": {
+      "name": "彙報員",
+      "role": "綜合輸出最終狀態報告"
+    }
+  },
+  "workflow": {
+    "description": "指揮官派發並行偵察、逐任務檢查 exit_reason、失敗任務交給修復工、最後由彙報員綜合"
+  },
+  "content": {
+    "examples": [
+      "並行讀取 /var/log/app.log、/var/log/sys.log、/var/log/web.log，跳過無權限的檔案，匯總每個檔案的最後 100 行。",
+      "對這 5 個 URL 並行抓取頁面標題，容忍逾時，回報哪些被跳過了。",
+      "並行檢查本機的磁碟佔用、記憶體佔用、Top CPU 行程，合併成一份健康報告。"
+    ]
+  }
+}

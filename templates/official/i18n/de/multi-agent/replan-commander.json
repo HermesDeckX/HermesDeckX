@@ -1,0 +1,32 @@
+{
+  "name": "Replan-Kommandeur",
+  "description": "Ein Kommandeur versendet zustandslose Subagenten parallel, prüft pro Task den exit_reason und plant neu statt blind zu wiederholen",
+  "agents": {
+    "commander": {
+      "name": "Kommandeur",
+      "role": "Parallelversand und Replan bei Fehlern"
+    },
+    "scout": {
+      "name": "Scout",
+      "role": "Zustandslose parallele Informationsbeschaffung"
+    },
+    "fixer": {
+      "name": "Fixer",
+      "role": "Behebbare Fehler mit Fallbacks behandeln"
+    },
+    "reporter": {
+      "name": "Reporter",
+      "role": "Finalen Statusbericht zusammenfassen"
+    }
+  },
+  "workflow": {
+    "description": "Kommandeur versendet parallele Scouts, prüft exit_reason pro Task, leitet Fehler an den Fixer, Reporter fasst zusammen"
+  },
+  "content": {
+    "examples": [
+      "Lies /var/log/app.log, /var/log/sys.log und /var/log/web.log parallel, überspringe ohne Rechte und fasse die letzten 100 Zeilen jeder Datei zusammen.",
+      "Hole für diese 5 URLs den Seitentitel parallel, toleriere Timeouts und melde, welche übersprungen wurden.",
+      "Prüfe parallel Plattenbelegung, Speicher und Top-CPU-Prozesse auf diesem Host und fasse alles in einem Health-Report zusammen."
+    ]
+  }
+}

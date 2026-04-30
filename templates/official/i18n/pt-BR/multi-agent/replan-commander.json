@@ -1,0 +1,32 @@
+{
+  "name": "Comandante de Replanejamento",
+  "description": "O comandante despacha subagentes sem estado em paralelo, inspeciona exit_reason por tarefa e replaneja em vez de tentar de novo às cegas",
+  "agents": {
+    "commander": {
+      "name": "Comandante",
+      "role": "Despacho paralelo e replanejamento em falhas"
+    },
+    "scout": {
+      "name": "Batedor",
+      "role": "Coleta paralela sem estado"
+    },
+    "fixer": {
+      "name": "Reparador",
+      "role": "Tratar falhas recuperáveis com alternativas"
+    },
+    "reporter": {
+      "name": "Relator",
+      "role": "Sintetizar o relatório final"
+    }
+  },
+  "workflow": {
+    "description": "O comandante despacha batedores em paralelo, verifica exit_reason por tarefa, envia falhas ao reparador e o relator sintetiza"
+  },
+  "content": {
+    "examples": [
+      "Leia /var/log/app.log, /var/log/sys.log e /var/log/web.log em paralelo, pule os sem permissão e resuma as últimas 100 linhas de cada.",
+      "Para estas 5 URLs, obtenha o título da página em paralelo, tolere timeouts e reporte quais foram puladas.",
+      "Verifique em paralelo uso de disco, memória e processos de maior CPU deste host, combinando tudo em um relatório único."
+    ]
+  }
+}
