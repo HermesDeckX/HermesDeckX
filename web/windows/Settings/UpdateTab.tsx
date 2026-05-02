@@ -2,10 +2,11 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Language, dispatchOpenWindow } from '../../types';
 import { getTranslation } from '../../locales';
 import { selfUpdateApi, hostInfoApi, serviceApi, gatewayApi, runtimeApi } from '../../services/api';
-import type { SelfUpdateInfo, UpdateCheckResult, UpdateHistoryEntry, RuntimeStatus } from '../../services/api';
+import type { SelfUpdateInfo, UpdateCheckResult, UpdateHistoryEntry, RuntimeStatus, ReleaseSummary } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { useConfirm } from '../../components/ConfirmDialog';
 import CustomSelect from '../../components/CustomSelect';
+import VersionPicker, { VersionPickerLabels } from '../../components/VersionPicker';
 import TranslateModelPicker from '../../components/TranslateModelPicker';
 import { SmartLink } from '../../components/SmartLink';
 import { useHermesAgentUpdate } from '../../hooks/useHermesAgentUpdate';
@@ -19,6 +20,17 @@ export interface UpdateTabProps {
   inputCls: string;
   rowCls: string;
 }
+
+const compareSemverLoose = (a?: string, b?: string) => {
+  const pa = String(a || '').replace(/^v/, '').split(/[.-]/).map(x => parseInt(x, 10) || 0);
+  const pb = String(b || '').replace(/^v/, '').split(/[.-]/).map(x => parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length, 3); i++) {
+    const da = pa[i] || 0;
+    const db = pb[i] || 0;
+    if (da !== db) return da > db ? 1 : -1;
+  }
+  return 0;
+};
 
 const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) => {
   const { toast } = useToast();
@@ -46,6 +58,9 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
   const [selfUpdateProgress, setSelfUpdateProgress] = useState<{ stage: string; percent: number; error?: string; done?: boolean } | null>(null);
   const [selfUpdateVersion, setSelfUpdateVersion] = useState<SelfUpdateInfo | null>(null);
   const [updateChannel, setUpdateChannel] = useState<'stable' | 'beta'>('stable');
+  const [ocReleaseList, setOcReleaseList] = useState<ReleaseSummary[]>([]);
+  const [ocSelectedTag, setOcSelectedTag] = useState('');
+  const [ocLoadingReleases, setOcLoadingReleases] = useState(false);
   const [updateHistory, setUpdateHistory] = useState<UpdateHistoryEntry[]>([]);
   const lastAutoCheckRef = useRef<number>(0);
   const [lastCheckTime, setLastCheckTime] = useState<number | null>(null);
@@ -88,10 +103,21 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
   }), []);
   const runtimeHermesDeckX = runtimeStatus?.hermesdeckx ?? defaultRuntimeComponent;
   const runtimeHermesAgent = runtimeStatus?.hermesagent ?? defaultRuntimeComponent;
+  const runtimeHermesAgentVersion = runtimeHermesAgent.active_version || runtimeHermesAgent.runtime_version || runtimeHermesAgent.image_version || '';
+  const effectiveHermesAgentCurrentVersion = isDockerRuntime ? runtimeHermesAgentVersion : (ocUpdateInfo?.currentVersion || '');
   const effectiveOcUpdating = isDockerRuntime ? runtimeOcUpdating : ocUpdating;
   const effectiveOcLogs = isDockerRuntime ? runtimeOcLogs : ocUpdateLogs;
   const effectiveOcStep = isDockerRuntime ? runtimeOcStep : ocUpdateStep;
   const effectiveOcProgress = isDockerRuntime ? runtimeOcProgress : ocUpdateProgress;
+  const versionPickerLabels: VersionPickerLabels = useMemo(() => ({
+    title: s.selfUpdatePickVersion || 'Pick version',
+    latest: s.selfUpdateLatestStable || 'Latest stable',
+    current: s.selfUpdateTagCurrent || 'current',
+    older: s.selfUpdateTagOlder || 'older',
+    beta: s.selfUpdateTagBeta || 'beta',
+    noAsset: s.selfUpdateTagNoAsset || 'no asset',
+    refresh: s.selfUpdateRefreshReleases || 'Refresh version list',
+  }), [s]);
 
   const loadRuntimeStatus = useCallback(async () => {
     try {
@@ -100,6 +126,28 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
     } catch {
     }
   }, []);
+
+  const loadOcReleaseList = useCallback(async (force = false) => {
+    setOcLoadingReleases(true);
+    try {
+      const list = await hostInfoApi.hermesAgentReleases(50, force);
+      const current = effectiveHermesAgentCurrentVersion;
+      setOcReleaseList(Array.isArray(list) ? list.map(item => {
+        const tagVersion = item.tagName.replace(/^v/, '');
+        return current
+          ? {
+              ...item,
+              isCurrent: compareSemverLoose(tagVersion, current) === 0,
+              isOlder: compareSemverLoose(tagVersion, current) < 0,
+            }
+          : item;
+      }) : []);
+    } catch {
+      setOcReleaseList([]);
+    } finally {
+      setOcLoadingReleases(false);
+    }
+  }, [effectiveHermesAgentCurrentVersion]);
 
   // Markdown-like rendering for release notes (sanitized)
   const renderMarkdown = useCallback((text: string) => {
@@ -232,7 +280,14 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
     setOcNotesExpanded(false);
     try {
       const res = await hostInfoApi.checkUpdate();
-      setOcUpdateInfo(res);
+      const effectiveRes = isDockerRuntime && runtimeHermesAgentVersion
+        ? {
+            ...res,
+            currentVersion: res.currentVersion || runtimeHermesAgentVersion,
+            available: !!res.latestVersion && compareSemverLoose(res.latestVersion, runtimeHermesAgentVersion) > 0,
+          }
+        : res;
+      setOcUpdateInfo(effectiveRes);
       setOcUpdateChecking(false);
       // Auto-translate release notes for non-English users (cached in SQLite via backend)
       if (res.releaseNotes && language !== 'en') {
@@ -249,7 +304,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
       setOcUpdateInfo({ available: false, error: sRef.current.networkError });
       setOcUpdateChecking(false);
     }
-  }, [language]);
+  }, [language, isDockerRuntime, runtimeHermesAgentVersion]);
 
   const handleOcUpdateRun = useCallback(async () => {
     // Prompt user to backup before updating
@@ -263,13 +318,26 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
       dispatchOpenWindow({ id: 'settings', tab: 'snapshot' });
       return;
     }
+    const targetVersion = ocSelectedTag || ocUpdateInfo?.latestVersion || '?';
     const ok = await confirm({
       title: sRef.current.hermesAgentUpdateRun || 'Update HermesAgent',
-      message: `${sRef.current.hermesAgentUpdateConfirm || 'Update HermesAgent from'} v${ocUpdateInfo?.currentVersion || '?'} → v${ocUpdateInfo?.latestVersion || '?'}`,
+      message: `${sRef.current.hermesAgentUpdateConfirm || 'Update HermesAgent from'} v${effectiveHermesAgentCurrentVersion || '?'} → v${targetVersion}`,
       confirmText: sRef.current.hermesAgentUpdateRun || 'Update',
       danger: false,
     });
     if (!ok) return;
+    const picked = ocReleaseList.find(r => r.tagName === ocSelectedTag || r.tagName === `v${ocSelectedTag}` || r.tagName.replace(/^v/, '') === ocSelectedTag);
+    const isDowngrade = !!picked?.isOlder || (!!ocSelectedTag && !!effectiveHermesAgentCurrentVersion && compareSemverLoose(ocSelectedTag, effectiveHermesAgentCurrentVersion) < 0);
+    if (isDowngrade) {
+      const confirmDown = await confirm({
+        title: sRef.current.selfUpdateDowngradeTitle || 'Downgrade version?',
+        message: (sRef.current.selfUpdateDowngradeMsg || 'You are about to install an older version. Continue?')
+          + `\n\nv${effectiveHermesAgentCurrentVersion || '?'} → v${ocSelectedTag}`,
+        confirmText: sRef.current.selfUpdateDowngradeConfirm || 'Downgrade anyway',
+        danger: true,
+      });
+      if (!confirmDown) return;
+    }
     try {
       if (isDockerRuntime) {
         setRuntimeOcUpdating(true);
@@ -280,6 +348,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ version: ocSelectedTag || '' }),
         });
         const reader = resp.body?.getReader();
         const decoder = new TextDecoder();
@@ -306,6 +375,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
                   await loadRuntimeStatus();
                   const res = await hostInfoApi.checkUpdate();
                   setOcUpdateInfo({ ...res, available: false });
+                  loadOcReleaseList(true);
                 }
               } catch { }
             }
@@ -313,11 +383,12 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
         }
         setRuntimeOcProgress(100);
       } else {
-        await runOcUpdate();
+        await runOcUpdate({ version: ocSelectedTag || '' });
         toast('success', sRef.current.hermesAgentUpdateOk);
         await new Promise(r => setTimeout(r, 1500));
         const res = await hostInfoApi.checkUpdate();
         setOcUpdateInfo({ ...res, available: false });
+        loadOcReleaseList(true);
       }
     } catch {
       toast('error', isDockerRuntime ? (sRef.current.runtimeUpdateFailed || sRef.current.hermesAgentUpdateFailed) : sRef.current.hermesAgentUpdateFailed);
@@ -326,7 +397,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
         setRuntimeOcUpdating(false);
       }
     }
-  }, [runOcUpdate, toast, confirm, ocUpdateInfo, isDockerRuntime, loadRuntimeStatus]);
+  }, [runOcUpdate, toast, confirm, ocUpdateInfo, isDockerRuntime, loadRuntimeStatus, loadOcReleaseList, effectiveHermesAgentCurrentVersion, ocSelectedTag, ocReleaseList]);
 
   // HermesAgent 升级日志自动滚动
   useEffect(() => {
@@ -452,6 +523,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
       }).catch(() => { });
       loadServiceStatus();
       loadRuntimeStatus();
+      loadOcReleaseList();
       // Auto-check with 1-hour cache — skip if checked recently
       const now = Date.now();
       if (now - lastAutoCheckRef.current > UPDATE_CHECK_CACHE_MS) {
@@ -812,7 +884,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
               </SmartLink>
             </div>
             <span className="font-mono text-[12px] font-bold text-slate-600 dark:text-white/60">
-              {ocUpdateInfo?.releaseTag || (ocUpdateInfo?.currentVersion ? `v${ocUpdateInfo.currentVersion}` : '—')}
+              {ocUpdateInfo?.releaseTag || (effectiveHermesAgentCurrentVersion ? `v${effectiveHermesAgentCurrentVersion}` : '—')}
             </span>
           </div>
 
@@ -828,16 +900,42 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
               {s.hermesAgentUpdateChecking || 'Checking...'}
             </div>
           )}
-          {ocUpdateInfo && !ocUpdateInfo.currentVersion && !ocUpdateInfo.error && (
+          {ocUpdateInfo && !effectiveHermesAgentCurrentVersion && !ocUpdateInfo.error && (
             <div className="flex items-center gap-1.5 text-[11px]">
               <span className="material-symbols-outlined text-[14px] text-amber-500">warning</span>
               <span className="font-bold text-amber-600 dark:text-amber-400">{s.hermesagentNotInstalled}</span>
             </div>
           )}
-          {ocUpdateInfo && !ocUpdateInfo.available && !ocUpdateInfo.error && ocUpdateInfo.currentVersion && (
+          {ocUpdateInfo && !ocUpdateInfo.available && !ocUpdateInfo.error && effectiveHermesAgentCurrentVersion && (
             <div className="flex items-center gap-1.5 text-[11px]">
               <span className="material-symbols-outlined text-[14px] text-mac-green">check_circle</span>
               <span className="text-mac-green font-medium">{s.hermesAgentUpdateCurrent}</span>
+            </div>
+          )}
+          {ocReleaseList.length > 0 && (!ocUpdateInfo?.available || ocSelectedTag) && (
+            <div className="mt-3 flex items-center gap-2">
+              <VersionPicker
+                inline
+                value={ocSelectedTag}
+                onChange={setOcSelectedTag}
+                releases={ocReleaseList}
+                loading={ocLoadingReleases}
+                onRefresh={() => void loadOcReleaseList(true)}
+                labels={versionPickerLabels}
+              />
+              {ocSelectedTag && (
+                <button
+                  onClick={handleOcUpdateRun}
+                  disabled={effectiveOcUpdating}
+                  className="shrink-0 flex items-center justify-center gap-1.5 px-4 h-9 rounded-lg bg-emerald-500 text-white text-[12px] font-bold disabled:opacity-40 hover:opacity-90 shadow-sm transition-all">
+                  <span className={`material-symbols-outlined text-[16px] ${effectiveOcUpdating ? 'animate-spin' : ''}`}>
+                    {effectiveOcUpdating ? 'progress_activity' : 'download'}
+                  </span>
+                  {effectiveOcUpdating
+                    ? s.hermesAgentUpdateRunning
+                    : `${s.hermesAgentUpdateRun || 'Update'} → v${ocSelectedTag}`}
+                </button>
+              )}
             </div>
           )}
           {ocUpdateInfo?.error && !ocUpdateInfo.available && (() => {
@@ -879,7 +977,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-white/40">
                     <span className="material-symbols-outlined text-[14px]">description</span>
-                    {s.selfUpdateReleaseNotes} <span className="font-normal ms-1 text-[10px] text-slate-400 dark:text-white/25">{ocUpdateInfo.releaseTag || `v${ocUpdateInfo.currentVersion}`}</span>
+                    {s.selfUpdateReleaseNotes} <span className="font-normal ms-1 text-[10px] text-slate-400 dark:text-white/25">{ocUpdateInfo.releaseTag || `v${effectiveHermesAgentCurrentVersion}`}</span>
                     {ocNotesTranslating && <span className="material-symbols-outlined text-[12px] animate-spin text-primary/50 ms-1">progress_activity</span>}
                   </div>
                   <div className="flex items-center gap-1">
@@ -891,7 +989,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
                           {ocShowTranslated ? (s.showOriginal || 'Original') : (s.showTranslation || 'Translated')}
                         </button>
                       ) : (
-                        <button onClick={() => handleOcTranslateNotes(ocUpdateInfo.releaseNotes!, ocUpdateInfo.releaseTag || ocUpdateInfo.currentVersion)} disabled={ocNotesTranslating}
+                        <button onClick={() => handleOcTranslateNotes(ocUpdateInfo.releaseNotes!, ocUpdateInfo.releaseTag || effectiveHermesAgentCurrentVersion)} disabled={ocNotesTranslating}
                           className="flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-medium text-primary/70 hover:bg-primary/10 disabled:opacity-40 transition-colors">
                           <span className={`material-symbols-outlined text-[12px] ${ocNotesTranslating ? 'animate-spin' : ''}`}>
                             {ocNotesTranslating ? 'progress_activity' : 'translate'}
@@ -939,7 +1037,7 @@ const UpdateTab: React.FC<UpdateTabProps> = ({ s, language, inputCls, rowCls }) 
                   <span className="material-symbols-outlined text-[14px] text-emerald-500">new_releases</span>
                   <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{s.hermesAgentUpdateAvailable}</span>
                 </div>
-                <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">v{ocUpdateInfo.currentVersion} → v{ocUpdateInfo.latestVersion}</span>
+                <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">v{effectiveHermesAgentCurrentVersion || ocUpdateInfo.currentVersion} → v{ocUpdateInfo.latestVersion}</span>
               </div>
               {/* HermesAgent Release Notes */}
               {(ocUpdateInfo.releaseNotes || ocNotesTranslating) && (() => {

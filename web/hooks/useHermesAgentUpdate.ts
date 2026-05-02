@@ -10,6 +10,7 @@ export interface HermesAgentUpdateEvent {
 }
 
 interface RunOptions {
+  version?: string;
   mapStepMessage?: (event: HermesAgentUpdateEvent) => string;
   maxLogLines?: number;
 }
@@ -35,6 +36,7 @@ export function useHermesAgentUpdate() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ version: options?.version || '' }),
       });
       if (!resp.ok) {
         throw new Error(`HTTP ${resp.status}`);

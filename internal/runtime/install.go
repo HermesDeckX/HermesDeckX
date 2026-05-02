@@ -16,6 +16,8 @@ import (
 	"HermesDeckX/internal/updater"
 )
 
+const hermesAgentGitURL = "git+https://github.com/NousResearch/hermes-agent.git"
+
 // InstallHermesDeckX downloads a HermesDeckX release binary into the runtime overlay.
 // The downloadURL should point to the linux-amd64 or linux-arm64 binary.
 // progressFn receives progress updates (can be nil).
@@ -142,7 +144,7 @@ func (m *Manager) InstallHermesDeckX(ctx context.Context, downloadURL string, pr
 
 // InstallHermesAgent runs `pip install --target=<dir> hermes-agent` with the target
 // pointing to the runtime overlay directory, so the binary persists in the volume.
-func (m *Manager) InstallHermesAgent(ctx context.Context, progressFn func(updater.ApplyProgress)) error {
+func (m *Manager) InstallHermesAgent(ctx context.Context, version string, progressFn func(updater.ApplyProgress)) error {
 	if err := m.EnsureDirs(); err != nil {
 		return err
 	}
@@ -164,7 +166,11 @@ func (m *Manager) InstallHermesAgent(ctx context.Context, progressFn func(update
 
 	pipTarget := filepath.Join(dir, "pip")
 
-	cmd := exec.CommandContext(ctx, "pip", "install", "--upgrade", "--target", pipTarget, "hermes-agent")
+	installArg := hermesAgentGitURL
+	if version != "" {
+		installArg += "@v" + trimAll(version)
+	}
+	cmd := exec.CommandContext(ctx, "pip", "install", "--upgrade", "--target", pipTarget, installArg)
 	executil.HideWindow(cmd)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -174,14 +180,13 @@ func (m *Manager) InstallHermesAgent(ctx context.Context, progressFn func(update
 
 	sendProgress("verifying", 80)
 
-	newVersion := currentHermesAgentVersion()
-
-	sendProgress("replacing", 90)
-
 	binPath := filepath.Join(pipTarget, "bin", "hermes")
 	if runtime.GOOS == "windows" {
 		binPath = filepath.Join(pipTarget, "Scripts", "hermes.exe")
 	}
+	newVersion := detectBinaryVersion(binPath)
+
+	sendProgress("replacing", 90)
 
 	mf := &Manifest{
 		Component:   ComponentHermesAgent,

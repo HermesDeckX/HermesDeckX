@@ -53,6 +53,8 @@ export const hermesDiskApi = {
 export const hostInfoApi = {
   get: () => get<any>('/api/v1/host-info'),
   checkUpdate: () => get<any>('/api/v1/host-info/check-update'),
+  hermesAgentReleases: (limit = 50, force = false) =>
+    getCached<ReleaseSummary[]>(`/api/v1/host-info/hermesagent/releases?limit=${limit}`, force ? 0 : 10 * 60 * 1000, force),
   deviceId: () => get<{ deviceId: string }>('/api/v1/host-info/device-id'),
 };
 
@@ -88,6 +90,14 @@ export interface UpdateOverview {
 export interface UpdateHistoryEntry {
   id: number; user_id: number; username: string; action: string;
   result: string; detail: string; ip: string; created_at: string;
+}
+export interface ReleaseSummary {
+  tagName: string;
+  name?: string;
+  prerelease: boolean;
+  hasAsset: boolean;
+  isCurrent?: boolean;
+  isOlder?: boolean;
 }
 export const selfUpdateApi = {
   info: () => get<SelfUpdateInfo>('/api/v1/self-update/info'),

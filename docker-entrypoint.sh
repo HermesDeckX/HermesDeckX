@@ -18,6 +18,12 @@ export HERMES_AGENT_STATE_DIR
 export PATH="/opt/hermesagent/venv/bin:$HOME/.local/bin:$HOME/bin:$PATH"
 export OHD_RUNTIME_DIR="$RUNTIME_DIR"
 
+if [ -x "$RUNTIME_DIR/hermesagent/pip/bin/hermes" ] && [ -f "$RUNTIME_DIR/hermesagent/manifest.json" ]; then
+    echo "[docker-entrypoint] Using runtime overlay HermesAgent from $RUNTIME_DIR/hermesagent/pip/bin/hermes"
+    export PATH="$RUNTIME_DIR/hermesagent/pip/bin:$PATH"
+    export PYTHONPATH="$RUNTIME_DIR/hermesagent/pip:${PYTHONPATH:-}"
+fi
+
 # ── Runtime overlay: write image version stamps on first boot ──
 if [ ! -f /app/.image-version ]; then
     /app/hermesdeckx version 2>/dev/null | head -1 > /app/.image-version || echo "unknown" > /app/.image-version

@@ -557,6 +557,7 @@ func RunServe(args []string) int {
 	router.GET("/api/v1/dashboard", dashboardHandler.Get)
 	router.GET("/api/v1/host-info", hostInfoHandler.Get)
 	router.GET("/api/v1/host-info/check-update", hostInfoHandler.CheckUpdate)
+	router.GET("/api/v1/host-info/hermesagent/releases", hostInfoHandler.HermesAgentReleases)
 	router.GET("/api/v1/host-info/device-id", hostInfoHandler.DeviceID)
 
 	router.GET("/api/v1/self-update/info", selfUpdateHandler.Info)

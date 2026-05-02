@@ -13,7 +13,7 @@ type Component string
 
 const (
 	ComponentHermesDeckX Component = "hermesdeckx"
-	ComponentHermesAgent  Component = "hermes-agent"
+	ComponentHermesAgent Component = "hermesagent"
 )
 
 // Manifest records which version is active in the runtime overlay volume.
@@ -41,9 +41,9 @@ type Status struct {
 
 // AllStatus is the combined status for both components.
 type AllStatus struct {
-	IsDocker  bool   `json:"is_docker"`
+	IsDocker    bool   `json:"is_docker"`
 	HermesDeckX Status `json:"hermesdeckx"`
-	HermesAgent  Status `json:"hermes-agent"`
+	HermesAgent Status `json:"hermesagent"`
 }
 
 // readManifestFile reads and parses a manifest.json from disk.

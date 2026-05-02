@@ -1,4 +1,4 @@
-﻿package handlers
+package handlers
 
 import (
 	"context"
@@ -351,6 +351,10 @@ func (h *SetupWizardHandler) UpdateHermesAgent(w http.ResponseWriter, r *http.Re
 		web.Fail(w, r, "SSE_ERROR", err.Error(), http.StatusInternalServerError)
 		return
 	}
+	var body struct {
+		Version string `json:"version"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&body)
 
 	emitter.EmitPhase("update", "Checking current version...", 0)
 
@@ -387,7 +391,7 @@ func (h *SetupWizardHandler) UpdateHermesAgent(w http.ResponseWriter, r *http.Re
 	}
 
 	emitter.EmitPhase("update", "Updating HermesAgent...", 20)
-	if err := installer.UpdateHermesAgent(ctx); err != nil {
+	if err := installer.UpdateHermesAgent(ctx, body.Version); err != nil {
 		// Try to restart gateway even if update failed
 		if gwWasRunning && h.svc != nil {
 			_ = h.svc.Start()

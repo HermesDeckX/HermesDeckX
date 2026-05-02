@@ -139,6 +139,11 @@ func (h *RuntimeHandler) UpdateHermesAgent(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 	flusher.Flush()
 
+	var body struct {
+		Version string `json:"version"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&body)
+
 	sendSSE := func(p updater.ApplyProgress) {
 		data, _ := json.Marshal(p)
 		fmt.Fprintf(w, "data: %s\n\n", data)
@@ -148,7 +153,7 @@ func (h *RuntimeHandler) UpdateHermesAgent(w http.ResponseWriter, r *http.Reques
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Minute)
 	defer cancel()
 
-	err := h.mgr.InstallHermesAgent(ctx, sendSSE)
+	err := h.mgr.InstallHermesAgent(ctx, body.Version, sendSSE)
 	if err != nil {
 		h.auditRepo.Create(&database.AuditLog{
 			UserID: web.GetUserID(r), Username: web.GetUsername(r),
@@ -222,7 +227,7 @@ func (h *RuntimeHandler) Rollback(w http.ResponseWriter, r *http.Request) {
 	switch body.Component {
 	case "hermesdeckx":
 		comp = runtime.ComponentHermesDeckX
-	case "hermes-agent":
+	case "hermesagent", "hermes-agent":
 		comp = runtime.ComponentHermesAgent
 	default:
 		web.Fail(w, r, "INVALID_PARAMS", "component must be 'hermesdeckx' or 'hermesagent'", http.StatusBadRequest)

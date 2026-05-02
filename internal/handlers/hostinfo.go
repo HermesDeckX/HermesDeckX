@@ -63,6 +63,15 @@ type HostInfoResponse struct {
 	AvailablePkgManagers []string   `json:"availablePkgManagers,omitempty"`
 }
 
+type ReleaseSummary struct {
+	TagName    string `json:"tagName"`
+	Name       string `json:"name,omitempty"`
+	Prerelease bool   `json:"prerelease"`
+	HasAsset   bool   `json:"hasAsset"`
+	IsCurrent  bool   `json:"isCurrent,omitempty"`
+	IsOlder    bool   `json:"isOlder,omitempty"`
+}
+
 // SysMemInfo is system-level memory info.
 type SysMemInfo struct {
 	Total   uint64  `json:"total"`
@@ -242,6 +251,72 @@ func (h *HostInfoHandler) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	web.OK(w, r, result)
+}
+
+func (h *HostInfoHandler) HermesAgentReleases(w http.ResponseWriter, r *http.Request) {
+	limit := 30
+	if raw := r.URL.Query().Get("limit"); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil && n > 0 && n <= 100 {
+			limit = n
+		}
+	}
+
+	currentVersion := ""
+	if _, ver, ok := hermes.DetectHermesAgentBinary(); ok {
+		currentVersion = extractSemver(ver)
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.github.com/repos/NousResearch/hermes-agent/releases?per_page=%d", limit), nil)
+	if err != nil {
+		web.OK(w, r, []ReleaseSummary{})
+		return
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("User-Agent", "HermesDeckX")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		web.OK(w, r, []ReleaseSummary{})
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		web.OK(w, r, []ReleaseSummary{})
+		return
+	}
+
+	var releases []struct {
+		TagName    string `json:"tag_name"`
+		Name       string `json:"name"`
+		Prerelease bool   `json:"prerelease"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
+		web.OK(w, r, []ReleaseSummary{})
+		return
+	}
+
+	result := make([]ReleaseSummary, 0, len(releases))
+	for _, rel := range releases {
+		versionText := extractSemver(rel.TagName)
+		if versionText == "" {
+			versionText = extractSemver(rel.Name)
+		}
+		item := ReleaseSummary{
+			TagName:    rel.TagName,
+			Name:       rel.Name,
+			Prerelease: rel.Prerelease,
+			HasAsset:   true,
+		}
+		if currentVersion != "" && versionText != "" {
+			item.IsCurrent = releaseVersionBase(versionText) == releaseVersionBase(currentVersion)
+			item.IsOlder = compareSemver(versionText, currentVersion) < 0
+		}
+		result = append(result, item)
+	}
 	web.OK(w, r, result)
 }
 

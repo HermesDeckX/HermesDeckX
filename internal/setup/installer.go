@@ -980,7 +980,18 @@ func (i *Installer) InstallVPNTool(ctx context.Context, tool string) error {
 // UpdateHermesAgent updates HermesAgent to the latest version using the
 // official `hermes-agent update` CLI command. This handles git-based updates,
 // zip fallback on Windows, and proper dependency reinstallation.
-func (i *Installer) UpdateHermesAgent(ctx context.Context) error {
+func (i *Installer) UpdateHermesAgent(ctx context.Context, version string) error {
+	if version != "" {
+		if i.env.Tools["pip"].Installed || detectTool("pip3", "--version").Installed {
+			if err := i.installViaPipWithVersion(ctx, "hermes-agent", version); err != nil {
+				return err
+			}
+			hermes.InvalidateDiscoveryCache()
+			i.emitter.EmitLog("✓ Hermes Agent updated successfully")
+			return nil
+		}
+		return fmt.Errorf("pip is required to install a specific HermesAgent version")
+	}
 	cmdPath := hermes.ResolveHermesAgentCmd()
 	if cmdPath == "" {
 		return fmt.Errorf("hermes-agent binary not found, cannot update")
