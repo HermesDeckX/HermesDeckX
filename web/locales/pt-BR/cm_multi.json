@@ -236,6 +236,7 @@
     "skipExisting": "Pular se o agente já existir",
     "deploymentPreview": "Prévia da Implantação",
     "statusCreated": "Criado",
+    "statusUpdated": "Atualizado",
     "statusSkipped": "Ignorado",
     "statusFailed": "Falhou",
     "statusPreview": "Será Criado",

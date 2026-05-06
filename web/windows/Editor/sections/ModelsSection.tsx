@@ -488,7 +488,7 @@ export const ModelsSection: React.FC<SectionProps> = ({ config, schema, setField
   const addModel = useCallback(() => {
     if (!showAddModel || !newModel.id.trim()) return;
     const rawModels = getField(['providers', showAddModel, 'models']);
-    const models: string[] = Array.isArray(rawModels) ? rawModels : [];
+    const models: string[] = Array.isArray(rawModels) ? rawModels.map((m: any) => typeof m === 'string' ? m : (m?.id || m?.name || '')).filter(Boolean) : [];
     const mid = newModel.id.trim();
     if (!models.includes(mid)) {
       setField(['providers', showAddModel, 'models'], [...models, mid]);
@@ -852,7 +852,7 @@ export const ModelsSection: React.FC<SectionProps> = ({ config, schema, setField
                 ]} />
                 {/* 模型列表 (matches ClawDeckX) */}
                 {(() => {
-                  const models: string[] = Array.isArray(cfg?.models) ? cfg.models : [];
+                  const models: string[] = Array.isArray(cfg?.models) ? cfg.models.map((m: any) => typeof m === 'string' ? m : (m?.id || m?.name || '')).filter(Boolean) : [];
                   return (
                     <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/[0.04]">
                       <div className="flex items-center justify-between mb-1.5">

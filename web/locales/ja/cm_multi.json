@@ -236,6 +236,7 @@
     "skipExisting": "エージェントが既に存在する場合はスキップ",
     "deploymentPreview": "デプロイプレビュー",
     "statusCreated": "作成済み",
+    "statusUpdated": "更新済み",
     "statusSkipped": "スキップ",
     "statusFailed": "失敗",
     "statusPreview": "作成予定",

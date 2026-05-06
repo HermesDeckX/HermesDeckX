@@ -236,6 +236,7 @@
     "skipExisting": "에이전트가 이미 존재하면 건너뛰기",
     "deploymentPreview": "배포 미리보기",
     "statusCreated": "생성됨",
+    "statusUpdated": "업데이트됨",
     "statusSkipped": "건너뜀",
     "statusFailed": "실패",
     "statusPreview": "생성 예정",

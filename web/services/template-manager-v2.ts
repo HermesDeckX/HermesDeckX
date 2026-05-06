@@ -84,6 +84,7 @@ export interface TemplateWorkflow {
     parallel?: boolean;
     condition?: string;
     trigger?: string;
+    timeout?: number;
   }>;
 }
 

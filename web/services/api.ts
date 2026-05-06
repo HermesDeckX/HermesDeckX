@@ -1685,6 +1685,7 @@ export interface MultiAgentDeployRequest {
         action: string;
         parallel?: boolean;
         condition?: string;
+        timeout?: number;
       }>;
     };
     bindings?: Array<{
@@ -1759,6 +1760,7 @@ export interface MultiAgentGenerateResult {
         action: string;
         parallel?: boolean;
         condition?: string;
+        timeout?: number;
       }>;
     };
   };

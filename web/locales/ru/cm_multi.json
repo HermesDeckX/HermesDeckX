@@ -236,6 +236,7 @@
     "skipExisting": "Пропустить, если агент уже существует",
     "deploymentPreview": "Предпросмотр развёртывания",
     "statusCreated": "Создан",
+    "statusUpdated": "Обновлён",
     "statusSkipped": "Пропущен",
     "statusFailed": "Ошибка",
     "statusPreview": "Будет создан",
