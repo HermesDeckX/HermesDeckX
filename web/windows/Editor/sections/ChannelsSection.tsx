@@ -210,6 +210,27 @@ const CHANNEL_TYPES: ChannelTypeDef[] = [
     ],
   },
   {
+    id: 'yuanbao', labelKey: 'Yuanbao', descKey: 'Tencent Yuanbao messaging platform', icon: 'smart_toy', category: 'china',
+    hasAccessControl: true,
+    envDetectKeys: ['YUANBAO_APP_KEY', 'YUANBAO_APP_SECRET'],
+    tokenFields: [
+      { key: 'appKey', labelKey: 'App Key', secret: true, required: true },
+      { key: 'appSecret', labelKey: 'App Secret', secret: true, required: true },
+      { key: 'homeChannel', labelKey: 'homeChannel', placeholder: 'group or user id' },
+    ],
+  },
+  {
+    id: 'msteams', labelKey: 'Microsoft Teams', descKey: 'Microsoft Teams plugin platform', icon: 'groups', category: 'enterprise',
+    hasAccessControl: true, helpUrl: 'https://learn.microsoft.com/microsoftteams/platform/',
+    envDetectKeys: ['MSTEAMS_APP_ID', 'MSTEAMS_APP_PASSWORD'],
+    tokenFields: [
+      { key: 'appId', labelKey: 'appId', required: true },
+      { key: 'appPassword', labelKey: 'App Password', secret: true, required: true },
+      { key: 'tenantId', labelKey: 'Tenant ID' },
+      { key: 'homeChannel', labelKey: 'homeChannel', placeholder: 'team/channel id' },
+    ],
+  },
+  {
     id: 'api_server', labelKey: 'apiServer', descKey: 'apiServerDesc', icon: 'api', category: 'other',
     envDetectKeys: ['API_SERVER_ENABLED'],
     tokenFields: [
@@ -323,6 +344,15 @@ const ENV_TO_TOKEN: Record<string, { ch: string; key: string }> = {
   QQ_STT_API_KEY: { ch: 'qqbot', key: 'sttApiKey' },
   QQ_STT_BASE_URL: { ch: 'qqbot', key: 'sttBaseUrl' },
   QQ_STT_MODEL: { ch: 'qqbot', key: 'sttModel' },
+  YUANBAO_APP_KEY: { ch: 'yuanbao', key: 'appKey' },
+  YUANBAO_APP_SECRET: { ch: 'yuanbao', key: 'appSecret' },
+  YUANBAO_HOME_CHANNEL: { ch: 'yuanbao', key: 'homeChannel' },
+  YUANBAO_ALLOWED_USERS: { ch: 'yuanbao', key: '_allowFrom' },
+  MSTEAMS_APP_ID: { ch: 'msteams', key: 'appId' },
+  MSTEAMS_APP_PASSWORD: { ch: 'msteams', key: 'appPassword' },
+  MSTEAMS_TENANT_ID: { ch: 'msteams', key: 'tenantId' },
+  MSTEAMS_HOME_CHANNEL: { ch: 'msteams', key: 'homeChannel' },
+  MSTEAMS_ALLOWED_USERS: { ch: 'msteams', key: '_allowFrom' },
   TWILIO_ACCOUNT_SID: { ch: 'sms', key: 'accountSid' },
   TWILIO_AUTH_TOKEN: { ch: 'sms', key: 'authToken' },
   TWILIO_PHONE_NUMBER: { ch: 'sms', key: 'phoneNumber' },
@@ -372,10 +402,10 @@ const ENV_TO_TOKEN: Record<string, { ch: string; key: string }> = {
 };
 
 // Channels that support DM pairing
-const PAIRING_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'whatsapp', 'weixin', 'mattermost', 'matrix', 'wecom', 'wecom_callback', 'email', 'sms', 'bluebubbles', 'qqbot']);
+const PAIRING_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'whatsapp', 'weixin', 'mattermost', 'matrix', 'wecom', 'wecom_callback', 'email', 'sms', 'bluebubbles', 'qqbot', 'yuanbao', 'msteams']);
 
 // Channels that support home channel
-const HOME_CHANNEL_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'mattermost', 'matrix', 'weixin', 'email', 'sms', 'qqbot']);
+const HOME_CHANNEL_CHANNELS = new Set(['telegram', 'discord', 'slack', 'signal', 'mattermost', 'matrix', 'weixin', 'email', 'sms', 'qqbot', 'yuanbao', 'msteams']);
 
 // Channels that support reply-to-mode
 const REPLY_TO_CHANNELS = new Set(['telegram', 'discord']);

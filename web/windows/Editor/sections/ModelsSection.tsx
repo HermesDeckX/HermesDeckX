@@ -46,6 +46,9 @@ const ZH_PROVIDER_NAMES: Record<string, string> = {
   zai: '智谱 Z.AI',
   alibaba: '阿里云 DashScope',
   huggingface: 'Hugging Face',
+  gmicloud: 'GMI Cloud',
+  azureaifoundry: 'Azure AI Foundry',
+  'tencent-tokenhub': '腾讯 Tokenhub',
   nvidia: '英伟达 NIM',
   stepfun: '阶跃星辰',
   xiaomi: '小米 MiMo',
@@ -137,6 +140,9 @@ const PROVIDERS: ProviderPreset[] = [
   { id: 'opencode-go', name: 'OpenCode Go', icon: '💻', category: 'builtin', envVars: ['OPENCODE_GO_API_KEY'], defaultModel: 'glm-4-plus', models: [], baseUrl: 'https://opencode.ai/zen/go/v1', helpUrl: 'https://opencode.ai' },
   { id: 'kilocode', name: 'Kilo Code', icon: '📊', category: 'builtin', envVars: ['KILOCODE_API_KEY'], defaultModel: 'claude-opus-4-6', models: [], baseUrl: 'https://api.kilo.ai/api/gateway', helpUrl: 'https://kilo.ai' },
   { id: 'arceeai', name: 'Arcee AI', icon: '🏹', category: 'builtin', envVars: ['ARCEEAI_API_KEY'], defaultModel: 'arcee-blitz', models: [], baseUrl: 'https://conductor.arcee.ai/v1', helpUrl: 'https://chat.arcee.ai' },
+  { id: 'gmicloud', name: 'GMI Cloud', icon: '☁️', category: 'builtin', envVars: ['GMI_API_KEY', 'GMI_CLOUD_API_KEY'], defaultModel: '', models: [], baseUrl: 'https://api.gmi-serving.com/v1', helpUrl: 'https://www.gmicloud.ai' },
+  { id: 'azureaifoundry', name: 'Azure AI Foundry', icon: '🔷', category: 'builtin', envVars: ['AZURE_AI_API_KEY', 'AZURE_AI_BASE_URL'], defaultModel: '', models: [], baseUrl: '', needsBaseUrl: true, helpUrl: 'https://ai.azure.com' },
+  { id: 'tencent-tokenhub', name: 'Tencent Tokenhub', icon: '🐧', category: 'builtin', envVars: ['TENCENT_TOKENHUB_API_KEY', 'TENCENT_TOKENHUB_BASE_URL'], defaultModel: '', models: [], baseUrl: '', needsBaseUrl: true, helpUrl: 'https://cloud.tencent.com' },
   { id: 'ollama-cloud', name: 'Ollama Cloud', icon: '☁️', category: 'builtin', envVars: ['OLLAMA_API_KEY'], defaultModel: '', models: [], baseUrl: 'https://ollama.com/v1', helpUrl: 'https://ollama.com/settings' },
   { id: 'nvidia', name: 'NVIDIA NIM', icon: '🟢', category: 'builtin', envVars: ['NVIDIA_API_KEY'], defaultModel: 'meta/llama-3.3-70b-instruct', models: [
     { id: 'meta/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', ctx: '128K' },
@@ -1328,6 +1334,7 @@ export const ModelsSection: React.FC<SectionProps> = ({ config, schema, setField
           { key: 'skills_hub', icon: 'extension', label: es.auxSkillsHub || 'Skills Hub', desc: es.auxSkillsHubDesc || 'Skill discovery and matching' },
           { key: 'approval', icon: 'verified_user', label: es.auxApproval || 'Approval', desc: es.auxApprovalDesc || 'Smart command approval classification' },
           { key: 'mcp', icon: 'settings_input_component', label: es.auxMcp || 'MCP', desc: es.auxMcpDesc || 'MCP tool schema conversion' },
+          { key: 'curator', icon: 'auto_awesome', label: es.auxCurator || 'Curator', desc: es.auxCuratorDesc || 'Background skill library maintenance' },
           { key: 'flush_memories', icon: 'neurology', label: es.auxFlushMemories || 'Flush Memories', desc: es.auxFlushMemoriesDesc || 'Memory consolidation and flush' },
           { key: 'title_generation', icon: 'title', label: es.auxTitleGeneration || 'Title Generation', desc: es.auxTitleGenerationDesc || 'Auto-generate session titles' },
         ] as const).map(task => (

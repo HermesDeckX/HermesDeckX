@@ -236,6 +236,7 @@
     "skipExisting": "एजेंट पहले से मौजूद होने पर छोड़ें",
     "deploymentPreview": "तैनाती पूर्वावलोकन",
     "statusCreated": "बनाया गया",
+    "statusUpdated": "अपडेट किया गया",
     "statusSkipped": "छोड़ा गया",
     "statusFailed": "विफल",
     "statusPreview": "बनाया जाएगा",

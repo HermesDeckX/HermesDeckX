@@ -236,6 +236,7 @@
     "skipExisting": "Ignorer si l'agent existe déjà",
     "deploymentPreview": "Aperçu du déploiement",
     "statusCreated": "Créé",
+    "statusUpdated": "Mis à jour",
     "statusSkipped": "Ignoré",
     "statusFailed": "Échoué",
     "statusPreview": "Sera créé",

@@ -1704,7 +1704,7 @@ export interface MultiAgentDeployResult {
   agents: Array<{
     id: string;
     name: string;
-    status: 'created' | 'skipped' | 'failed' | 'preview';
+    status: 'created' | 'updated' | 'skipped' | 'failed' | 'preview';
     workspace?: string;
     error?: string;
   }>;

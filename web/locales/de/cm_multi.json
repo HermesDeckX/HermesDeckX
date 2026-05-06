@@ -236,6 +236,7 @@
     "skipExisting": "Überspringen, wenn Agent bereits existiert",
     "deploymentPreview": "Bereitstellungsvorschau",
     "statusCreated": "Erstellt",
+    "statusUpdated": "Aktualisiert",
     "statusSkipped": "Übersprungen",
     "statusFailed": "Fehlgeschlagen",
     "statusPreview": "Wird erstellt",

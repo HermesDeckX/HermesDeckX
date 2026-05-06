@@ -1639,6 +1639,64 @@ const ScenarioTeamBuilder: React.FC<ScenarioTeamBuilderProps> = ({
                     )}
                   </div>
 
+                  {wzAgents.length > 0 && (() => {
+                    const statusCounts = {
+                      pending: wzAgents.filter(a => a.status === 'pending').length,
+                      running: wzAgents.filter(a => a.status === 'running').length,
+                      done: wzAgents.filter(a => a.status === 'done').length,
+                      error: wzAgents.filter(a => a.status === 'error').length,
+                      skipped: wzAgents.filter(a => a.status === 'skipped').length,
+                    };
+                    const activeAgent = wzAgents.find(a => a.status === 'running');
+                    const statusItems = [
+                      { key: 'pending', icon: 'radio_button_unchecked', label: stb.wzPending || 'Pending', value: statusCounts.pending, cls: 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.04]' },
+                      { key: 'running', icon: 'progress_activity', label: stb.wzRunning || 'Running', value: statusCounts.running, cls: 'text-violet-500 bg-violet-500/10' },
+                      { key: 'done', icon: 'check_circle', label: stb.wzDone || 'Done', value: statusCounts.done, cls: 'text-green-500 bg-green-500/10' },
+                      { key: 'error', icon: 'error', label: stb.wzErrors || 'Errors', value: statusCounts.error, cls: 'text-red-500 bg-red-500/10' },
+                      { key: 'skipped', icon: 'skip_next', label: stb.wzSkipped || 'Skipped', value: statusCounts.skipped, cls: 'text-amber-500 bg-amber-500/10' },
+                    ];
+                    return (
+                      <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.02] p-2.5 space-y-2">
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {statusItems.map(item => (
+                            <div key={item.key} className={`rounded-lg px-2 py-1.5 ${item.cls}`}>
+                              <div className="flex items-center gap-1 min-w-0">
+                                <span className={`material-symbols-outlined text-[12px] shrink-0 ${item.key === 'running' && item.value > 0 ? 'animate-spin' : ''}`}
+                                  style={item.key === 'running' && item.value > 0 ? { animationDuration: '1.5s' } : {}}>
+                                  {item.icon}
+                                </span>
+                                <span className="text-[9px] font-bold truncate">{item.label}</span>
+                              </div>
+                              <div className="mt-0.5 text-[13px] font-mono font-bold tabular-nums">{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                        {activeAgent && (
+                          <div className="flex items-center gap-2 rounded-lg border border-violet-500/15 bg-violet-500/[0.04] px-2.5 py-2">
+                            <span className="relative flex h-2 w-2 shrink-0">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-60" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 truncate">
+                                {stb.wzActiveAgent || 'Active agent'} · {activeAgent.name}
+                              </p>
+                              <p className="text-[10px] text-slate-500 dark:text-white/35 truncate">
+                                {activeAgent.role}
+                              </p>
+                            </div>
+                            {activeAgent.startedAt && (
+                              <ElapsedTimer startedAt={activeAgent.startedAt} className="text-[10px] font-mono text-violet-500 tabular-nums shrink-0" />
+                            )}
+                            {(activeAgent.tokenCount ?? 0) > 0 && (
+                              <span className="text-[10px] font-mono text-slate-400 dark:text-white/25 shrink-0">{activeAgent.tokenCount} chars</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {/* Agent cards */}
                   <div className="space-y-2">
                     {wzAgents.map((agent, idx) => {

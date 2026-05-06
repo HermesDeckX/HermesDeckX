@@ -2151,6 +2151,37 @@ func (h *WizardHandler) buildChannelEnvVars(req ChannelWizardRequest) map[string
 				env["QQ_ALLOWED_USERS"] = allowCSV
 			}
 		}
+
+	case "yuanbao":
+		if v := req.Tokens["appKey"]; v != "" {
+			env["YUANBAO_APP_KEY"] = v
+		}
+		if v := req.Tokens["appSecret"]; v != "" {
+			env["YUANBAO_APP_SECRET"] = v
+		}
+		if v := req.Tokens["homeChannel"]; v != "" {
+			env["YUANBAO_HOME_CHANNEL"] = v
+		}
+		if allowCSV != "" {
+			env["YUANBAO_ALLOWED_USERS"] = allowCSV
+		}
+
+	case "msteams":
+		if v := req.Tokens["appId"]; v != "" {
+			env["MSTEAMS_APP_ID"] = v
+		}
+		if v := req.Tokens["appPassword"]; v != "" {
+			env["MSTEAMS_APP_PASSWORD"] = v
+		}
+		if v := req.Tokens["tenantId"]; v != "" {
+			env["MSTEAMS_TENANT_ID"] = v
+		}
+		if v := req.Tokens["homeChannel"]; v != "" {
+			env["MSTEAMS_HOME_CHANNEL"] = v
+		}
+		if allowCSV != "" {
+			env["MSTEAMS_ALLOWED_USERS"] = allowCSV
+		}
 	}
 
 	// Global access control

@@ -236,6 +236,7 @@
     "skipExisting": "如果代理已存在则跳过",
     "deploymentPreview": "部署预览",
     "statusCreated": "已创建",
+    "statusUpdated": "已更新",
     "statusSkipped": "已跳过",
     "statusFailed": "失败",
     "statusPreview": "将创建",

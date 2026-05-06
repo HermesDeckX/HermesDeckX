@@ -12,4 +12,4 @@ var Build = "dev"
 
 // HermesAgentCompat is the minimum compatible hermes-agent version.
 // Source of truth: web/package.json -> "hermesAgentCompat" field.
-var HermesAgentCompat = ">=0.8.0"
+var HermesAgentCompat = ">=0.12.0"

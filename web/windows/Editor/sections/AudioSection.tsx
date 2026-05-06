@@ -8,7 +8,7 @@ import { schemaTooltip } from '../schemaTooltip';
 // hermes-agent TTS / STT / Voice Section
 // ============================================================================
 // hermes-agent config.yaml paths:
-//   tts.provider              — edge | elevenlabs | openai | xai | minimax | mistral | neutts
+//   tts.provider              — edge | elevenlabs | openai | xai | minimax | mistral | neutts | piper
 //   tts.edge.voice            — Edge TTS voice name
 //   tts.elevenlabs.*          — ElevenLabs voice_id, model_id
 //   tts.openai.*              — OpenAI TTS model, voice
@@ -33,6 +33,7 @@ export const AudioSection: React.FC<SectionProps> = ({ config, schema, setField,
     { value: 'minimax', label: es.ttsMinimax || 'MiniMax' },
     { value: 'mistral', label: es.ttsMistral || 'Mistral' },
     { value: 'neutts', label: es.ttsNeutts || 'NeuTTS (local)' },
+    { value: 'piper', label: es.ttsPiper || 'Piper (local)' },
   ], [es]);
 
   const sttProviderOptions = useMemo(() => [
@@ -214,6 +215,44 @@ export const AudioSection: React.FC<SectionProps> = ({ config, schema, setField,
                 { value: 'cuda', label: 'CUDA' },
                 { value: 'mps', label: 'MPS (Apple)' },
               ]}
+            />
+          </>
+        )}
+
+        {/* Piper (local) */}
+        {ttsProvider === 'piper' && (
+          <>
+            <TextField
+              label={es.piperVoice || 'Voice'}
+              desc={es.piperVoiceDesc || 'Piper voice name or model basename.'}
+              tooltip={tip('tts.piper.voice')}
+              value={getField(['tts', 'piper', 'voice']) || 'en_US-lessac-medium'}
+              onChange={v => setField(['tts', 'piper', 'voice'], v)}
+              placeholder="en_US-lessac-medium"
+            />
+            <TextField
+              label={es.piperVoicesDir || 'Voices Directory'}
+              desc={es.piperVoicesDirDesc || 'Directory containing Piper voice models. Empty = Hermes default.'}
+              tooltip={tip('tts.piper.voices_dir')}
+              value={getField(['tts', 'piper', 'voices_dir']) || ''}
+              onChange={v => setField(['tts', 'piper', 'voices_dir'], v)}
+              placeholder="~/.hermes/voices/piper"
+            />
+            <SwitchField
+              label={es.piperUseCuda || 'Use CUDA'}
+              desc={es.piperUseCudaDesc || 'Use GPU acceleration when Piper and the runtime support it.'}
+              tooltip={tip('tts.piper.use_cuda')}
+              value={getField(['tts', 'piper', 'use_cuda']) === true}
+              onChange={v => setField(['tts', 'piper', 'use_cuda'], v)}
+            />
+            <NumberField
+              label={es.piperLengthScale || 'Length Scale'}
+              desc={es.piperLengthScaleDesc || 'Speech speed control. Higher values speak more slowly.'}
+              tooltip={tip('tts.piper.length_scale')}
+              value={getField(['tts', 'piper', 'length_scale'])}
+              onChange={v => setField(['tts', 'piper', 'length_scale'], v)}
+              min={0.1}
+              step={0.1}
             />
           </>
         )}

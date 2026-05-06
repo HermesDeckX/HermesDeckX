@@ -30,23 +30,25 @@ type SessionInfo struct {
 	ReasoningTokens int64    `json:"reasoningTokens,omitempty"`
 	EstimatedCost   *float64 `json:"estimatedCostUsd,omitempty"`
 	ApiCallCount    int      `json:"apiCallCount"`
+	ParentSessionID string   `json:"parentSessionId,omitempty"`
 	Preview         string   `json:"preview,omitempty"`
 	LastActive      string   `json:"lastActive,omitempty"`
 }
 
 // MessageInfo represents a message from state.db.
 type MessageInfo struct {
-	ID               int64           `json:"id"`
-	SessionID        string          `json:"sessionId"`
-	Role             string          `json:"role"`
-	Content          json.RawMessage `json:"content"`
-	ToolCallID       string          `json:"toolCallId,omitempty"`
-	ToolCalls        json.RawMessage `json:"toolCalls,omitempty"`
-	ToolName         string          `json:"toolName,omitempty"`
-	Timestamp        float64         `json:"timestamp"`
-	TokenCount       *int            `json:"tokenCount,omitempty"`
-	FinishReason     string          `json:"finishReason,omitempty"`
-	ReasoningContent string          `json:"reasoningContent,omitempty"`
+	ID                int64           `json:"id"`
+	SessionID         string          `json:"sessionId"`
+	Role              string          `json:"role"`
+	Content           json.RawMessage `json:"content"`
+	ToolCallID        string          `json:"toolCallId,omitempty"`
+	ToolCalls         json.RawMessage `json:"toolCalls,omitempty"`
+	ToolName          string          `json:"toolName,omitempty"`
+	Timestamp         float64         `json:"timestamp"`
+	TokenCount        *int            `json:"tokenCount,omitempty"`
+	FinishReason      string          `json:"finishReason,omitempty"`
+	ReasoningContent  string          `json:"reasoningContent,omitempty"`
+	CodexMessageItems json.RawMessage `json:"codexMessageItems,omitempty"`
 }
 
 // openStateDB opens the hermes-agent state.db in read-only mode.
@@ -79,7 +81,7 @@ func ListSessions(limit int, source string) ([]SessionInfo, error) {
 		s.started_at, s.ended_at, s.end_reason, s.message_count,
 		s.tool_call_count, s.input_tokens, s.output_tokens,
 		s.reasoning_tokens, s.estimated_cost_usd,
-		COALESCE(s.api_call_count, 0),
+		COALESCE(s.api_call_count, 0), s.parent_session_id,
 		(SELECT content FROM messages WHERE session_id = s.id AND role = 'user' ORDER BY timestamp DESC LIMIT 1) as preview
 	FROM sessions s`
 
@@ -110,7 +112,7 @@ func ListSessions(limit int, source string) ([]SessionInfo, error) {
 	var sessions []SessionInfo
 	for rows.Next() {
 		var s SessionInfo
-		var userID, model, title, endReason sql.NullString
+		var userID, model, title, endReason, parentSessionID sql.NullString
 		var endedAt sql.NullFloat64
 		var estimatedCost sql.NullFloat64
 		var preview sql.NullString
@@ -120,7 +122,7 @@ func ListSessions(limit int, source string) ([]SessionInfo, error) {
 			&s.ID, &s.Source, &userID, &model, &title,
 			&s.StartedAt, &endedAt, &endReason, &s.MessageCount,
 			&s.ToolCallCount, &s.InputTokens, &s.OutputTokens,
-			&reasoningTokens, &estimatedCost, &s.ApiCallCount, &preview,
+			&reasoningTokens, &estimatedCost, &s.ApiCallCount, &parentSessionID, &preview,
 		)
 		if err != nil {
 			continue
@@ -185,7 +187,8 @@ func GetSessionHistory(sessionID string, limit int, maxChars int) ([]MessageInfo
 
 	query := `SELECT id, session_id, role, content, tool_call_id, tool_calls,
 		tool_name, timestamp, token_count, finish_reason,
-		COALESCE(reasoning_content, '') as reasoning_content
+		COALESCE(reasoning_content, '') as reasoning_content,
+		codex_message_items
 	FROM messages WHERE session_id = ? ORDER BY timestamp ASC LIMIT ?`
 
 	rows, err := db.Query(query, sessionID, limit)
@@ -198,13 +201,14 @@ func GetSessionHistory(sessionID string, limit int, maxChars int) ([]MessageInfo
 	for rows.Next() {
 		var m MessageInfo
 		var content, toolCallID, toolCalls, toolName, finishReason sql.NullString
+		var codexMessageItems sql.NullString
 		var tokenCount sql.NullInt64
 		var reasoningContent sql.NullString
 
 		err := rows.Scan(
 			&m.ID, &m.SessionID, &m.Role, &content, &toolCallID,
 			&toolCalls, &toolName, &m.Timestamp, &tokenCount, &finishReason,
-			&reasoningContent,
+			&reasoningContent, &codexMessageItems,
 		)
 		if err != nil {
 			continue
@@ -237,6 +241,9 @@ func GetSessionHistory(sessionID string, limit int, maxChars int) ([]MessageInfo
 		}
 		if reasoningContent.Valid && reasoningContent.String != "" {
 			m.ReasoningContent = reasoningContent.String
+		}
+		if codexMessageItems.Valid && codexMessageItems.String != "" {
+			m.CodexMessageItems = json.RawMessage(codexMessageItems.String)
 		}
 
 		messages = append(messages, m)
@@ -579,7 +586,7 @@ func SearchSessions(query string, limit int) ([]SessionInfo, error) {
 			s.started_at, s.ended_at, s.end_reason, s.message_count,
 			s.tool_call_count, s.input_tokens, s.output_tokens,
 			s.reasoning_tokens, s.estimated_cost_usd,
-			COALESCE(s.api_call_count, 0)
+			COALESCE(s.api_call_count, 0), s.parent_session_id
 		FROM messages_fts f
 		JOIN messages m ON m.id = f.rowid
 		JOIN sessions s ON s.id = m.session_id
@@ -595,14 +602,14 @@ func SearchSessions(query string, limit int) ([]SessionInfo, error) {
 	var sessions []SessionInfo
 	for rows.Next() {
 		var s SessionInfo
-		var userID, model, title, endReason sql.NullString
+		var userID, model, title, endReason, parentSessionID sql.NullString
 		var endedAt, estimatedCost sql.NullFloat64
 		var reasoningTokens sql.NullInt64
 
 		err := rows.Scan(
 			&s.ID, &s.Source, &userID, &model, &title, &s.StartedAt, &endedAt,
 			&endReason, &s.MessageCount, &s.ToolCallCount, &s.InputTokens, &s.OutputTokens,
-			&reasoningTokens, &estimatedCost, &s.ApiCallCount,
+			&reasoningTokens, &estimatedCost, &s.ApiCallCount, &parentSessionID,
 		)
 		if err != nil {
 			continue
@@ -627,6 +634,9 @@ func SearchSessions(query string, limit int) ([]SessionInfo, error) {
 		}
 		if reasoningTokens.Valid {
 			s.ReasoningTokens = reasoningTokens.Int64
+		}
+		if parentSessionID.Valid {
+			s.ParentSessionID = parentSessionID.String
 		}
 		sessions = append(sessions, s)
 	}

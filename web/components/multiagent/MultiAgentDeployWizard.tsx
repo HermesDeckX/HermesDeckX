@@ -141,6 +141,37 @@ const MultiAgentDeployWizard: React.FC<MultiAgentDeployWizardProps> = ({
     }
   };
 
+  const renderDeploySummary = (result: MultiAgentDeployResult) => {
+    const counts = {
+      preview: result.agents.filter(a => a.status === 'preview').length,
+      created: result.agents.filter(a => a.status === 'created').length,
+      updated: result.agents.filter(a => a.status === 'updated').length,
+      skipped: result.agents.filter(a => a.status === 'skipped').length,
+      failed: result.agents.filter(a => a.status === 'failed').length,
+    };
+    const items = [
+      { key: 'preview', icon: 'visibility', label: md.statusPreview || 'Will Create', value: counts.preview, cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+      { key: 'created', icon: 'add_circle', label: md.statusCreated || 'Created', value: counts.created, cls: 'bg-green-500/10 text-green-600 dark:text-green-400' },
+      { key: 'updated', icon: 'sync', label: md.statusUpdated || 'Updated', value: counts.updated, cls: 'bg-violet-500/10 text-violet-600 dark:text-violet-400' },
+      { key: 'skipped', icon: 'skip_next', label: md.statusSkipped || 'Skipped', value: counts.skipped, cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+      { key: 'failed', icon: 'error', label: md.statusFailed || 'Failed', value: counts.failed, cls: 'bg-red-500/10 text-red-600 dark:text-red-400' },
+    ].filter(item => item.value > 0);
+    if (items.length === 0) return null;
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {items.map(item => (
+          <div key={item.key} className={`rounded-xl px-3 py-2 ${item.cls}`}>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="material-symbols-outlined text-[13px] shrink-0">{item.icon}</span>
+              <span className="text-[10px] font-bold truncate">{item.label}</span>
+            </div>
+            <div className="mt-1 text-[16px] font-mono font-bold tabular-nums">{item.value}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-2xl mx-4 rounded-2xl bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden">
@@ -389,6 +420,7 @@ const MultiAgentDeployWizard: React.FC<MultiAgentDeployWizardProps> = ({
                   </div>
                 </div>
               )}
+              {previewResult && renderDeploySummary(previewResult)}
             </div>
           )}
 
@@ -423,6 +455,7 @@ const MultiAgentDeployWizard: React.FC<MultiAgentDeployWizardProps> = ({
                   {deployResult.deployedCount} {md.created || 'created'}, {deployResult.skippedCount} {md.skipped || 'skipped'}
                 </p>
               </div>
+              {renderDeploySummary(deployResult)}
 
               {/* Coordinator Configuration Status */}
               <div className={`p-3 rounded-xl ${deployResult.coordinatorUpdated ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-amber-500/10 border border-amber-500/20'}`}>

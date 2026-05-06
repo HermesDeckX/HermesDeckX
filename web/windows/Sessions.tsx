@@ -48,6 +48,7 @@ interface GwSession {
   fastMode?: boolean;
   lastTo?: string;
   parentKey?: string;
+  parentSessionId?: string;
   spawnedBy?: string;
   status?: 'running' | 'done' | 'failed' | 'killed' | 'timeout';
   startedAt?: number;
@@ -222,11 +223,25 @@ function extractText(content: unknown): string {
   return '';
 }
 
-function extractToolCalls(content: unknown): Array<{ id?: string; name: string; input?: string }> {
+function extractToolCalls(content: unknown): Array<{ id?: string; name: string; input?: unknown; inputText?: string }> {
   if (!Array.isArray(content)) return [];
   return content
     .filter((b: any) => b?.type === 'tool_use')
-    .map((b: any) => ({ id: b.id, name: b.name || 'tool', input: b.input ? JSON.stringify(b.input, null, 2) : undefined }));
+    .map((b: any) => ({ id: b.id, name: b.name || 'tool', input: b.input, inputText: b.input ? JSON.stringify(b.input, null, 2) : undefined }));
+}
+
+function getSessionParentKey(s: GwSession): string {
+  return s.parentKey || s.parentSessionId || s.spawnedBy || '';
+}
+
+function getSpawnArgs(input: unknown): { agentId?: string; task?: string; sessionId?: string } | null {
+  if (!input || typeof input !== 'object') return null;
+  const obj = input as Record<string, unknown>;
+  const agentId = typeof obj.agentId === 'string' ? obj.agentId : typeof obj.agent_id === 'string' ? obj.agent_id : undefined;
+  const task = typeof obj.task === 'string' ? obj.task : typeof obj.prompt === 'string' ? obj.prompt : undefined;
+  const sessionId = typeof obj.sessionId === 'string' ? obj.sessionId : typeof obj.session_id === 'string' ? obj.session_id : undefined;
+  if (!agentId && !task && !sessionId) return null;
+  return { agentId, task, sessionId };
 }
 
 function extractToolResultText(content: unknown): string {
@@ -637,7 +652,6 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
     { cmd: '/compress', desc: c.quickCompact || 'Compress context', icon: 'compress', cat: 'session' },
     { cmd: '/snapshot', desc: c.cmdSnapshot || 'Create or restore snapshots', icon: 'inventory_2', cat: 'session' },
     { cmd: '/stop', desc: c.stop || 'Kill running processes', icon: 'stop_circle', cat: 'session' },
-    { cmd: '/btw', desc: c.cmdBtw || 'Side question (no tools)', icon: 'chat_bubble', cat: 'session' },
     { cmd: '/queue', desc: c.cmdQueue || 'Queue prompt for next turn', icon: 'queue', cat: 'session' },
     { cmd: '/steer', desc: c.cmdSteer || 'Inject message after next tool call', icon: 'alt_route', cat: 'session' },
     { cmd: '/background', desc: c.cmdBackground || 'Run prompt in background', icon: 'schedule', cat: 'session' },
@@ -656,16 +670,17 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
     { cmd: '/fast', desc: c.cmdFast || 'Toggle fast mode', icon: 'speed', cat: 'options' },
     { cmd: '/skin', desc: c.cmdSkin || 'Change display skin/theme', icon: 'palette', cat: 'options' },
     { cmd: '/voice', desc: c.cmdVoice || 'Toggle voice mode', icon: 'graphic_eq', cat: 'options' },
+    { cmd: '/footer', desc: c.cmdFooter || 'Toggle runtime metadata footer', icon: 'vertical_align_bottom', cat: 'options' },
     // — Tools & Skills —
-    { cmd: '/reload', desc: c.cmdReload || 'Reload .env variables', icon: 'refresh', cat: 'tools' },
+    { cmd: '/curator', desc: c.cmdCurator || 'Manage background skill maintenance', icon: 'auto_awesome', cat: 'tools' },
     { cmd: '/reload-mcp', desc: c.cmdReloadMcp || 'Reload MCP servers', icon: 'sync', cat: 'tools' },
+    { cmd: '/reload-skills', desc: c.cmdReloadSkills || 'Re-scan installed skills', icon: 'extension', cat: 'tools' },
     // — Info —
     { cmd: '/help', desc: c.quickHelp || 'Show commands', icon: 'help', cat: 'status' },
     { cmd: '/commands', desc: c.cmdCommands || 'Browse available commands', icon: 'menu_book', cat: 'status' },
     { cmd: '/usage', desc: c.tokens || 'Token usage and rate limits', icon: 'data_usage', cat: 'status' },
     { cmd: '/insights', desc: c.cmdInsights || 'Usage analytics', icon: 'analytics', cat: 'status' },
     { cmd: '/profile', desc: c.cmdProfile || 'Show active profile', icon: 'badge', cat: 'status' },
-    { cmd: '/gquota', desc: c.cmdGquota || 'Gemini Code Assist quota', icon: 'speed', cat: 'status' },
     { cmd: '/debug', desc: c.cmdDebug || 'Share a debug report', icon: 'bug_report', cat: 'status' },
     { cmd: '/update', desc: c.cmdUpdate || 'Update Hermes Agent', icon: 'system_update_alt', cat: 'status' },
     { cmd: '/approve', desc: c.cmdApprove || 'Approve pending command', icon: 'verified', cat: 'status' },
@@ -1215,6 +1230,7 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
         fastMode: s.fastMode ?? undefined,
         lastTo: s.lastTo || s.deliveryContext?.to || '',
         parentKey: s.parentKey || s.parentSessionKey || '',
+        parentSessionId: s.parentSessionId || s.parent_session_id || '',
         spawnedBy: s.spawnedBy || s.ownerKey || '',
         status: s.status || undefined,
         startedAt: s.startedAt || undefined,
@@ -1860,7 +1876,35 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
       else if (ts >= weekAgo) groups[2].items.push(s);
       else groups[3].items.push(s);
     }
-    return groups.filter(g => g.items.length > 0);
+    return groups
+      .map(group => {
+        const itemKeys = new Set(group.items.map(s => s.key));
+        const childrenByParent = new Map<string, GwSession[]>();
+        for (const s of group.items) {
+          const parentKey = getSessionParentKey(s);
+          if (!parentKey || !itemKeys.has(parentKey)) continue;
+          const arr = childrenByParent.get(parentKey) || [];
+          arr.push(s);
+          childrenByParent.set(parentKey, arr);
+        }
+        const ordered: Array<{ session: GwSession; depth: number; childCount: number }> = [];
+        const added = new Set<string>();
+        const addWithChildren = (s: GwSession, depth: number) => {
+          if (added.has(s.key)) return;
+          added.add(s.key);
+          const children = childrenByParent.get(s.key) || [];
+          ordered.push({ session: s, depth, childCount: children.length });
+          for (const child of children) addWithChildren(child, depth + 1);
+        };
+        for (const s of group.items) {
+          const parentKey = getSessionParentKey(s);
+          if (parentKey && itemKeys.has(parentKey)) continue;
+          addWithChildren(s, 0);
+        }
+        for (const s of group.items) addWithChildren(s, 0);
+        return { label: group.label, items: ordered };
+      })
+      .filter(g => g.items.length > 0);
   }, [filteredSessions, c]);
 
   // Stream throttle: batch rapid setStream updates into 50ms minimum intervals (max 20 renders/s).
@@ -2807,17 +2851,18 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
           {groupedSessions.map(group => (
             <div key={group.label}>
               <p className="text-[10px] font-bold text-slate-400 dark:text-white/25 uppercase tracking-widest px-2 pt-2.5 pb-1">{group.label}</p>
-              {group.items.map(s => (
+              {group.items.map(({ session: s, depth, childCount }) => (
                 <div key={s.key} className="relative group">
                   <button onClick={() => selectSession(s.key)}
                     aria-current={sessionKey === s.key ? 'true' : undefined}
                     className={`w-full text-start p-2.5 rounded-xl transition-all border ${sessionKey === s.key
                       ? 'bg-primary/10 border-primary/20 shadow-sm glow-subtle-blue'
                       : 'border-transparent hover:bg-slate-200/50 dark:hover:bg-white/5'
-                      }`}>
+                      }`}
+                    style={{ paddingInlineStart: depth > 0 ? `${10 + Math.min(depth, 3) * 14}px` : undefined }}>
                     <div className="flex items-start gap-2">
-                      <div className={`relative w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${s.kind === 'direct' ? 'bg-blue-500/10 text-blue-500' : s.kind === 'group' ? 'bg-purple-500/10 text-purple-500' : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/30'} ${(s.activeRun || s.isStreaming || s.status === 'running') ? 'ring-1 ring-primary/40 animate-pulse' : ''}`}>
-                        <span className="material-symbols-outlined text-[12px]">{s.kind === 'group' ? 'group' : s.kind === 'global' ? 'public' : 'person'}</span>
+                      <div className={`relative w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${depth > 0 ? 'bg-indigo-500/10 text-indigo-500' : s.kind === 'direct' ? 'bg-blue-500/10 text-blue-500' : s.kind === 'group' ? 'bg-purple-500/10 text-purple-500' : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/30'} ${(s.activeRun || s.isStreaming || s.status === 'running') ? 'ring-1 ring-primary/40 animate-pulse' : ''}`}>
+                        <span className="material-symbols-outlined text-[12px]">{depth > 0 ? 'subdirectory_arrow_right' : s.kind === 'group' ? 'group' : s.kind === 'global' ? 'public' : 'person'}</span>
                         {(s.activeRun || s.isStreaming || s.status === 'running') && <span className="absolute -top-0.5 -end-0.5 w-2 h-2 rounded-full bg-primary border border-white dark:border-[#0d1117]" />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -2848,6 +2893,12 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
                         {s.status === 'failed' && (
                           <span className="text-[9px] font-bold px-1 py-px rounded bg-red-500/15 text-red-500">ERR</span>
                         )}
+                        {childCount > 0 && (
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-px rounded bg-indigo-500/10 text-indigo-500" title={c.subagents || 'Subagents'}>
+                            <span className="material-symbols-outlined text-[10px]">account_tree</span>
+                            {childCount}
+                          </span>
+                        )}
                         {(s.status === 'killed' || s.status === 'timeout') && (
                           <span className="text-[9px] font-bold px-1 py-px rounded bg-amber-500/15 text-amber-500">{s.status === 'killed' ? 'STOP' : 'T/O'}</span>
                         )}
@@ -2860,11 +2911,11 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
                     <h4 className={`text-[11px] font-bold truncate pe-12 ${sessionKey === s.key ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-white/50'}`}>
                       {s.label || s.key}
                     </h4>
-                    {(s.parentKey || s.spawnedBy) && (() => {
+                    {getSessionParentKey(s) && (() => {
                       // Show a small chip linking back to the parent session so
                       // subagent / branched / worktree spawns are discoverable
                       // from the child. Click jumps to the parent.
-                      const pk = s.parentKey || s.spawnedBy || '';
+                      const pk = getSessionParentKey(s);
                       const parent = sessions.find(x => x.key === pk);
                       const label = parent?.label || parent?.derivedTitle || pk;
                       return (
@@ -3551,11 +3602,60 @@ const Sessions: React.FC<SessionsProps> = ({ language, pendingSessionKey, onSess
                                 }
                               }
                             }
+                            const spawnArgs = tool.name === 'sessions_spawn' ? getSpawnArgs(tool.input) : null;
+                            if (spawnArgs) {
+                              const child = sessions.find(s => {
+                                const parent = getSessionParentKey(s);
+                                if (parent && parent === sessionKey) return true;
+                                if (spawnArgs.sessionId && s.key === spawnArgs.sessionId) return true;
+                                return Boolean(spawnArgs.agentId && s.key.includes(`:${spawnArgs.agentId}:`));
+                              });
+                              return (
+                                <div key={`${messageKey}-spawn-${ti}`} className="my-1.5 rounded-xl border border-indigo-500/20 bg-indigo-500/[0.04] dark:bg-indigo-500/[0.06] overflow-hidden">
+                                  <div className="px-3 py-2 flex items-start gap-2.5">
+                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-indigo-500/10 border border-indigo-500/15 text-indigo-500">
+                                      <span className="material-symbols-outlined text-[13px]">account_tree</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+                                          {c.subagentDelegation || 'Subagent delegation'}
+                                        </span>
+                                        {spawnArgs.agentId && (
+                                          <code className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-[9px] font-mono text-indigo-600 dark:text-indigo-300">
+                                            {spawnArgs.agentId}
+                                          </code>
+                                        )}
+                                        {child && (
+                                          <button
+                                            onClick={() => selectSession(child.key)}
+                                            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 text-[9px] font-bold text-primary hover:bg-primary/15"
+                                          >
+                                            <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                                            {c.openSession || 'Open session'}
+                                          </button>
+                                        )}
+                                      </div>
+                                      {spawnArgs.task && (
+                                        <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-white/55 line-clamp-3">
+                                          {spawnArgs.task}
+                                        </p>
+                                      )}
+                                      {result && (
+                                        <p className={`mt-1 text-[10px] font-mono truncate ${isErr ? 'text-red-500' : 'text-slate-400 dark:text-white/35'}`}>
+                                          {result}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
                             return (
                               <ToolCallCard
                                 key={`${messageKey}-tool-${ti}`}
                                 name={tool.name}
-                                input={tool.input}
+                                input={tool.inputText ?? tool.input}
                                 result={result}
                                 isError={isErr}
                                 labels={{ toolCall: c.toolInput, toolResult: c.toolOutput }}

@@ -236,6 +236,7 @@
     "skipExisting": "Lewati jika agen sudah ada",
     "deploymentPreview": "Pratinjau Deployment",
     "statusCreated": "Dibuat",
+    "statusUpdated": "Diperbarui",
     "statusSkipped": "Dilewati",
     "statusFailed": "Gagal",
     "statusPreview": "Akan Dibuat",

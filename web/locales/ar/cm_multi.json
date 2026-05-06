@@ -236,6 +236,7 @@
     "skipExisting": "تخطي إذا كان الوكيل موجوداً بالفعل",
     "deploymentPreview": "معاينة النشر",
     "statusCreated": "تم الإنشاء",
+    "statusUpdated": "تم التحديث",
     "statusSkipped": "تم التخطي",
     "statusFailed": "فاشل",
     "statusPreview": "سيتم الإنشاء",
